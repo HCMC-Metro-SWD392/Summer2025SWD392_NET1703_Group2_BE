@@ -1,3 +1,6 @@
+using MetroTicketBE.Infrastructure.Context;
+using Microsoft.EntityFrameworkCore;
+
 namespace MetroTicketBE.WebAPI;
 
 public class Program
@@ -12,6 +15,9 @@ public class Program
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+
+        builder.Services.AddDbContext<ApplicationDBContext>(options =>
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
         var app = builder.Build();
 
