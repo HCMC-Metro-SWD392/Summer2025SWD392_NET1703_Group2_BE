@@ -1,4 +1,4 @@
-﻿namespace Domain.Entities;
+﻿namespace MetroTicketBE.Domain.Entities;
 
 public class Transaction
 {
@@ -11,4 +11,6 @@ public class Transaction
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     
     public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
+    public ICollection<Discount> Discounts { get; set; } = new List<Discount>();
+    
 }

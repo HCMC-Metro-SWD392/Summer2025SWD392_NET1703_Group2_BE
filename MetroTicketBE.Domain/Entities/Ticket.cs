@@ -1,5 +1,5 @@
 ﻿
-namespace Domain.Entities;
+namespace MetroTicketBE.Domain.Entities;
 
 public class Ticket
 {
