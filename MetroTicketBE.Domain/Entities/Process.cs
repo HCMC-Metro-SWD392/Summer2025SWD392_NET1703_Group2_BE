@@ -1,6 +1,8 @@
-﻿namespace MetroTicketBE.Domain.Entities;
+﻿using MetroTicket.Domain.Entities;
 
-public class Process
+namespace MetroTicketBE.Domain.Entities;
+
+public class Process : BaseEntity
 {
     public Guid Id { get; set; }
     public Guid TicketId { get; set; }
@@ -9,11 +11,10 @@ public class Process
     public DateTime CheckInTime { get; set; }
     public DateTime CheckOutTime { get; set; }
     public Guid StatusId { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     
-    public Ticket Ticket { get; set; } = null!;
-    public ICollection<Station> StationCheckIn { get; set; } = null!;
-    public ICollection<Station> StationCheckOut { get; set; } = null!;
-    
+    public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
+    public Station StationCheckIn { get; set; } = null!;
+    public Station StationCheckOut { get; set; } = null!;
+    public Status Status { get; set; } = null!;
+
 }

@@ -1,12 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace MetroTicket.Domain.Entities
+﻿namespace MetroTicket.Domain.Entities
 {
-    public class BaseEntity<CID>
+    public class BaseEntity
     {
-        public CID? CreatedBy { get; set; }
-        [ForeignKey("CreatedBy")]
-        public virtual User? CreatedByUser { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public Guid CreatedBy { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public Guid UpdatedBy { get; set; }
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     }
 }

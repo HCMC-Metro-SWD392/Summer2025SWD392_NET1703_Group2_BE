@@ -1,6 +1,8 @@
-﻿namespace MetroTicketBE.Domain.Entities;
+﻿using MetroTicket.Domain.Entities;
 
-public class EmailTemplate
+namespace MetroTicketBE.Domain.Entities;
+
+public class EmailTemplate : BaseEntity
 {
     public Guid Id { get; set; }
     public string TemplateName { get; set; } = null!;
@@ -15,11 +17,8 @@ public class EmailTemplate
     public string CallToActionText { get; set; } = null!;
     public string Language { get; set; } = null!;
     public string RecipientType { get; set; } = null!;
-    public Guid CreatedBy { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-    public Guid UpdatedBy { get; set; }
     public Guid StatusId { get; set; }
     
     public Status Status { get; set; } = null!;
+    public User User { get; set; } = null!;
 }

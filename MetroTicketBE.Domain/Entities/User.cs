@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using MetroTicketBE.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace MetroTicket.Domain.Entities
 {
@@ -9,5 +10,10 @@ namespace MetroTicket.Domain.Entities
         public string? Sex { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public string? IdentityId { get; set; }
+
+        public ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
+        public ICollection<Log> Logs { get; set; } = new List<Log>();
+        public ICollection<FormRequest> FormRequests { get; set; } = new List<FormRequest>();
+        public ICollection<EmailTemplate> EmailTemplates { get; set; } = new List<EmailTemplate>();
     }
 }

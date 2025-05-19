@@ -16,4 +16,5 @@ public class PayOSMethod
     public string? CancelReason { get; set; } = null!;
     
     public Status Status { get; set; } = null!;
+    public PaymentMethod PaymentMethod { get; set; } = null!;
 }

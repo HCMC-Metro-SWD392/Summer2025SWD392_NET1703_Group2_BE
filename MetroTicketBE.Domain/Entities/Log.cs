@@ -1,13 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace MetroTicket.Domain.Entities
+﻿namespace MetroTicket.Domain.Entities
 {
-    public class Log : BaseEntity<String>
+    public class Log : BaseEntity
     {
         public Guid Id { get; set; }
         public Guid LogTypeId { get; set; }
-        [ForeignKey("LogTypeId")]
-        public virtual required LogType LogType { get; set; }
         public string? Description { get; set; }
+        public LogType LogType { get; set; } = null!;
+        public User User { get; set; } = null!;
     }
 }
