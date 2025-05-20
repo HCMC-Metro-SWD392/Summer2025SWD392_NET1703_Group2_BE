@@ -7,6 +7,8 @@ public class Station
     public string Address { get; set; } = null!;
     public string Description { get; set; } = null!;
 
-    public ICollection<TimeLine> TimeLines { get; set; } = new List<TimeLine>();
+    public ICollection<TrainSegment> AsStart { get; set; } = new List<TrainSegment>();
+    public ICollection<TrainSegment> AsEnd { get; set; } = new List<TrainSegment>();
     public ICollection<TicketRoute> TicketRoutes { get; set; } = new List<TicketRoute>();
+    public ICollection<TimeLine> TimeLines { get; set; } = new List<TimeLine>();
 }

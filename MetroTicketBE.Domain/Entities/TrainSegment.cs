@@ -2,9 +2,10 @@
 
 namespace MetroTicketBE.Domain.Entities;
 
-public class TimeLine: BaseEntity
+public class TrainSegment : BaseEntity
 {
     public Guid Id { get; set; }
+    public Guid TrainId { get; set; }
     public Guid StationStartId { get; set; }
     public Guid StationEndId { get; set; }
     public TimeSpan StartTime { get; set; }
@@ -12,5 +13,5 @@ public class TimeLine: BaseEntity
     
     public Station StationStart { get; set; } = null!;
     public Station StationEnd { get; set; } = null!;
-    public ICollection<Train> Trains { get; set; } = new List<Train>();
+    public Train Train { get; set; } = null!;
 }
