@@ -2,7 +2,7 @@
 
 namespace MetroTicketBE.Domain.Entities;
 
-public class Discount
+public class Promotion
 {
     public Guid Id { get; set; }
     public string Code { get; set; } = null!;

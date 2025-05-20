@@ -12,4 +12,6 @@ public class Status
     public ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
     public ICollection<Process> Processes { get; set; } = new List<Process>();
     public ICollection<EmailTemplate> EmailTemplates { get; set; } = new List<EmailTemplate>();
+    public ICollection<PayOSMethod> PayOSMethods { get; set; } = new List<PayOSMethod>();
+    public ICollection<FormRequest> FormRequests { get; set; } = new List<FormRequest>();
 }

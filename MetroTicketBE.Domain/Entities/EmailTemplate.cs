@@ -2,9 +2,8 @@
 
 namespace MetroTicketBE.Domain.Entities;
 
-public class EmailTemplate : BaseEntity
+public class EmailTemplate : BaseEntity<Guid, string, string>
 {
-    public Guid Id { get; set; }
     public string TemplateName { get; set; } = null!;
     public string SubjectLine { get; set; } = null!;
     public string BodyContent { get; set; } = null!;
@@ -20,5 +19,4 @@ public class EmailTemplate : BaseEntity
     public Guid StatusId { get; set; }
     
     public Status Status { get; set; } = null!;
-    public User User { get; set; } = null!;
 }
