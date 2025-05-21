@@ -9,6 +9,10 @@ public class Station
 
     public ICollection<TrainSegment> AsStart { get; set; } = new List<TrainSegment>();
     public ICollection<TrainSegment> AsEnd { get; set; } = new List<TrainSegment>();
-    public ICollection<TicketRoute> TicketRoutes { get; set; } = new List<TicketRoute>();
-    public ICollection<TimeLine> TimeLines { get; set; } = new List<TimeLine>();
+    public ICollection<TicketRoute> TicketRoutesAsFirstStation { get; set; } = new List<TicketRoute>();
+    public ICollection<TicketRoute> TicketRoutesAsLastStation { get; set; } = new List<TicketRoute>();
+    
+    public ICollection<Process> CheckInProcesses { get; set; } = new List<Process>();
+    public ICollection<Process> CheckOutProcesses { get; set; } = new List<Process>();
+
 }

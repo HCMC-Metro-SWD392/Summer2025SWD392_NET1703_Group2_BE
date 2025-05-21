@@ -3,9 +3,8 @@ using MetroTicket.Domain.Entities;
 
 namespace MetroTicketBE.Domain.Entities;
 
-public class Ticket : BaseEntity
+public class Ticket : BaseEntity<Guid, string, string>
 {
-    public Guid Id { get; set; }
     public Guid? SubscriptionTicketId { get; set; }
     public Guid RouteId { get; set; }
     public Guid TransactionId { get; set; }

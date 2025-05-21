@@ -2,9 +2,8 @@
 
 namespace MetroTicketBE.Domain.Entities;
 
-public class Process : BaseEntity
+public class Process : BaseEntity<Guid, string, string>
 {
-    public Guid Id { get; set; }
     public Guid TicketId { get; set; }
     public Guid StationCheckInId { get; set; }
     public Guid StationCheckOutId { get; set; }

@@ -1,10 +1,12 @@
 ﻿namespace MetroTicket.Domain.Entities
 {
-    public class BaseEntity
+    public abstract class BaseEntity<IID, CID, UID>
     {
-        public Guid CreatedBy { get; set; }
+        public IID Id { get; set; }
+        public CID CreatedById { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public Guid UpdatedBy { get; set; }
+        public UID UpdatedById { get; set; }
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
     }
 }

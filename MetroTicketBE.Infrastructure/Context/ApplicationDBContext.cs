@@ -14,7 +14,7 @@ namespace MetroTicketBE.Infrastructure.Context
         public DbSet<User> User { get; set; }
         public DbSet<Log> Logs { get; set; }
         public DbSet<LogType> LogTypes { get; set; }
-        public DbSet<Discount> Discounts { get; set; }
+        public DbSet<Promotion> Discounts { get; set; }
         public DbSet<EmailTemplate> EmailTemplates { get; set; }
         public DbSet<FormRequest> FormRequests { get; set; }
         public DbSet<FormRequestType> FormRequestType { get; set; }
@@ -26,6 +26,7 @@ namespace MetroTicketBE.Infrastructure.Context
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<TicketType> TicketTypes { get; set; }
         public DbSet<TicketRoute> TicketRoutes { get; set; }
+        public DbSet<TimeLine> TimeLines { get; set; }
         public DbSet<TrainSegment> TimeLine { get; set; }
         public DbSet<Train> Trains { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
@@ -82,16 +83,20 @@ namespace MetroTicketBE.Infrastructure.Context
                 .OnDelete(DeleteBehavior.Restrict);
             
             //TimeLine
-            
+            modelBuilder.Entity<TimeLine>()
+                .HasOne(tl => tl.TrainSegment)
+                .WithMany(ts => ts.TimeLines)
+                .HasForeignKey(tl => tl.TrainSegmentId)
+                .OnDelete(DeleteBehavior.Restrict);
             //Ticket Route
             modelBuilder.Entity<TicketRoute>()
                 .HasOne(tr => tr.FirstStation)
-                .WithMany(s => s.TicketRoutes)
+                .WithMany(s => s.TicketRoutesAsFirstStation)
                 .HasForeignKey(tr => tr.FirstStationId)
                 .OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<TicketRoute>()
                 .HasOne(tr => tr.LastStation)
-                .WithMany(s => s.TicketRoutes)
+                .WithMany(s => s.TicketRoutesAsLastStation)
                 .HasForeignKey(tr => tr.LastStationId)
                 .OnDelete(DeleteBehavior.Restrict);
             
@@ -99,8 +104,94 @@ namespace MetroTicketBE.Infrastructure.Context
             modelBuilder.Entity<Ticket>()
                 .HasOne(t => t.SubscriptionTicket)
                 .WithMany(st => st.Tickets)
-                .HasForeignKey(t => t.SubscriptionTicket)
+                .HasForeignKey(t => t.SubscriptionTicketId)
                 .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Ticket>()
+                .HasOne(t => t.Route)
+                .WithMany(tr => tr.Tickets)
+                .HasForeignKey(t => t.RouteId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Ticket>()
+                .HasOne(t => t.Transaction)
+                .WithMany(tr => tr.Tickets)
+                .HasForeignKey(t => t.TransactionId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            //SubscriptionTicket
+            modelBuilder.Entity<SubscriptionTicket>()
+                .HasOne(st => st.TicketType)
+                .WithMany(tt => tt.SubscriptionTickets)
+                .HasForeignKey(st => st.TicketTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            //Process
+            modelBuilder.Entity<Process>()
+                .HasOne(p => p.StationCheckIn)
+                .WithMany(s => s.CheckInProcesses)
+                .HasForeignKey(p => p.StationCheckInId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Process>()
+                .HasOne(p => p.StationCheckOut)
+                .WithMany(s => s.CheckOutProcesses)
+                .HasForeignKey(p => p.StationCheckOutId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Process>()
+                .HasOne(p => p.Status)
+                .WithMany(s => s.Processes)
+                .HasForeignKey(p => p.StatusId)
+                .OnDelete(deleteBehavior: DeleteBehavior.Restrict);
+            
+            //PayOSMethod
+            modelBuilder.Entity<PayOSMethod>()
+                .HasOne(p => p.Status)
+                .WithMany(s => s.PayOSMethods)
+                .HasForeignKey(p => p.StatusId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<PayOSMethod>()
+                .HasOne(p => p.PaymentMethod)
+                .WithMany(pm => pm.PayOSMethods)
+                .HasForeignKey(p => p.PaymentMethodId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            //Log
+            // modelBuilder.Entity<Log>()
+            //     .HasOne(l => l.User)
+            //     .WithMany(u => u.Logs)
+            //     .HasForeignKey(l => l.CreatedById)
+            //     .OnDelete(DeleteBehavior.Restrict);
+            // modelBuilder.Entity<Log>()
+            //     .HasOne(l => l.User)
+            //     .WithMany(u => u.Logs)
+            //     .HasForeignKey(l => l.UpdatedById)
+            //     .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Log>()
+                .HasOne(l => l.LogType)
+                .WithMany(lt => lt.Logs)
+                .HasForeignKey(l => l.LogTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            //FormRequest
+            modelBuilder.Entity<FormRequest>()
+                .HasOne(fr => fr.Sender)
+                .WithMany(u => u.FormRequestsAsSenders)
+                .HasForeignKey(fr => fr.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<FormRequest>()
+                .HasOne(fr => fr.FormRequestType)
+                .WithMany(frt => frt.FormRequests)
+                .HasForeignKey(fr => fr.FormRequestTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<FormRequest>()
+                .HasOne(fr => fr.Reviewer)
+                .WithMany(r => r.FormRequestsAsReviewers)
+                .HasForeignKey(fr => fr.ReviewerId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<FormRequest>()
+                .HasOne(fr => fr.Status)
+                .WithMany(s => s.FormRequests)
+                .HasForeignKey(fr => fr.StatusId)
+                .OnDelete(DeleteBehavior.Restrict);
+
         }
     }
 }
