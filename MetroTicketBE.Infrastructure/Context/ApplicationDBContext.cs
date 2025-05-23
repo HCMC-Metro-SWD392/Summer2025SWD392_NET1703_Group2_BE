@@ -191,7 +191,23 @@ namespace MetroTicketBE.Infrastructure.Context
                 .WithMany(s => s.FormRequests)
                 .HasForeignKey(fr => fr.StatusId)
                 .OnDelete(DeleteBehavior.Restrict);
-
+            
+            //Customer
+            modelBuilder.Entity<Customer>()
+                .HasOne(c => c.User)
+                .WithOne(u => u.Customer)
+                .HasForeignKey<Customer>(c => c.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Customer>()
+                .HasOne(c => c.CustomerType)
+                .WithMany(ct => ct.Customers)
+                .HasForeignKey(c => c.CustomerTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Customer>()
+                .HasOne(c => c.Membership)
+                .WithMany(m => m.Customers)
+                .HasForeignKey(c => c.MembershipId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
