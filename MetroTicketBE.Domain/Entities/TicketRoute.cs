@@ -2,8 +2,9 @@
 
 namespace MetroTicketBE.Domain.Entities;
 
-public class TicketRoute : BaseEntity<Guid, string, string>
+public class TicketRoute
 {
+    public Guid Id { get; set; }
     public Guid FirstStationId { get; set; }
     public Guid LastStationId { get; set; }
     public double Price { get; set; }

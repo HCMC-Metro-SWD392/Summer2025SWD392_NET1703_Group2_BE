@@ -7,7 +7,4 @@ public class Train
     public int TrainCarQuantity { get; set; }
     public double LoadCapacity { get; set; }
     public Guid StatusId { get; set; }
-    
-    public ICollection<TrainSegment> TrainSegments { get; set; } = new List<TrainSegment>();
-    public Status Status { get; set; } = null!;
 }

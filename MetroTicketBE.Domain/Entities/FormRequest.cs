@@ -2,13 +2,14 @@
 
 namespace MetroTicketBE.Domain.Entities;
 
-public class FormRequest : BaseEntity<Guid, string, string>
+public class FormRequest
 {
-    public string SenderId { get; set; }
+    public Guid Id { get; set; }
+    public required string SenderId { get; set; }
     public string Title { get; set; } = null!;
     public string Content { get; set; } = null!;
     public Guid FormRequestTypeId { get; set; }
-    public string ReviewerId { get; set; }
+    public string ReviewerId { get; set; } = null!;
     public string RejectionReason { get; set; } = null!;
     public Guid StatusId { get; set; }
     
