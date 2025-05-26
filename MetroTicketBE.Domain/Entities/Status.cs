@@ -14,4 +14,5 @@ public class Status
     public ICollection<EmailTemplate> EmailTemplates { get; set; } = new List<EmailTemplate>();
     public ICollection<PayOSMethod> PayOSMethods { get; set; } = new List<PayOSMethod>();
     public ICollection<FormRequest> FormRequests { get; set; } = new List<FormRequest>();
+    public ICollection<StaffSchedule> StaffSchedules { get; set; } = new List<StaffSchedule>();
 }
