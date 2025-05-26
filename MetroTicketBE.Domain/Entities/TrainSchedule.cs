@@ -10,10 +10,13 @@ namespace MetroTicketBE.Domain.Entities
     public class TrainSchedule
     {
         public Guid Id { get; set; }
+        public Guid TrainId { get; set; }
         public Guid StartStationId { get; set; }
         public TimeSpan StartTime { get; set; }
         public TrainScheduleStatus Status { get; set; }
 
         public Station StartStation { get; set; } = null!;
+
+        public ICollection<Train> Trains { get; set; } = new List<Train>();
     }
 }

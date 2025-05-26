@@ -49,6 +49,12 @@ namespace MetroTicketBE.Infrastructure.Context
                 .HasForeignKey(ticket => ticket.TransactionId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Transaction>()
+                .HasOne(t => t.Promotion)
+                .WithMany(p => p.Transactions)
+                .HasForeignKey(t => t.PromotionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
 
             //Ticket Route
             modelBuilder.Entity<TicketRoute>()
@@ -133,7 +139,7 @@ namespace MetroTicketBE.Infrastructure.Context
                 .WithMany(m => m.Customers)
                 .HasForeignKey(c => c.MembershipId)
                 .OnDelete(DeleteBehavior.Restrict);
-            
+
             //Staff
             modelBuilder.Entity<Staff>()
                 .HasOne(s => s.User)
@@ -186,6 +192,28 @@ namespace MetroTicketBE.Infrastructure.Context
                 .WithMany(s => s.StrainSchedules)
                 .HasForeignKey(ts => ts.StartStationId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<TrainSchedule>()
+    .HasMany(ts => ts.Trains)
+    .WithMany(t => t.TrainSchedules)
+    .UsingEntity<Dictionary<string, object>>(
+        "TrainScheduleWithTrain", // Tên bảng trung gian
+        j => j
+            .HasOne<Train>()
+            .WithMany()
+            .HasForeignKey("TrainId")
+            .OnDelete(DeleteBehavior.Restrict),
+        j => j
+            .HasOne<TrainSchedule>()
+            .WithMany()
+            .HasForeignKey("TrainScheduleId")
+            .OnDelete(DeleteBehavior.Restrict),
+        j =>
+        {
+            j.HasKey("TrainId", "TrainScheduleId");
+            j.ToTable("TrainScheduleWithTrain"); // Tùy chọn tên bảng
+        });
+
 
             //FormRequest
             modelBuilder.Entity<FormRequest>()

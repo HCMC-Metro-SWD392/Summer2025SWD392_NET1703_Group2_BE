@@ -9,7 +9,8 @@ public class Customer
     public Guid CustomerTypeId { get; set; }
     public Guid MembershipId { get; set; }
     public long Points { get; set; }
-    
+    public TimeSpan StudentExpiration { get; set; }
+
     public User User { get; set; } = null!;
     public CustomerType CustomerType { get; set; } = null!;
     public Membership Membership { get; set; } = null!;

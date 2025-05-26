@@ -12,6 +12,8 @@ public class Transaction
     public Guid Status { get; set; }
     
     public User User { get; set; } = null!;
+
     public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
-    public ICollection<Promotion> Promotions { get; set; } = new List<Promotion>();
+
+    public Promotion Promotion { get; set; } = null!;
 }
