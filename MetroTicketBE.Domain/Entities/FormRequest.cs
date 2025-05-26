@@ -1,4 +1,5 @@
 ﻿using MetroTicket.Domain.Entities;
+using MetroTicketBE.Domain.Enum;
 
 namespace MetroTicketBE.Domain.Entities;
 
@@ -8,13 +9,15 @@ public class FormRequest
     public required string SenderId { get; set; }
     public string Title { get; set; } = null!;
     public string Content { get; set; } = null!;
-    public Guid FormRequestTypeId { get; set; }
+    public required FormRequestType FormRequestType { get; set; }
     public string ReviewerId { get; set; } = null!;
     public string RejectionReason { get; set; } = null!;
-    public Guid StatusId { get; set; }
+    public string CreatedBy { get; set; } = null!; // UserId of the creator
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public FormStatus Status { get; set; }
     
-    public FormRequestType FormRequestType { get; set; } = null!;
-    public Status Status { get; set; } = null!;
     public User Reviewer { get; set; } = null!;
     public User Sender { get; set; } = null!;
+
+    public ICollection<FormAttachment> FormAttachments { get; set; } = new List<FormAttachment>();
 }

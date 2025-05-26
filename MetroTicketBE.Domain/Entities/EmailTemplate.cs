@@ -1,4 +1,5 @@
 ﻿using MetroTicket.Domain.Entities;
+using MetroTicketBE.Domain.Enum;
 
 namespace MetroTicketBE.Domain.Entities;
 
@@ -17,7 +18,5 @@ public class EmailTemplate
     public string CallToActionText { get; set; } = null!;
     public string Language { get; set; } = null!;
     public string RecipientType { get; set; } = null!;
-    public Guid StatusId { get; set; }
-    
-    public int Status { get; set; } 
+    public EmailStatus Status { get; set; }
 }
