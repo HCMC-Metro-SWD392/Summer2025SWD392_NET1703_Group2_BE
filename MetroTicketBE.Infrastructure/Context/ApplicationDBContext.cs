@@ -146,11 +146,17 @@ namespace MetroTicketBE.Infrastructure.Context
                 .WithOne(u => u.Staff)
                 .HasForeignKey<Staff>(s => s.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Staff>()
-                .HasOne(s => s.StaffSchedule)
-                .WithMany(ss => ss.Staffs)
-                .HasForeignKey(s => s.StaffScheduleId)
+            
+            //StaffSchedule
+            modelBuilder.Entity<StaffSchedule>()
+                .HasOne(ss => ss.Shift)
+                .WithMany(s => s.StaffSchedules)
+                .HasForeignKey(ss => ss.ShiftId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<StaffSchedule>()
+                .HasOne(ss => ss.Staff)
+                .WithMany(s => s.StaffSchedules)
+                .HasForeignKey(ss => ss.StaffId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             //MetroLine
