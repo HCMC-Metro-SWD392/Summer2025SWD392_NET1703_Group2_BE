@@ -57,18 +57,6 @@ namespace MetroTicketBE.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "CustomerTypes",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    TypeName = table.Column<string>(type: "text", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CustomerTypes", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Discounts",
                 columns: table => new
                 {
@@ -126,17 +114,17 @@ namespace MetroTicketBE.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "StaffSchedule",
+                name: "StaffShift",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ShiftName = table.Column<string>(type: "text", nullable: false),
                     StartTime = table.Column<TimeSpan>(type: "interval", nullable: false),
-                    EndTime = table.Column<TimeSpan>(type: "interval", nullable: false),
-                    Status = table.Column<int>(type: "integer", nullable: false)
+                    EndTime = table.Column<TimeSpan>(type: "interval", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_StaffSchedule", x => x.Id);
+                    table.PrimaryKey("PK_StaffShift", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -174,7 +162,7 @@ namespace MetroTicketBE.Infrastructure.Migrations
                     TrainCode = table.Column<string>(type: "text", nullable: false),
                     TrainCarQuantity = table.Column<int>(type: "integer", nullable: false),
                     LoadCapacity = table.Column<double>(type: "double precision", nullable: false),
-                    StatusId = table.Column<Guid>(type: "uuid", nullable: false)
+                    Status = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -305,14 +293,14 @@ namespace MetroTicketBE.Infrastructure.Migrations
                     Language = table.Column<string>(type: "text", nullable: false),
                     RecipientType = table.Column<string>(type: "text", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
-                    UserId = table.Column<string>(type: "text", nullable: true)
+                    ApplicationUserId = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_EmailTemplates", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_EmailTemplates_AspNetUsers_UserId",
-                        column: x => x.UserId,
+                        name: "FK_EmailTemplates_AspNetUsers_ApplicationUserId",
+                        column: x => x.ApplicationUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
                 });
@@ -370,14 +358,33 @@ namespace MetroTicketBE.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Staff",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Staff", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Staff_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Customers",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<string>(type: "text", nullable: false),
-                    CustomerTypeId = table.Column<Guid>(type: "uuid", nullable: false),
-                    MembershipId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Points = table.Column<long>(type: "bigint", nullable: false)
+                    CustomerType = table.Column<int>(type: "integer", nullable: false),
+                    MembershipId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Points = table.Column<long>(type: "bigint", nullable: false),
+                    StudentExpiration = table.Column<TimeSpan>(type: "interval", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -387,13 +394,7 @@ namespace MetroTicketBE.Infrastructure.Migrations
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Customers_CustomerTypes_CustomerTypeId",
-                        column: x => x.CustomerTypeId,
-                        principalTable: "CustomerTypes",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Customers_Memberships_MembershipId",
                         column: x => x.MembershipId,
@@ -451,36 +452,17 @@ namespace MetroTicketBE.Infrastructure.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
+                        name: "FK_Transactions_Discounts_PromotionId",
+                        column: x => x.PromotionId,
+                        principalTable: "Discounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
                         name: "FK_Transactions_PaymentMethods_PaymentMethodId",
                         column: x => x.PaymentMethodId,
                         principalTable: "PaymentMethods",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Staff",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserId = table.Column<string>(type: "text", nullable: false),
-                    StaffScheduleId = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Staff", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Staff_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Staff_StaffSchedule_StaffScheduleId",
-                        column: x => x.StaffScheduleId,
-                        principalTable: "StaffSchedule",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -550,6 +532,7 @@ namespace MetroTicketBE.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TrainId = table.Column<Guid>(type: "uuid", nullable: false),
                     StartStationId = table.Column<Guid>(type: "uuid", nullable: false),
                     StartTime = table.Column<TimeSpan>(type: "interval", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false)
@@ -634,27 +617,30 @@ namespace MetroTicketBE.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PromotionTransaction",
+                name: "StaffSchedule",
                 columns: table => new
                 {
-                    PromotionsId = table.Column<Guid>(type: "uuid", nullable: false),
-                    TransactionsId = table.Column<Guid>(type: "uuid", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ShiftId = table.Column<Guid>(type: "uuid", nullable: false),
+                    StaffId = table.Column<Guid>(type: "uuid", nullable: false),
+                    WorkingDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PromotionTransaction", x => new { x.PromotionsId, x.TransactionsId });
+                    table.PrimaryKey("PK_StaffSchedule", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_PromotionTransaction_Discounts_PromotionsId",
-                        column: x => x.PromotionsId,
-                        principalTable: "Discounts",
+                        name: "FK_StaffSchedule_StaffShift_ShiftId",
+                        column: x => x.ShiftId,
+                        principalTable: "StaffShift",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_PromotionTransaction_Transactions_TransactionsId",
-                        column: x => x.TransactionsId,
-                        principalTable: "Transactions",
+                        name: "FK_StaffSchedule_Staff_StaffId",
+                        column: x => x.StaffId,
+                        principalTable: "Staff",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -680,6 +666,30 @@ namespace MetroTicketBE.Infrastructure.Migrations
                         name: "FK_MetroLineStations_Stations_StationId",
                         column: x => x.StationId,
                         principalTable: "Stations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TrainScheduleWithTrain",
+                columns: table => new
+                {
+                    TrainId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TrainScheduleId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TrainScheduleWithTrain", x => new { x.TrainId, x.TrainScheduleId });
+                    table.ForeignKey(
+                        name: "FK_TrainScheduleWithTrain_StrainSchedules_TrainScheduleId",
+                        column: x => x.TrainScheduleId,
+                        principalTable: "StrainSchedules",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_TrainScheduleWithTrain_Trains_TrainId",
+                        column: x => x.TrainId,
+                        principalTable: "Trains",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -764,11 +774,6 @@ namespace MetroTicketBE.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Customers_CustomerTypeId",
-                table: "Customers",
-                column: "CustomerTypeId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Customers_MembershipId",
                 table: "Customers",
                 column: "MembershipId");
@@ -776,13 +781,12 @@ namespace MetroTicketBE.Infrastructure.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Customers_UserId",
                 table: "Customers",
-                column: "UserId",
-                unique: true);
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_EmailTemplates_UserId",
+                name: "IX_EmailTemplates_ApplicationUserId",
                 table: "EmailTemplates",
-                column: "UserId");
+                column: "ApplicationUserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_FormAttachment_FormRequestId",
@@ -845,20 +849,19 @@ namespace MetroTicketBE.Infrastructure.Migrations
                 column: "StationCheckOutId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PromotionTransaction_TransactionsId",
-                table: "PromotionTransaction",
-                column: "TransactionsId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Staff_StaffScheduleId",
-                table: "Staff",
-                column: "StaffScheduleId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Staff_UserId",
                 table: "Staff",
-                column: "UserId",
-                unique: true);
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StaffSchedule_ShiftId",
+                table: "StaffSchedule",
+                column: "ShiftId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StaffSchedule_StaffId",
+                table: "StaffSchedule",
+                column: "StaffId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_StrainSchedules_StartStationId",
@@ -901,9 +904,19 @@ namespace MetroTicketBE.Infrastructure.Migrations
                 column: "TransactionId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_TrainScheduleWithTrain_TrainScheduleId",
+                table: "TrainScheduleWithTrain",
+                column: "TrainScheduleId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Transactions_PaymentMethodId",
                 table: "Transactions",
                 column: "PaymentMethodId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transactions_PromotionId",
+                table: "Transactions",
+                column: "PromotionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Transactions_UserId",
@@ -948,25 +961,16 @@ namespace MetroTicketBE.Infrastructure.Migrations
                 name: "PayOSMethods");
 
             migrationBuilder.DropTable(
-                name: "PromotionTransaction");
-
-            migrationBuilder.DropTable(
-                name: "Staff");
-
-            migrationBuilder.DropTable(
-                name: "StrainSchedules");
+                name: "StaffSchedule");
 
             migrationBuilder.DropTable(
                 name: "Tickets");
 
             migrationBuilder.DropTable(
-                name: "Trains");
+                name: "TrainScheduleWithTrain");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
-
-            migrationBuilder.DropTable(
-                name: "CustomerTypes");
 
             migrationBuilder.DropTable(
                 name: "Memberships");
@@ -978,10 +982,10 @@ namespace MetroTicketBE.Infrastructure.Migrations
                 name: "MetroLines");
 
             migrationBuilder.DropTable(
-                name: "Discounts");
+                name: "StaffShift");
 
             migrationBuilder.DropTable(
-                name: "StaffSchedule");
+                name: "Staff");
 
             migrationBuilder.DropTable(
                 name: "Processes");
@@ -996,19 +1000,28 @@ namespace MetroTicketBE.Infrastructure.Migrations
                 name: "Transactions");
 
             migrationBuilder.DropTable(
+                name: "StrainSchedules");
+
+            migrationBuilder.DropTable(
+                name: "Trains");
+
+            migrationBuilder.DropTable(
                 name: "FareRule");
 
             migrationBuilder.DropTable(
                 name: "TicketTypes");
 
             migrationBuilder.DropTable(
-                name: "Stations");
-
-            migrationBuilder.DropTable(
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
+                name: "Discounts");
+
+            migrationBuilder.DropTable(
                 name: "PaymentMethods");
+
+            migrationBuilder.DropTable(
+                name: "Stations");
         }
     }
 }

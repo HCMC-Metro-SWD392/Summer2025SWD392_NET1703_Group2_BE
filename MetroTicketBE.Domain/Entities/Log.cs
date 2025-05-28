@@ -8,6 +8,6 @@ namespace MetroTicket.Domain.Entities
         public Guid LogTypeId { get; set; }
         public string? Description { get; set; }
         public LogType LogType { get; set; }
-        public User User { get; set; } = null!;
+        public ApplicationUser User { get; set; } = null!;
     }
 }

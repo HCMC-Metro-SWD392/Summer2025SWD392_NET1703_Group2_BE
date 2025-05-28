@@ -6,4 +6,9 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\MetroTicketBE.Domain\MetroTicketBE.Domain.csproj" />
+      <ProjectReference Include="..\MetroTicketBE.Infrastructure\MetroTicketBE.Infrastructure.csproj" />
+    </ItemGroup>
+
 </Project>

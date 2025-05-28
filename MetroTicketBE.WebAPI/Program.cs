@@ -1,4 +1,5 @@
 using MetroTicketBE.Infrastructure.Context;
+using MetroTicketBE.WebAPI.Extentions;
 using Microsoft.EntityFrameworkCore;
 
 namespace MetroTicketBE.WebAPI;
@@ -19,7 +20,13 @@ public class Program
         builder.Services.AddDbContext<ApplicationDBContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+        // Register services life cycle
+        // Base on Extensions.ServiceCollectionExtensions
+        builder.Services.RegisterService();
+
+
         var app = builder.Build();
+        ApplyMigration();
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
@@ -36,5 +43,18 @@ public class Program
         app.MapControllers();
 
         app.Run();
+
+        void ApplyMigration()
+        {
+            using (var scope = app.Services.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<ApplicationDBContext>();
+
+                if (context.Database.GetPendingMigrations().Any())
+                {
+                    context.Database.Migrate();
+                }
+            }
+        }
     }
 }

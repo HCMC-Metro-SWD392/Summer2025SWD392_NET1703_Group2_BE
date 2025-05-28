@@ -19,8 +19,4 @@
       <ProjectReference Include="..\MetroTicketBE.Domain\MetroTicketBE.Domain.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Repository\" />
-    </ItemGroup>
-
 </Project>

@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MetroTicketBE.Infrastructure.Context
 {
-    public class ApplicationDBContext : IdentityDbContext<User>
+    public class ApplicationDBContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options) : base(options)
         {
 
         }
-        public DbSet<User> User { get; set; }
+        public DbSet<ApplicationUser> User { get; set; }
         public DbSet<Log> Logs { get; set; }
         public DbSet<Promotion> Discounts { get; set; }
         public DbSet<EmailTemplate> EmailTemplates { get; set; }
@@ -27,7 +27,6 @@ namespace MetroTicketBE.Infrastructure.Context
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<PaymentMethod> PaymentMethods { get; set; }
         public DbSet<Customer> Customers { get; set; }
-        public DbSet<CustomerType> CustomerTypes { get; set; }
         public DbSet<Membership> Memberships { get; set; }
         public DbSet<MetroLine> MetroLines { get; set; }
         public DbSet<TrainSchedule> StrainSchedules { get; set; }
@@ -122,17 +121,6 @@ namespace MetroTicketBE.Infrastructure.Context
                 .OnDelete(DeleteBehavior.Restrict);
 
             //Customer
-            modelBuilder.Entity<Customer>()
-                .HasOne(c => c.User)
-                .WithOne(u => u.Customer)
-                .HasForeignKey<Customer>(c => c.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Customer>()
-                .HasOne(c => c.CustomerType)
-                .WithMany(ct => ct.Customers)
-                .HasForeignKey(c => c.CustomerTypeId)
-                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Customer>()
                 .HasOne(c => c.Membership)
@@ -140,13 +128,6 @@ namespace MetroTicketBE.Infrastructure.Context
                 .HasForeignKey(c => c.MembershipId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            //Staff
-            modelBuilder.Entity<Staff>()
-                .HasOne(s => s.User)
-                .WithOne(u => u.Staff)
-                .HasForeignKey<Staff>(s => s.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
-            
             //StaffSchedule
             modelBuilder.Entity<StaffSchedule>()
                 .HasOne(ss => ss.Shift)
@@ -200,25 +181,25 @@ namespace MetroTicketBE.Infrastructure.Context
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<TrainSchedule>()
-    .HasMany(ts => ts.Trains)
-    .WithMany(t => t.TrainSchedules)
-    .UsingEntity<Dictionary<string, object>>(
-        "TrainScheduleWithTrain", // Tên bảng trung gian
-        j => j
-            .HasOne<Train>()
-            .WithMany()
-            .HasForeignKey("TrainId")
-            .OnDelete(DeleteBehavior.Restrict),
-        j => j
-            .HasOne<TrainSchedule>()
-            .WithMany()
-            .HasForeignKey("TrainScheduleId")
-            .OnDelete(DeleteBehavior.Restrict),
-        j =>
-        {
-            j.HasKey("TrainId", "TrainScheduleId");
-            j.ToTable("TrainScheduleWithTrain"); // Tùy chọn tên bảng
-        });
+                .HasMany(ts => ts.Trains)
+                .WithMany(t => t.TrainSchedules)
+                .UsingEntity<Dictionary<string, object>>(
+                    "TrainScheduleWithTrain",
+                        j => j
+                            .HasOne<Train>()
+                            .WithMany()
+                            .HasForeignKey("TrainId")
+                            .OnDelete(DeleteBehavior.Restrict),
+                        j => j
+                            .HasOne<TrainSchedule>()
+                            .WithMany()
+                            .HasForeignKey("TrainScheduleId")
+                            .OnDelete(DeleteBehavior.Restrict),
+                        j =>
+                        {
+                            j.HasKey("TrainId", "TrainScheduleId");
+                            j.ToTable("TrainScheduleWithTrain");
+                        });
 
 
             //FormRequest

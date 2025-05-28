@@ -11,7 +11,7 @@ public class Transaction
     public Guid PaymentMethodId { get; set; }
     public Guid Status { get; set; }
     
-    public User User { get; set; } = null!;
+    public ApplicationUser User { get; set; } = null!;
 
     public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
 

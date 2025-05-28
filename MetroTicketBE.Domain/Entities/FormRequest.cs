@@ -16,8 +16,8 @@ public class FormRequest
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public FormStatus Status { get; set; }
     
-    public User Reviewer { get; set; } = null!;
-    public User Sender { get; set; } = null!;
+    public ApplicationUser Reviewer { get; set; } = null!;
+    public ApplicationUser Sender { get; set; } = null!;
 
     public ICollection<FormAttachment> FormAttachments { get; set; } = new List<FormAttachment>();
 }

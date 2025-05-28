@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MetroTicketBE.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20250526044927_InitialCreate")]
+    [Migration("20250528194459_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -25,32 +25,7 @@ namespace MetroTicketBE.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("MetroTicket.Domain.Entities.Log", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<int>("LogType")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("LogTypeId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Logs");
-                });
-
-            modelBuilder.Entity("MetroTicket.Domain.Entities.User", b =>
+            modelBuilder.Entity("MetroTicket.Domain.Entities.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -130,20 +105,48 @@ namespace MetroTicketBE.Infrastructure.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("MetroTicket.Domain.Entities.Log", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<int>("LogType")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("LogTypeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Logs");
+                });
+
             modelBuilder.Entity("MetroTicketBE.Domain.Entities.Customer", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("CustomerTypeId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("CustomerType")
+                        .HasColumnType("integer");
 
-                    b.Property<Guid>("MembershipId")
+                    b.Property<Guid?>("MembershipId")
                         .HasColumnType("uuid");
 
                     b.Property<long>("Points")
                         .HasColumnType("bigint");
+
+                    b.Property<TimeSpan?>("StudentExpiration")
+                        .HasColumnType("interval");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -151,29 +154,11 @@ namespace MetroTicketBE.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CustomerTypeId");
-
                     b.HasIndex("MembershipId");
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
+                    b.HasIndex("UserId");
 
                     b.ToTable("Customers");
-                });
-
-            modelBuilder.Entity("MetroTicketBE.Domain.Entities.CustomerType", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("TypeName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CustomerTypes");
                 });
 
             modelBuilder.Entity("MetroTicketBE.Domain.Entities.EmailTemplate", b =>
@@ -181,6 +166,9 @@ namespace MetroTicketBE.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("text");
 
                     b.Property<string>("BodyContent")
                         .IsRequired()
@@ -233,12 +221,9 @@ namespace MetroTicketBE.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("ApplicationUserId");
 
                     b.ToTable("EmailTemplates");
                 });
@@ -547,19 +532,13 @@ namespace MetroTicketBE.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("StaffScheduleId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("StaffScheduleId");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
+                    b.HasIndex("UserId");
 
                     b.ToTable("Staff");
                 });
@@ -570,18 +549,46 @@ namespace MetroTicketBE.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<TimeSpan>("EndTime")
-                        .HasColumnType("interval");
+                    b.Property<Guid>("ShiftId")
+                        .HasColumnType("uuid");
 
-                    b.Property<TimeSpan>("StartTime")
-                        .HasColumnType("interval");
+                    b.Property<Guid>("StaffId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
+                    b.Property<DateOnly>("WorkingDate")
+                        .HasColumnType("date");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("ShiftId");
+
+                    b.HasIndex("StaffId");
+
                     b.ToTable("StaffSchedule");
+                });
+
+            modelBuilder.Entity("MetroTicketBE.Domain.Entities.StaffShift", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("interval");
+
+                    b.Property<string>("ShiftName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("interval");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("StaffShift");
                 });
 
             modelBuilder.Entity("MetroTicketBE.Domain.Entities.Station", b =>
@@ -734,8 +741,8 @@ namespace MetroTicketBE.Infrastructure.Migrations
                     b.Property<double>("LoadCapacity")
                         .HasColumnType("double precision");
 
-                    b.Property<Guid>("StatusId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.Property<int>("TrainCarQuantity")
                         .HasColumnType("integer");
@@ -763,6 +770,9 @@ namespace MetroTicketBE.Infrastructure.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
+
+                    b.Property<Guid>("TrainId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -796,6 +806,8 @@ namespace MetroTicketBE.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("PaymentMethodId");
+
+                    b.HasIndex("PromotionId");
 
                     b.HasIndex("UserId");
 
@@ -934,24 +946,24 @@ namespace MetroTicketBE.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("PromotionTransaction", b =>
+            modelBuilder.Entity("TrainScheduleWithTrain", b =>
                 {
-                    b.Property<Guid>("PromotionsId")
+                    b.Property<Guid>("TrainId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("TransactionsId")
+                    b.Property<Guid>("TrainScheduleId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("PromotionsId", "TransactionsId");
+                    b.HasKey("TrainId", "TrainScheduleId");
 
-                    b.HasIndex("TransactionsId");
+                    b.HasIndex("TrainScheduleId");
 
-                    b.ToTable("PromotionTransaction");
+                    b.ToTable("TrainScheduleWithTrain", (string)null);
                 });
 
             modelBuilder.Entity("MetroTicket.Domain.Entities.Log", b =>
                 {
-                    b.HasOne("MetroTicket.Domain.Entities.User", "User")
+                    b.HasOne("MetroTicket.Domain.Entities.ApplicationUser", "User")
                         .WithMany("Logs")
                         .HasForeignKey("UserId");
 
@@ -960,25 +972,16 @@ namespace MetroTicketBE.Infrastructure.Migrations
 
             modelBuilder.Entity("MetroTicketBE.Domain.Entities.Customer", b =>
                 {
-                    b.HasOne("MetroTicketBE.Domain.Entities.CustomerType", "CustomerType")
-                        .WithMany("Customers")
-                        .HasForeignKey("CustomerTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("MetroTicketBE.Domain.Entities.Membership", "Membership")
                         .WithMany("Customers")
                         .HasForeignKey("MembershipId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("MetroTicket.Domain.Entities.User", "User")
-                        .WithOne("Customer")
-                        .HasForeignKey("MetroTicketBE.Domain.Entities.Customer", "UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                    b.HasOne("MetroTicket.Domain.Entities.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("CustomerType");
 
                     b.Navigation("Membership");
 
@@ -987,9 +990,9 @@ namespace MetroTicketBE.Infrastructure.Migrations
 
             modelBuilder.Entity("MetroTicketBE.Domain.Entities.EmailTemplate", b =>
                 {
-                    b.HasOne("MetroTicket.Domain.Entities.User", null)
+                    b.HasOne("MetroTicket.Domain.Entities.ApplicationUser", null)
                         .WithMany("EmailTemplates")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("ApplicationUserId");
                 });
 
             modelBuilder.Entity("MetroTicketBE.Domain.Entities.FormAttachment", b =>
@@ -1005,13 +1008,13 @@ namespace MetroTicketBE.Infrastructure.Migrations
 
             modelBuilder.Entity("MetroTicketBE.Domain.Entities.FormRequest", b =>
                 {
-                    b.HasOne("MetroTicket.Domain.Entities.User", "Reviewer")
+                    b.HasOne("MetroTicket.Domain.Entities.ApplicationUser", "Reviewer")
                         .WithMany("FormRequestsAsReviewers")
                         .HasForeignKey("ReviewerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("MetroTicket.Domain.Entities.User", "Sender")
+                    b.HasOne("MetroTicket.Domain.Entities.ApplicationUser", "Sender")
                         .WithMany("FormRequestsAsSenders")
                         .HasForeignKey("SenderId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1100,21 +1103,32 @@ namespace MetroTicketBE.Infrastructure.Migrations
 
             modelBuilder.Entity("MetroTicketBE.Domain.Entities.Staff", b =>
                 {
-                    b.HasOne("MetroTicketBE.Domain.Entities.StaffSchedule", "StaffSchedule")
-                        .WithMany("Staffs")
-                        .HasForeignKey("StaffScheduleId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                    b.HasOne("MetroTicket.Domain.Entities.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("MetroTicket.Domain.Entities.User", "User")
-                        .WithOne("Staff")
-                        .HasForeignKey("MetroTicketBE.Domain.Entities.Staff", "UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("StaffSchedule");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MetroTicketBE.Domain.Entities.StaffSchedule", b =>
+                {
+                    b.HasOne("MetroTicketBE.Domain.Entities.StaffShift", "Shift")
+                        .WithMany("StaffSchedules")
+                        .HasForeignKey("ShiftId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MetroTicketBE.Domain.Entities.Staff", "Staff")
+                        .WithMany("StaffSchedules")
+                        .HasForeignKey("StaffId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Shift");
+
+                    b.Navigation("Staff");
                 });
 
             modelBuilder.Entity("MetroTicketBE.Domain.Entities.SubscriptionTicket", b =>
@@ -1196,11 +1210,18 @@ namespace MetroTicketBE.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MetroTicket.Domain.Entities.User", "User")
+                    b.HasOne("MetroTicketBE.Domain.Entities.Promotion", "Promotion")
+                        .WithMany("Transactions")
+                        .HasForeignKey("PromotionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("MetroTicket.Domain.Entities.ApplicationUser", "User")
                         .WithMany("Transactions")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Promotion");
 
                     b.Navigation("User");
                 });
@@ -1216,7 +1237,7 @@ namespace MetroTicketBE.Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("MetroTicket.Domain.Entities.User", null)
+                    b.HasOne("MetroTicket.Domain.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1225,7 +1246,7 @@ namespace MetroTicketBE.Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("MetroTicket.Domain.Entities.User", null)
+                    b.HasOne("MetroTicket.Domain.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1240,7 +1261,7 @@ namespace MetroTicketBE.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MetroTicket.Domain.Entities.User", null)
+                    b.HasOne("MetroTicket.Domain.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1249,33 +1270,30 @@ namespace MetroTicketBE.Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("MetroTicket.Domain.Entities.User", null)
+                    b.HasOne("MetroTicket.Domain.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PromotionTransaction", b =>
+            modelBuilder.Entity("TrainScheduleWithTrain", b =>
                 {
-                    b.HasOne("MetroTicketBE.Domain.Entities.Promotion", null)
+                    b.HasOne("MetroTicketBE.Domain.Entities.Train", null)
                         .WithMany()
-                        .HasForeignKey("PromotionsId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("TrainId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("MetroTicketBE.Domain.Entities.Transaction", null)
+                    b.HasOne("MetroTicketBE.Domain.Entities.TrainSchedule", null)
                         .WithMany()
-                        .HasForeignKey("TransactionsId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("TrainScheduleId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("MetroTicket.Domain.Entities.User", b =>
+            modelBuilder.Entity("MetroTicket.Domain.Entities.ApplicationUser", b =>
                 {
-                    b.Navigation("Customer")
-                        .IsRequired();
-
                     b.Navigation("EmailTemplates");
 
                     b.Navigation("FormRequestsAsReviewers");
@@ -1284,15 +1302,7 @@ namespace MetroTicketBE.Infrastructure.Migrations
 
                     b.Navigation("Logs");
 
-                    b.Navigation("Staff")
-                        .IsRequired();
-
                     b.Navigation("Transactions");
-                });
-
-            modelBuilder.Entity("MetroTicketBE.Domain.Entities.CustomerType", b =>
-                {
-                    b.Navigation("Customers");
                 });
 
             modelBuilder.Entity("MetroTicketBE.Domain.Entities.FareRule", b =>
@@ -1327,9 +1337,19 @@ namespace MetroTicketBE.Infrastructure.Migrations
                     b.Navigation("Tickets");
                 });
 
-            modelBuilder.Entity("MetroTicketBE.Domain.Entities.StaffSchedule", b =>
+            modelBuilder.Entity("MetroTicketBE.Domain.Entities.Promotion", b =>
                 {
-                    b.Navigation("Staffs");
+                    b.Navigation("Transactions");
+                });
+
+            modelBuilder.Entity("MetroTicketBE.Domain.Entities.Staff", b =>
+                {
+                    b.Navigation("StaffSchedules");
+                });
+
+            modelBuilder.Entity("MetroTicketBE.Domain.Entities.StaffShift", b =>
+                {
+                    b.Navigation("StaffSchedules");
                 });
 
             modelBuilder.Entity("MetroTicketBE.Domain.Entities.Station", b =>
