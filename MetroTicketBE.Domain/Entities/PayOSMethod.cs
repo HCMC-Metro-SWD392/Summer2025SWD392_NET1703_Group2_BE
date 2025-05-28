@@ -1,4 +1,6 @@
-﻿namespace MetroTicketBE.Domain.Entities;
+﻿using MetroTicketBE.Domain.Enum;
+
+namespace MetroTicketBE.Domain.Entities;
 
 public class PayOSMethod
 {
@@ -12,9 +14,8 @@ public class PayOSMethod
     public DateTime ExpiredAt { get; set; }
     public string Signature { get; set; } = null!;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public Guid StatusId { get; set; }
+    public PaymentStatus Status { get; set; }
     public string? CancelReason { get; set; } = null!;
     
-    public Status Status { get; set; } = null!;
     public PaymentMethod PaymentMethod { get; set; } = null!;
 }

@@ -1,4 +1,6 @@
-﻿namespace MetroTicketBE.Domain.Entities;
+﻿using MetroTicketBE.Domain.Enum;
+
+namespace MetroTicketBE.Domain.Entities;
 
 public class Train
 {
@@ -6,8 +8,7 @@ public class Train
     public string TrainCode { get; set; } = null!;
     public int TrainCarQuantity { get; set; }
     public double LoadCapacity { get; set; }
-    public Guid StatusId { get; set; }
-    
-    public ICollection<TrainSegment> TrainSegments { get; set; } = new List<TrainSegment>();
-    public Status Status { get; set; } = null!;
+    public TrainStatus Status { get; set; }
+
+    public ICollection<TrainSchedule> TrainSchedules { get; set; } = null!;
 }

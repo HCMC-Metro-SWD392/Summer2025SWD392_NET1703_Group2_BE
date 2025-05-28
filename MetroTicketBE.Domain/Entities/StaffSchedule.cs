@@ -1,13 +1,16 @@
 ﻿using MetroTicket.Domain.Entities;
+using MetroTicketBE.Domain.Enum;
 
 namespace MetroTicketBE.Domain.Entities;
 
-public class StaffSchedule: BaseEntity<Guid, string, string>
+public class StaffSchedule
 {
-    public TimeSpan StartTime { get; set; }
-    public TimeSpan EndTime { get; set; }
-    public Guid StatusId { get; set; }
+    public Guid Id { get; set; }
+    public Guid ShiftId { get; set; }
+    public Guid StaffId { get; set; }
+    public DateOnly WorkingDate { get; set; }
+    public StaffScheduleStatus Status { get; set; }
     
-    public Status Status { get; set; } = null!;
-    public ICollection<Staff> Staffs { get; set; } = null!;
+    public Staff Staff { get; set; } = null!;
+    public StaffShift Shift { get; set; } = null!;
 }
