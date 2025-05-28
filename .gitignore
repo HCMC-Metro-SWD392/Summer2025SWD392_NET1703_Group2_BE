@@ -14,7 +14,7 @@
 appsettings.Development.json
 appsettings.json
 
-MetroTicketBE.Infracstructure/Migrations
+/Migrations
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
