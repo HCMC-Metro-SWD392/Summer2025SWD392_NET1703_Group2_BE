@@ -31,6 +31,10 @@ namespace MetroTicketBE.Infrastructure.Context
         public DbSet<MetroLine> MetroLines { get; set; }
         public DbSet<TrainSchedule> StrainSchedules { get; set; }
         public DbSet<MetroLineStation> MetroLineStations { get; set; }
+        public DbSet<Staff> Staffs { get; set; }
+        public DbSet<StaffSchedule> StaffSchedules { get; set; }
+        public DbSet<StaffShift> StaffShifts { get; set; }
+        public DbSet<FareRule> FareRules { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
