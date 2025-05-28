@@ -13,11 +13,14 @@
 .idea/
 appsettings.Development.json
 appsettings.json
+
+MetroTicketBE.Infracstructure/Migrations
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
 # Mono auto generated files
 mono_crash.*
+
 
 # Build results
 [Dd]ebug/

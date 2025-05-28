@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MetroTicketBE.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20250521013312_InitDB")]
-    partial class InitDB
+    [Migration("20250521021539_AddCustomer")]
+    partial class AddCustomer
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -155,6 +155,52 @@ namespace MetroTicketBE.Infrastructure.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("MetroTicketBE.Domain.Entities.Customer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CustomerTypeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MembershipId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("Points")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerTypeId");
+
+                    b.HasIndex("MembershipId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Customer");
+                });
+
+            modelBuilder.Entity("MetroTicketBE.Domain.Entities.CustomerType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("TypeName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CustomerType");
                 });
 
             modelBuilder.Entity("MetroTicketBE.Domain.Entities.EmailTemplate", b =>
@@ -312,6 +358,24 @@ namespace MetroTicketBE.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("FormRequestType");
+                });
+
+            modelBuilder.Entity("MetroTicketBE.Domain.Entities.Membership", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("MembershipType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("PointToRedeem")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Membership");
                 });
 
             modelBuilder.Entity("MetroTicketBE.Domain.Entities.PayOSMethod", b =>
@@ -998,6 +1062,33 @@ namespace MetroTicketBE.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("MetroTicketBE.Domain.Entities.Customer", b =>
+                {
+                    b.HasOne("MetroTicketBE.Domain.Entities.CustomerType", "CustomerType")
+                        .WithMany("Customers")
+                        .HasForeignKey("CustomerTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MetroTicketBE.Domain.Entities.Membership", "Membership")
+                        .WithMany("Customers")
+                        .HasForeignKey("MembershipId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MetroTicket.Domain.Entities.User", "User")
+                        .WithOne("Customer")
+                        .HasForeignKey("MetroTicketBE.Domain.Entities.Customer", "UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CustomerType");
+
+                    b.Navigation("Membership");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("MetroTicketBE.Domain.Entities.EmailTemplate", b =>
                 {
                     b.HasOne("MetroTicketBE.Domain.Entities.Status", "Status")
@@ -1309,6 +1400,9 @@ namespace MetroTicketBE.Infrastructure.Migrations
 
             modelBuilder.Entity("MetroTicket.Domain.Entities.User", b =>
                 {
+                    b.Navigation("Customer")
+                        .IsRequired();
+
                     b.Navigation("EmailTemplates");
 
                     b.Navigation("FormRequestsAsReviewers");
@@ -1320,9 +1414,19 @@ namespace MetroTicketBE.Infrastructure.Migrations
                     b.Navigation("Transactions");
                 });
 
+            modelBuilder.Entity("MetroTicketBE.Domain.Entities.CustomerType", b =>
+                {
+                    b.Navigation("Customers");
+                });
+
             modelBuilder.Entity("MetroTicketBE.Domain.Entities.FormRequestType", b =>
                 {
                     b.Navigation("FormRequests");
+                });
+
+            modelBuilder.Entity("MetroTicketBE.Domain.Entities.Membership", b =>
+                {
+                    b.Navigation("Customers");
                 });
 
             modelBuilder.Entity("MetroTicketBE.Domain.Entities.PaymentMethod", b =>
