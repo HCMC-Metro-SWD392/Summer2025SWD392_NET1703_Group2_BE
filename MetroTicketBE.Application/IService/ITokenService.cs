@@ -5,6 +5,7 @@ namespace MetroTicketBE.Infrastructure.IRepository
     public interface ITokenService
     {
         Task<string> GenerateJwtAccessTokenAsync(ApplicationUser user);
-        Task<string> GenerateJwtRefreshTokenAsync(ApplicationUser user);
+        Task<string> GenerateJwtRefreshTokenAsync(ApplicationUser user, bool rememberMe);
+        Task<bool> StoreRefreshToken(string userId, string refreshToken, bool rememberMe);
     }
 }

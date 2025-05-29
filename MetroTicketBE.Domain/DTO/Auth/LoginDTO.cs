@@ -14,5 +14,6 @@ namespace MetroTicketBE.Domain.DTO.Auth
         
         [Required(ErrorMessage = "Vui lòng nhập mật khẩu")]
         public required string Password { get; set; }
+        public bool RememberMe { get; set; } = false;
     }
 }

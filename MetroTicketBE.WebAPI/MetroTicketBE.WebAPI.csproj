@@ -17,6 +17,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\MetroTicketBE.Application\MetroTicketBE.Application.csproj" />
+      <ProjectReference Include="..\MetroTicketBE.Domain\MetroTicketBE.Domain.csproj" />
       <ProjectReference Include="..\MetroTicketBE.Infrastructure\MetroTicketBE.Infrastructure.csproj" />
     </ItemGroup>
 

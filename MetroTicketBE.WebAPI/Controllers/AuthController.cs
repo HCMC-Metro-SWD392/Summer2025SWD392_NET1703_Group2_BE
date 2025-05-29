@@ -46,5 +46,13 @@ namespace MetroTicketBE.WebAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, response);
             }
         }
+
+        [HttpPost]
+        [Route("sign-in")]
+        public async Task<ActionResult<ResponseDTO>> LoginUser([FromBody] LoginDTO loginDTO)
+        {
+            var response = await _authService.LoginUser(loginDTO);
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }

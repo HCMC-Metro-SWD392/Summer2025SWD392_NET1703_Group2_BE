@@ -15,19 +15,22 @@ namespace MetroTicketBE.Application.Service
         private readonly IUnitOfWork _unitOfWork;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ITokenService _tokenService;
 
         public AuthService
         (
             IUserManagerRepository userManagerRepository,
             IUnitOfWork unitOfWork,
             RoleManager<IdentityRole> roleManager,
-            UserManager<ApplicationUser> userManager
+            UserManager<ApplicationUser> userManager,
+            ITokenService tokenService
         )
         {
             _userManagerRepository = userManagerRepository ?? throw new ArgumentNullException(nameof(userManagerRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+            _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
         }
 
         public async Task<ResponseDTO> LoginUser(LoginDTO loginDTO)
@@ -48,13 +51,26 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
+                if (user.LockoutEnd > DateTimeOffset.UtcNow)
+                {
+                    var remainingMinutes = (user.LockoutEnd.Value - DateTimeOffset.UtcNow).TotalMinutes;
+                    return new ResponseDTO
+                    {
+                        Message = $"Tài khoản đang bị tạm khóa {Math.Ceiling(remainingMinutes)} phút",
+                        Result = null,
+                        IsSuccess = false,
+                        StatusCode = 403
+                    };
+                }
+
                 var isPasswordValid = await _userManager.CheckPasswordAsync(user, loginDTO.Password);
 
                 if (isPasswordValid is false)
                 {
+                    await _userManager.AccessFailedAsync(user);
                     return new ResponseDTO
                     {
-                        Message = "Mật khẩu không chính xác",
+                        Message = $"Mật khẩu không chính xác. Nếu nhập sai {5 - user.AccessFailedCount} lần nữa, tài khoản sẽ bị khóa 5 phút",
                         Result = null,
                         IsSuccess = false,
                         StatusCode = 401
@@ -72,30 +88,35 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                if (user.LockoutEnabled is true)
+                var accessToken = await _tokenService.GenerateJwtAccessTokenAsync(user);
+                var refreshToken = await _tokenService.GenerateJwtRefreshTokenAsync(user, loginDTO.RememberMe);
+
+                await _tokenService.StoreRefreshToken(user.Id, refreshToken, loginDTO.RememberMe);
+
+                return new ResponseDTO
                 {
-                    return new ResponseDTO
+                    Message = "Đăng nhập thành công",
+                    Result = new
                     {
-                        Message = "Tài khoản đã bị khóa",
-                        Result = null,
-                        IsSuccess = false,
-                        StatusCode = 403
-                    };
-                }
-
-                if(user.LockoutEnd > DateTimeOffset.UtcNow)
-                {
-                    return new ResponseDTO
-                    {
-                        Message = $"Tài khoản đang bị tạm khóa {user.LockoutEnd.Value.Minute} phút",
-                        Result = null,
-                        IsSuccess = false,
-                        StatusCode = 403
-                    };
-                }
-
-
+                        AccessToken = accessToken,
+                        RefreshToken = refreshToken
+                    },
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
             }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    // Return all exception details in the message
+                    Message = $"Đã xảy ra lỗi: {ex.Message}",
+                    Result = null,
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
 
         public async Task<ResponseDTO> RegisterCustomer(RegisterCustomerDTO registerCustomerDTO)
         {
@@ -115,7 +136,7 @@ namespace MetroTicketBE.Application.Service
                 }
 
                 //Check if email already exists
-                var isEmailExist = await _userManagerRepository.IsEmailExist(registerCustomerDTO.Email);
+                var isEmailExist = registerCustomerDTO.Email is not null && await _userManagerRepository.IsEmailExist(registerCustomerDTO.Email);
 
                 if (isEmailExist is true)
                 {
@@ -134,9 +155,9 @@ namespace MetroTicketBE.Application.Service
                     PhoneNumber = registerCustomerDTO.PhoneNumber,
                     Email = registerCustomerDTO.Email,
                     FullName = registerCustomerDTO.FullName,
-                    UserName = registerCustomerDTO.PhoneNumber,
-                    LockoutEnabled = false
+                    UserName = registerCustomerDTO.PhoneNumber
                 };
+
                 // Create user in the database
                 var createUserResult = await _userManagerRepository.CreateAsync(newUser, registerCustomerDTO.Password);
 
