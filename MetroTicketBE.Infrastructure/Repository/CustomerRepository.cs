@@ -18,6 +18,7 @@ namespace MetroTicketBE.Infrastructure.Repository
         {
             return await _context.Customers
                 .Include(c => c.User)
+                .Include(m => m.Membership)
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 
