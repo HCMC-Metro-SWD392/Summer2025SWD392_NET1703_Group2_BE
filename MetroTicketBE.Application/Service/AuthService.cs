@@ -14,18 +14,88 @@ namespace MetroTicketBE.Application.Service
         private readonly IUserManagerRepository _userManagerRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public AuthService
         (
             IUserManagerRepository userManagerRepository,
             IUnitOfWork unitOfWork,
-            RoleManager<IdentityRole> roleManager
+            RoleManager<IdentityRole> roleManager,
+            UserManager<ApplicationUser> userManager
         )
         {
             _userManagerRepository = userManagerRepository ?? throw new ArgumentNullException(nameof(userManagerRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
+            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         }
+
+        public async Task<ResponseDTO> LoginUser(LoginDTO loginDTO)
+        {
+            try
+            {
+                // Check if phone number exists
+                var user = await _userManagerRepository.FindByPhoneNumberAsync(loginDTO.PhoneNumber);
+
+                if (user is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Số điện thoại không tồn tại",
+                        Result = null,
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+
+                var isPasswordValid = await _userManager.CheckPasswordAsync(user, loginDTO.Password);
+
+                if (isPasswordValid is false)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Mật khẩu không chính xác",
+                        Result = null,
+                        IsSuccess = false,
+                        StatusCode = 401
+                    };
+                }
+
+                if (user.PhoneNumberConfirmed is false)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Số điện thoại chưa được xác nhận",
+                        Result = null,
+                        IsSuccess = false,
+                        StatusCode = 403
+                    };
+                }
+
+                if (user.LockoutEnabled is true)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Tài khoản đã bị khóa",
+                        Result = null,
+                        IsSuccess = false,
+                        StatusCode = 403
+                    };
+                }
+
+                if(user.LockoutEnd > DateTimeOffset.UtcNow)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = $"Tài khoản đang bị tạm khóa {user.LockoutEnd.Value.Minute} phút",
+                        Result = null,
+                        IsSuccess = false,
+                        StatusCode = 403
+                    };
+                }
+
+
+            }
 
         public async Task<ResponseDTO> RegisterCustomer(RegisterCustomerDTO registerCustomerDTO)
         {
