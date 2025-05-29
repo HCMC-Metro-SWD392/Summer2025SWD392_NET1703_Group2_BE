@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MetroTicketBE.Infrastructure.Repository
 {
-    public class CustomerRepository : Repository<Customer>, ICustomerRepository
+    public class CustomerGenericRepository : GenericRepository<Customer>, ICustomerRepository
     {
         private readonly ApplicationDBContext _context;
 
-        public CustomerRepository(ApplicationDBContext context) : base(context)
+        public CustomerGenericRepository(ApplicationDBContext context) : base(context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }

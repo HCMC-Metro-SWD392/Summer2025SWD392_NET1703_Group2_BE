@@ -25,6 +25,9 @@ namespace MetroTicketBE.WebAPI.Extentions
             services.AddScoped<ITokenService, TokenService>();
             // Registering IRedisService with its implementation RedisService
             services.AddScoped<IRedisService, RedisService>();
+            // Registering ICustomerService with its implementation CustomerService
+            services.AddScoped<ICustomerService, CustomerService>();
+            services.AddScoped<ICustomerRepository, CustomerRepository>();
 
             // Register the Identity services with default configuration
             services.AddIdentity<ApplicationUser, IdentityRole>()
