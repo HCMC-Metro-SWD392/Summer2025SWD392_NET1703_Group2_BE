@@ -28,7 +28,7 @@ namespace MetroTicketBE.Application.Service
             var authClaims = new List<Claim>()
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim("PhoneNumber", user.PhoneNumber),
+                new Claim("PhoneNumber", user.Email),
                 new Claim("FullName", user.FullName ?? string.Empty)
             };
 

@@ -9,8 +9,8 @@ namespace MetroTicketBE.Domain.DTO.Auth
 {
     public class LoginDTO
     {
-        [Required(ErrorMessage = "Vui lòng nhập số điện thoại")]
-        public required string PhoneNumber { get; set; }
+        [Required(ErrorMessage = "Vui lòng nhập email")]
+        public required string Email { get; set; }
         
         [Required(ErrorMessage = "Vui lòng nhập mật khẩu")]
         public required string Password { get; set; }
