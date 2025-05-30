@@ -58,7 +58,7 @@ public class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-        app.UseCors();
+        app.UseCors("AllowFrontend");
         app.UseHttpsRedirection();
 
         app.UseAuthorization();

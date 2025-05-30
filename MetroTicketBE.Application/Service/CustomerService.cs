@@ -1,6 +1,7 @@
 ﻿using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.Customer;
+using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Infrastructure.IRepository;
 
 namespace MetroTicketBE.Application.Service;
@@ -14,34 +15,46 @@ public class CustomerService: ICustomerService
         _customerRepository = customerRepository ?? throw new ArgumentNullException(nameof(customerRepository)); 
     }
     
-    public async Task<CustomerResponseDTO?> GetCustomerByIdAsync(Guid customerId)
+    public async Task<ResponseDTO> GetCustomerByIdAsync(Guid customerId)
     {
-       var customer = await _customerRepository.GetByIdAsync(customerId);
+       Customer? customer = await _customerRepository.GetByIdAsync(customerId);
        
-         if (customer == null)
+         if (customer is null)
          {
-             return null;
+             return new ResponseDTO()
+             {
+                    Message = "Khách hàng không tồn tại",
+                    Result = null,
+                    IsSuccess = false,
+                    StatusCode = 404
+             };
          }
 
-         return new CustomerResponseDTO
+         return new ResponseDTO()
          {
-             Id = customer.Id,
-             CustomerType = customer.CustomerType,
-             FullName = customer.User.FullName,
-             Address = customer.User.Address,
-             Sex = customer.User.Sex,
-             PhoneNumber = customer.User.PhoneNumber,
-             Email = customer.User.Email,
-             DateOfBirth = customer.User.DateOfBirth,
-             UserName = customer.User.UserName,
-             IdentityId = customer.User.IdentityId,
-             Membership = new MembershipDTO()
-                {
-                    Id = customer.Membership?.Id,
-                    MembershipType = customer.Membership?.MembershipType
-                },
-             Points = customer.Points,
-             StudentExpiration = customer.StudentExpiration
+             Message = "Lấy thông tin khách hàng thành công",
+             Result = new CustomerResponseDTO
+             {
+                 Id = customer.Id,
+                 CustomerType = customer.CustomerType,
+                 FullName = customer.User.FullName,
+                 Address = customer.User.Address,
+                 Sex = customer.User.Sex,
+                 PhoneNumber = customer.User.PhoneNumber,
+                 Email = customer.User.Email,
+                 DateOfBirth = customer.User.DateOfBirth,
+                 UserName = customer.User.UserName,
+                 IdentityId = customer.User.IdentityId,
+                 Membership = new MembershipDTO()
+                 {
+                     Id = customer.Membership?.Id,
+                     MembershipType = customer.Membership?.MembershipType
+                 },
+                 Points = customer.Points,
+                 StudentExpiration = customer.StudentExpiration
+             },
+             IsSuccess = true,
+             StatusCode = 200
          };
     }
 }

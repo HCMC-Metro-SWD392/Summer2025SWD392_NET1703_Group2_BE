@@ -1,4 +1,5 @@
 ﻿using MetroTicketBE.Application.IService;
+using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.Customer;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,15 +17,16 @@ public class CustomerController: ControllerBase
     }
     
     [HttpGet("{customerId:guid}")]
-    public async Task<ActionResult<CustomerResponseDTO>> GetCustomerByIdAsync(Guid customerId)
+    public async Task<ActionResult<ResponseDTO>> GetCustomerByIdAsync(Guid customerId)
     {
-        var customer = await _customerService.GetCustomerByIdAsync(customerId);
+        ResponseDTO response = await _customerService.GetCustomerByIdAsync(customerId);
         
-        if (customer == null)
+        if (!response.IsSuccess)
         {
-            return NotFound(new { Message = "Customer not found" });
+            return NotFound(response);
         }
         
-        return Ok(customer);
+        return Ok(response);
     }
+    
 }
