@@ -38,13 +38,13 @@ namespace MetroTicketBE.Application.Service
             try
             {
                 // Check if phone number exists
-                var user = await _userManagerRepository.FindByPhoneNumberAsync(loginDTO.PhoneNumber);
+                var user = await _userManagerRepository.FindByEmailAsync(loginDTO.Email);
 
                 if (user is null)
                 {
                     return new ResponseDTO
                     {
-                        Message = "Số điện thoại không tồn tại",
+                        Message = "Email không tồn tại",
                         Result = null,
                         IsSuccess = false,
                         StatusCode = 404
@@ -77,11 +77,11 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                if (user.PhoneNumberConfirmed is false)
+                if (user.EmailConfirmed is false)
                 {
                     return new ResponseDTO
                     {
-                        Message = "Số điện thoại chưa được xác nhận",
+                        Message = "Email chưa được xác nhận",
                         Result = null,
                         IsSuccess = false,
                         StatusCode = 403
@@ -92,6 +92,8 @@ namespace MetroTicketBE.Application.Service
                 var refreshToken = await _tokenService.GenerateJwtRefreshTokenAsync(user, loginDTO.RememberMe);
 
                 await _tokenService.StoreRefreshToken(user.Id, refreshToken, loginDTO.RememberMe);
+
+                await _userManager.ResetAccessFailedCountAsync(user);
 
                 return new ResponseDTO
                 {
@@ -122,27 +124,28 @@ namespace MetroTicketBE.Application.Service
         {
             try
             {
-                //Check if phone number already exists
-                var isPhoneNumberExist = await _userManagerRepository.IsPhoneNumberExist(registerCustomerDTO.PhoneNumber);
-                if (isPhoneNumberExist is true)
+                //Check if email already exists
+                var isEmailExist = await _userManagerRepository.IsEmailExist(registerCustomerDTO.Email);
+                
+                if (isEmailExist is true)
                 {
                     return new ResponseDTO
                     {
-                        Message = "Số điện thoại đã tồn tại",
+                        Message = "Email đã tồn tại",
                         Result = registerCustomerDTO,
                         IsSuccess = false,
                         StatusCode = 409
                     };
                 }
 
-                //Check if email already exists
-                var isEmailExist = registerCustomerDTO.Email is not null && await _userManagerRepository.IsEmailExist(registerCustomerDTO.Email);
-
-                if (isEmailExist is true)
+                //Check if phone number already exists
+                var isPhoneNumberExist = registerCustomerDTO.PhoneNumber is not null && await _userManagerRepository.IsPhoneNumberExist(registerCustomerDTO.PhoneNumber);
+                
+                if (isPhoneNumberExist is true)
                 {
                     return new ResponseDTO
                     {
-                        Message = "Email đã tồn tại",
+                        Message = "Số điện thoại đã tồn tại",
                         Result = registerCustomerDTO,
                         IsSuccess = false,
                         StatusCode = 409
@@ -245,6 +248,11 @@ namespace MetroTicketBE.Application.Service
                     StatusCode = 500
                 };
             }
+        }
+
+        public Task<ResponseDTO> SendVerifyEmail(string email, string confirmationLink)
+        {
+            throw new NotImplementedException();
         }
     }
 }
