@@ -104,7 +104,8 @@ namespace MetroTicketBE.Application.Service
                     Result = new
                     {
                         AccessToken = accessToken,
-                        RefreshToken = refreshToken
+                        RefreshToken = refreshToken,
+                        User = user
                     },
                     IsSuccess = true,
                     StatusCode = 200

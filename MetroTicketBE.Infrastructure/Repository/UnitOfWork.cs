@@ -15,7 +15,6 @@ namespace MetroTicketBE.Infrastructure.Repository
         private readonly ApplicationDBContext _context;
         public ICustomerRepository CustomerRepository { get; private set; }
         public IUserManagerRepository UserManagerRepository { get; }
-
         public IEmailTemplateRepository EmailTemplateRepository { get; }
 
         public UnitOfWork(ApplicationDBContext context, UserManager<ApplicationUser> userManager)

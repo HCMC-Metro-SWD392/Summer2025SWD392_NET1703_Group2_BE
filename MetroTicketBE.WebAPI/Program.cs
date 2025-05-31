@@ -20,6 +20,18 @@ public class Program
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+        builder.Services.AddCors(
+            options =>
+            {
+                options.AddPolicy("AllowFrontend", policyBuilder =>
+                {
+                    policyBuilder.WithOrigins("http://localhost:5173")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+                });
+            });
+                
 
         builder.Services.AddDbContext<ApplicationDBContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString(StaticConnectionString.POSTGRE_DefaultConnection)));
@@ -49,7 +61,7 @@ public class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-
+        app.UseCors("AllowFrontend");
         app.UseHttpsRedirection();
 
         app.UseAuthorization();
