@@ -70,9 +70,17 @@ namespace MetroTicketBE.WebAPI.Controllers
         [HttpPost]
         [Route("verify-email")]
         [ActionName("verify-email")]
-        public async Task<ActionResult<ResponseDTO>> VerifyEmail([FromQuery] string userId, [FromQuery] string token)
+        public async Task<ActionResult<ResponseDTO>> VerifyEmail([FromQuery] string email, [FromQuery] string token)
         {
-            var response = await _authService.VerifyEmail(userId, token);
+            var response = await _authService.VerifyEmail(email, token);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpPost]
+        [Route("logout")]
+        public async Task<ActionResult<ResponseDTO>> Logout([FromQuery] string userId)
+        {
+            var response = await _authService.Logout(userId);
             return StatusCode(response.StatusCode, response);
         }
     }

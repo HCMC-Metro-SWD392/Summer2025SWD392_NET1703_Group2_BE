@@ -8,6 +8,6 @@ namespace MetroTicketBE.Domain.Constants
 {
     public static class StaticURL
     {
-        public const string Frontend_Url_Verify_Email = "https://metroticket.com";
+        public const string Frontend_Url_Verify_Email = "http://localhost:5173/verifyEmail";
     }
 }

@@ -123,6 +123,58 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
+        public async Task<ResponseDTO> Logout(string userId)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+
+                if (user is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Người dùng không tồn tại",
+                        Result = null,
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+
+                await _userManager.UpdateSecurityStampAsync(user);
+                // Delete the refresh token associated with the user
+                var isDeleted = await _tokenService.DeleteRefreshToken(userId);
+                if (isDeleted is false)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Không thể xóa refresh token",
+                        Result = null,
+                        IsSuccess = false,
+                        StatusCode = 500
+                    };
+                }
+
+                return new ResponseDTO
+                {
+                    Message = "Đăng xuất thành công",
+                    Result = null,
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    // Return all exception details in the message
+                    Message = $"Đã xảy ra lỗi: {ex.Message}",
+                    Result = null,
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
+
         public async Task<ResponseDTO> RegisterCustomer(RegisterCustomerDTO registerCustomerDTO)
         {
             try
@@ -231,7 +283,7 @@ namespace MetroTicketBE.Application.Service
                         StatusCode = 500
                     };
                 }
-
+                await SendVerifyEmail(newUser.Email);
                 return new ResponseDTO
                 {
                     Message = "Đăng ký thành công",
@@ -270,7 +322,7 @@ namespace MetroTicketBE.Application.Service
                 }
 
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                var confirmationLink = $"{StaticURL.Frontend_Url_Verify_Email}/auth/verify-email?email={email}&token={Uri.EscapeDataString(token)}";
+                var confirmationLink = $"{StaticURL.Frontend_Url_Verify_Email}/api/auth/verify-email?email={email}&token={Uri.EscapeDataString(token)}";
 
                 await _emailService.SendVerifyEmail(email, confirmationLink);
                 return new ResponseDTO
@@ -357,4 +409,4 @@ namespace MetroTicketBE.Application.Service
             }
         }
     }
-}   
+}

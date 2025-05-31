@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MetroTicketBE.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20250531010855_InitialCreate")]
+    [Migration("20250531023301_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -229,7 +229,7 @@ namespace MetroTicketBE.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("693bfae2-f379-4f9d-b499-f322487a4393"),
+                            Id = new Guid("aeafaf87-365d-4260-964f-59e00610de6c"),
                             BodyContent = "\r\n<!DOCTYPE html>\r\n<html lang='vi'>\r\n<head>\r\n    <meta charset='UTF-8'>\r\n    <title>Xác minh Email</title>\r\n</head>\r\n<body style='font-family: Segoe UI, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;'>\r\n    <table width='100%' cellpadding='0' cellspacing='0' style='background-color: #f4f4f4; padding: 40px 0;'>\r\n        <tr>\r\n            <td align='center'>\r\n                <table width='600' cellpadding='0' cellspacing='0' style='background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);'>\r\n                    <tr>\r\n                        <td style='background-color: #007bff; padding: 20px; text-align: center; color: white;'>\r\n                            <h2 style='margin: 0;'>Metro HCMC</h2>\r\n                            <p style='margin: 0;'>Xác minh tài khoản của bạn</p>\r\n                        </td>\r\n                    </tr>\r\n                    <tr>\r\n                        <td style='padding: 30px;'>\r\n                            <p style='font-size: 16px;'>Cảm ơn bạn đã đăng ký tài khoản tại <strong>Metro HCMC</strong>.</p>\r\n                            <p style='font-size: 16px;'>Để hoàn tất quá trình đăng ký, vui lòng nhấn vào nút bên dưới để xác minh địa chỉ email của bạn:</p>\r\n                            <div style='text-align: center; margin: 30px 0;'>\r\n                                <a href='{Login}' style='background-color: #007bff; color: white; padding: 14px 28px; text-decoration: none; font-size: 16px; border-radius: 6px; display: inline-block;'>Xác minh ngay</a>\r\n                            </div>\r\n                            <p style='font-size: 14px; color: #666;'>Nếu bạn không yêu cầu đăng ký tài khoản này, vui lòng bỏ qua email này hoặc liên hệ với chúng tôi nếu có bất kỳ thắc mắc nào.</p>\r\n                        </td>\r\n                    </tr>\r\n                    <tr>\r\n                        <td style='background-color: #f1f1f1; padding: 20px; text-align: center; font-size: 13px; color: #999;'>\r\n                            <p style='margin: 0;'>Trân trọng,</p>\r\n                            <p style='margin: 0;'>Đội ngũ <strong>Metro HCMC</strong></p>\r\n                            <p style='margin: 0;'>Mọi thắc mắc xin liên hệ: <a href='https://metrohcmc.vn' style='color: #007bff; text-decoration: none;'>metrohcmc.vn</a></p>\r\n                        </td>\r\n                    </tr>\r\n                </table>\r\n            </td>\r\n        </tr>\r\n    </table>\r\n</body>\r\n</html>",
                             CallToAction = "<a href=\"{Login}\">Xác minh tài khoản</a>",
                             Category = "Verify",
