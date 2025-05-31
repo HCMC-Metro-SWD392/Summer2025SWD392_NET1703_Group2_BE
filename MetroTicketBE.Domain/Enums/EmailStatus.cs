@@ -11,6 +11,8 @@ namespace MetroTicketBE.Domain.Enum
     {
         Pending = 0,     // Chưa gửi
         Sent = 1,        // Đã gửi
-        Failed = 2       // Gửi thất bại
+        Failed = 2,       // Gửi thất bại
+        Active = 3,      // Đã kích hoạt
+        Inactive = 4 // Chưa kích hoạt
     }
 }

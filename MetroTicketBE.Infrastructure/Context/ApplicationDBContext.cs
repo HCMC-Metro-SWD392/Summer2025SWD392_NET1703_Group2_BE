@@ -1,5 +1,6 @@
 ﻿using MetroTicket.Domain.Entities;
 using MetroTicketBE.Domain.Entities;
+using MetroTicketBE.Infrastructure.Seeding;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -38,6 +39,9 @@ namespace MetroTicketBE.Infrastructure.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            //Seeding
+            ApplicationDBContextSeed.SeedEmailTemplate(modelBuilder);
+        
 
             //Transaction
             modelBuilder.Entity<Transaction>()

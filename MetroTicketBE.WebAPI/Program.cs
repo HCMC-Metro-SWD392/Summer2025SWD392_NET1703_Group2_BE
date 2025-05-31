@@ -1,3 +1,5 @@
+using Amazon.SimpleEmail;
+using Amazon.SimpleEmailV2;
 using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Infrastructure.Context;
 using MetroTicketBE.WebAPI.Extentions;
@@ -21,6 +23,7 @@ public class Program
 
         builder.Services.AddDbContext<ApplicationDBContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString(StaticConnectionString.POSTGRE_DefaultConnection)));
+
 
         // Register services life cycle
         // Base on Extensions.ServiceCollectionExtensions
@@ -50,7 +53,6 @@ public class Program
         app.UseHttpsRedirection();
 
         app.UseAuthorization();
-
 
         app.MapControllers();
 

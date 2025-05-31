@@ -16,6 +16,7 @@ namespace MetroTicketBE.Application.Service
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ITokenService _tokenService;
+        private readonly IEmailService _emailService;
 
         public AuthService
         (
@@ -23,7 +24,8 @@ namespace MetroTicketBE.Application.Service
             IUnitOfWork unitOfWork,
             RoleManager<IdentityRole> roleManager,
             UserManager<ApplicationUser> userManager,
-            ITokenService tokenService
+            ITokenService tokenService,
+            IEmailService emailService
         )
         {
             _userManagerRepository = userManagerRepository ?? throw new ArgumentNullException(nameof(userManagerRepository));
@@ -31,6 +33,7 @@ namespace MetroTicketBE.Application.Service
             _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
+            _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
         }
 
         public async Task<ResponseDTO> LoginUser(LoginDTO loginDTO)
@@ -126,7 +129,7 @@ namespace MetroTicketBE.Application.Service
             {
                 //Check if email already exists
                 var isEmailExist = await _userManagerRepository.IsEmailExist(registerCustomerDTO.Email);
-                
+
                 if (isEmailExist is true)
                 {
                     return new ResponseDTO
@@ -140,7 +143,7 @@ namespace MetroTicketBE.Application.Service
 
                 //Check if phone number already exists
                 var isPhoneNumberExist = registerCustomerDTO.PhoneNumber is not null && await _userManagerRepository.IsPhoneNumberExist(registerCustomerDTO.PhoneNumber);
-                
+
                 if (isPhoneNumberExist is true)
                 {
                     return new ResponseDTO
@@ -250,9 +253,108 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public Task<ResponseDTO> SendVerifyEmail(string email, string confirmationLink)
+        public async Task<ResponseDTO> SendVerifyEmail(string email)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var user = await _userManagerRepository.FindByEmailAsync(email);
+                if (user.EmailConfirmed is true)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Email đã được xác nhận",
+                        Result = null,
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var confirmationLink = $"{StaticURL.Frontend_Url_Verify_Email}/auth/verify-email?email={email}&token={Uri.EscapeDataString(token)}";
+
+                await _emailService.SendVerifyEmail(email, confirmationLink);
+                return new ResponseDTO
+                {
+                    Message = "Email xác nhận đã được gửi",
+                    Result = null,
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
+            }
+            catch (Exception e)
+            {
+                return new ResponseDTO
+                {
+                    // Return all exception details in the message
+                    Message = $"Đã xảy ra lỗi khi gửi email xác nhận: {e.Message}",
+                    Result = null,
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
+
+        public async Task<ResponseDTO> VerifyEmail(string email, string token)
+        {
+            try
+            {
+                var user = await _userManager.FindByEmailAsync(email);
+
+                if (user is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Người dùng không tồn tại",
+                        Result = null,
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+
+                if (user.EmailConfirmed is true)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Email đã được xác nhận",
+                        Result = null,
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
+                var decodedToken = Uri.UnescapeDataString(token);
+                var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
+
+                if (result.Succeeded is false)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Xác nhận email không thành công",
+                        Result = null,
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
+                return new ResponseDTO
+                {
+                    Message = "Xác nhận email thành công",
+                    Result = null,
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
+            }
+            catch (Exception e)
+            {
+                return new ResponseDTO
+                {
+                    // Return all exception details in the message
+                    Message = $"Đã xảy ra lỗi khi xác nhận email: {e.Message}",
+                    Result = null,
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
         }
     }
-}
+}   

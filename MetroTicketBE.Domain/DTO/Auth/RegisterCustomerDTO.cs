@@ -7,10 +7,10 @@ namespace MetroTicketBE.Domain.DTO.Auth
     {
         [Required(ErrorMessage = "Vui lòng nhập số điện thoại")]
         [RegularExpression(@"^(\+84|0)[1-9]\d{8}$", ErrorMessage = "Số điện thoại không hợp lệ")]
-        public required string PhoneNumber { get; set; }
+        public string? PhoneNumber { get; set; }
 
         [EmailAddress(ErrorMessage = "Email không hợp lệ")]
-        public string? Email { get; set; } = null!;
+        public required string Email { get; set; } = null!;
 
         [Required(ErrorMessage = "Vui lòng nhập mật khẩu")]
         [DataType(DataType.Password)]
@@ -25,7 +25,7 @@ namespace MetroTicketBE.Domain.DTO.Auth
 
         [Required(ErrorMessage = "Vui lòng nhập họ tên")]
         [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "Họ tên chỉ được chứa chữ cái và khoảng trắng")]
-        [StringLength(100, MinimumLength = 6, ErrorMessage = "Họ tên phải có ít nhất 6 ký tự và không được vượt quá 100 ký tự")]
+        [StringLength(100, ErrorMessage = "Họ tên không được vượt quá 100 ký tự")]
         public required string FullName { get; set; }
 
 

@@ -12,10 +12,10 @@ public class EmailTemplate
     public string SenderName { get; set; } = null!;
     public string SenderEmail { get; set; } = null!;
     public string Category { get; set; } = null!;
-    public string PreheaderText { get; set; } = null!;
-    public string PersonalizationTag { get; set; } = null!;
+    public string PreHeaderText { get; set; } = null!;
+    public string PersonalizationTags { get; set; } = null!;
     public string FooterContent { get; set; } = null!;
-    public string CallToActionText { get; set; } = null!;
+    public string CallToAction { get; set; } = null!;
     public string Language { get; set; } = null!;
     public string RecipientType { get; set; } = null!;
     public EmailStatus Status { get; set; }

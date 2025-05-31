@@ -16,12 +16,15 @@ namespace MetroTicketBE.Infrastructure.Repository
         public ICustomerRepository CustomerRepository { get; private set; }
         public IUserManagerRepository UserManagerRepository { get; }
 
+        public IEmailTemplateRepository EmailTemplateRepository { get; }
+
         public UnitOfWork(ApplicationDBContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
 
             CustomerRepository = new CustomerRepository(_context);
             UserManagerRepository = new UserManagerRepository(userManager);
+            EmailTemplateRepository = new EmailTemplateRepository(_context);
         }
         public async Task<int> SaveAsync()
         {

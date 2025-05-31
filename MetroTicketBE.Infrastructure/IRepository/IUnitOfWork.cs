@@ -10,6 +10,7 @@ namespace MetroTicketBE.Infrastructure.IRepository
     {
         ICustomerRepository CustomerRepository { get; }
         IUserManagerRepository UserManagerRepository { get; }
+        IEmailTemplateRepository EmailTemplateRepository { get; }
         Task<int> SaveAsync();
     }
 }
