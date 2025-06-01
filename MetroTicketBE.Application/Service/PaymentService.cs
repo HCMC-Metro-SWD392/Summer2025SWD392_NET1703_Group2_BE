@@ -8,7 +8,6 @@ using MetroTicketBE.Domain.Enum;
 using MetroTicketBE.Infrastructure.IRepository;
 using MetroTicketBE.Infrastructure.Repository;
 using MetroTicketBE.WebAPI.Extentions;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Net.payOS;
 using Net.payOS.Types;
@@ -20,29 +19,14 @@ namespace MetroTicketBE.Application.Service
     {
         private readonly IConfiguration _configuration;
         private readonly PayOS _payos;
-        private readonly StationRepository _stationRepository;
         private readonly StationGraph _stationGraph;
-        private readonly MetroLineRepository _metroLineRepository;
-        private readonly FareRuleRepository _fareRuleRepository;
-        private readonly TicketRouteRepository _ticketRouteRepository;
-        private readonly CustomerRepository _customerRepository;
-        private readonly PromotionRepository _promotionRepository;
-        private readonly PaymentMethodRepository _paymentMethodRepository;
         private readonly IUnitOfWork _unitOfWork;
 
         public PaymentService
         (
             IConfiguration configuration,
-            UserManager<ApplicationUser> userManager,
             PayOS payos,
-            StationRepository stationRepository,
             StationGraph stationGraph,
-            MetroLineRepository metroLineRepository,
-            FareRuleRepository fareRuleRepository,
-            TicketRouteRepository ticketRouteRepository,
-            CustomerRepository customerRepository,
-            PromotionRepository promotionRepository,
-            PaymentMethodRepository paymentMethodRepository,
             IUnitOfWork unitOfWork
         )
         {
@@ -52,14 +36,7 @@ namespace MetroTicketBE.Application.Service
                     _configuration["Payos:API_KEY"] ?? throw new Exception("Cannot find PAYOS_API_KEY"),
                     _configuration["Payos:CHECKSUM_KEY"] ?? throw new Exception("Cannot find PAYOS_CHECKSUM_KEY")
                 );
-            _stationRepository = stationRepository ?? throw new ArgumentNullException(nameof(stationRepository));
             _stationGraph = stationGraph ?? throw new ArgumentNullException(nameof(stationGraph));
-            _metroLineRepository = metroLineRepository ?? throw new ArgumentNullException(nameof(metroLineRepository));
-            _fareRuleRepository = fareRuleRepository ?? throw new ArgumentNullException(nameof(fareRuleRepository));
-            _ticketRouteRepository = ticketRouteRepository ?? throw new ArgumentNullException(nameof(ticketRouteRepository));
-            _customerRepository = customerRepository ?? throw new ArgumentNullException(nameof(customerRepository));
-            _promotionRepository = promotionRepository ?? throw new ArgumentNullException(nameof(promotionRepository));
-            _paymentMethodRepository = paymentMethodRepository ?? throw new ArgumentNullException(nameof(paymentMethodRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         }
         public async Task<ResponseDTO> CreateLinkPaymentTicketRoute(ClaimsPrincipal user, CreateLinkPaymentRouteDTO createLinkDTO)
@@ -78,7 +55,7 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                var customer = await _customerRepository.GetByUserIdAsync(userId);
+                var customer = await _unitOfWork.CustomerRepository.GetByUserIdAsync(userId);
 
                 if (customer is null)
                 {
@@ -91,7 +68,7 @@ namespace MetroTicketBE.Application.Service
 
                 }
 
-                var promotion = await _promotionRepository.GetByCodeAsync(createLinkDTO.CodePromotion);
+                var promotion = await _unitOfWork.PromotionRepository.GetByCodeAsync(createLinkDTO.CodePromotion);
 
                 if (promotion is null)
                 {
@@ -138,7 +115,7 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                var paymentMethod = await _paymentMethodRepository.GetByNameAsync(StaticPaymentMethod.PayOSMethod);
+                var paymentMethod = await _unitOfWork.PaymentMethodRepository.GetByNameAsync(StaticPaymentMethod.PayOSMethod);
 
                 if (paymentMethod is null)
                 {
@@ -192,9 +169,9 @@ namespace MetroTicketBE.Application.Service
         {
             try
             {
-                var allMetroLines = await _metroLineRepository.GetAllListAsync();
+                var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
                 var stationPath = _stationGraph.FindShortestPath(startStationId, endStationId);
-                double distance = _stationRepository.CalculateTotalDistance(stationPath, allMetroLines);
+                double distance = _unitOfWork.StationRepository.CalculateTotalDistance(stationPath, allMetroLines);
 
                 return distance;
             }
@@ -210,7 +187,7 @@ namespace MetroTicketBE.Application.Service
             {
                 double distance = await CalculateDistanceOfTwoStation(startStationId, endStationId);
 
-                int price = (await _fareRuleRepository.GetAllAsync())
+                int price = (await _unitOfWork.FareRuleRepository.GetAllAsync())
                     .Where(fr => fr.MinDistance <= distance && fr.MaxDistance >= distance)
                     .Select(fr => fr.Fare)
                     .FirstOrDefault();
@@ -223,7 +200,7 @@ namespace MetroTicketBE.Application.Service
                     Price = price
                 };
 
-                await _ticketRouteRepository.AddAsync(saveTicketRoute);
+                await _unitOfWork.TicketRouteRepository.AddAsync(saveTicketRoute);
 
                 return price;
             }
@@ -236,7 +213,7 @@ namespace MetroTicketBE.Application.Service
         private async Task<int> CalculatePriceApplyPromo(int price, Guid promotionId)
         {
             // Kiểm tra xem có tồn tại mã khuyến mãi không
-            var promotion = await _promotionRepository.GetByIdAsync(promotionId);
+            var promotion = await _unitOfWork.PromotionRepository.GetByIdAsync(promotionId);
 
             if (promotion is null)
             {

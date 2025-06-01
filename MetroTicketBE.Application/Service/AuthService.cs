@@ -11,7 +11,6 @@ namespace MetroTicketBE.Application.Service
 {
     public class AuthService : IAuthService
     {
-        private readonly IUserManagerRepository _userManagerRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<ApplicationUser> _userManager;
@@ -20,7 +19,6 @@ namespace MetroTicketBE.Application.Service
 
         public AuthService
         (
-            IUserManagerRepository userManagerRepository,
             IUnitOfWork unitOfWork,
             RoleManager<IdentityRole> roleManager,
             UserManager<ApplicationUser> userManager,
@@ -28,7 +26,6 @@ namespace MetroTicketBE.Application.Service
             IEmailService emailService
         )
         {
-            _userManagerRepository = userManagerRepository ?? throw new ArgumentNullException(nameof(userManagerRepository));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
@@ -41,7 +38,7 @@ namespace MetroTicketBE.Application.Service
             try
             {
                 // Check if phone number exists
-                var user = await _userManagerRepository.FindByEmailAsync(loginDTO.Email);
+                var user = await _unitOfWork.UserManagerRepository.FindByEmailAsync(loginDTO.Email);
 
                 if (user is null)
                 {
@@ -181,7 +178,7 @@ namespace MetroTicketBE.Application.Service
             try
             {
                 //Check if email already exists
-                var isEmailExist = await _userManagerRepository.IsEmailExist(registerCustomerDTO.Email);
+                var isEmailExist = await _unitOfWork.UserManagerRepository.IsEmailExist(registerCustomerDTO.Email);
 
                 if (isEmailExist is true)
                 {
@@ -195,7 +192,7 @@ namespace MetroTicketBE.Application.Service
                 }
 
                 //Check if phone number already exists
-                var isPhoneNumberExist = registerCustomerDTO.PhoneNumber is not null && await _userManagerRepository.IsPhoneNumberExist(registerCustomerDTO.PhoneNumber);
+                var isPhoneNumberExist = registerCustomerDTO.PhoneNumber is not null && await _unitOfWork.UserManagerRepository.IsPhoneNumberExist(registerCustomerDTO.PhoneNumber);
 
                 if (isPhoneNumberExist is true)
                 {
@@ -218,7 +215,7 @@ namespace MetroTicketBE.Application.Service
                 };
 
                 // Create user in the database
-                var createUserResult = await _userManagerRepository.CreateAsync(newUser, registerCustomerDTO.Password);
+                var createUserResult = await _unitOfWork.UserManagerRepository.CreateAsync(newUser, registerCustomerDTO.Password);
 
                 if (createUserResult.Succeeded is false)
                 {
@@ -246,7 +243,7 @@ namespace MetroTicketBE.Application.Service
                 }
 
                 // Add user to role
-                var addToRoleResult = await _userManagerRepository.AddtoRoleAsync(newUser, StaticUserRole.Customer);
+                var addToRoleResult = await _unitOfWork.UserManagerRepository.AddtoRoleAsync(newUser, StaticUserRole.Customer);
 
                 if (addToRoleResult.Succeeded is false)
                 {
@@ -310,7 +307,7 @@ namespace MetroTicketBE.Application.Service
         {
             try
             {
-                var user = await _userManagerRepository.FindByEmailAsync(email);
+                var user = await _unitOfWork.UserManagerRepository.FindByEmailAsync(email);
                 if (user.EmailConfirmed is true)
                 {
                     return new ResponseDTO

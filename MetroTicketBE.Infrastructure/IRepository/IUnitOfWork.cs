@@ -11,8 +11,13 @@ namespace MetroTicketBE.Infrastructure.IRepository
         ICustomerRepository CustomerRepository { get; }
         IUserManagerRepository UserManagerRepository { get; }
         IEmailTemplateRepository EmailTemplateRepository { get; }
-        IPaymentMethodRepository PaymentMethodRepository { get; }
+        IPaymentMethodRepository PaymentMethodRepository { get; }   
         IPaymentTransactionRepository PaymentTransactionRepository { get; }
+        IFareRuleRepository FareRuleRepository { get; }
+        IPromotionRepository PromotionRepository { get; }
+        IMetroLineRepository MetroLineRepository { get; }
+        IStationRepository StationRepository { get; }
+        ITicketRouteRepository TicketRouteRepository { get; }
         Task<int> SaveAsync();
     }
 }
