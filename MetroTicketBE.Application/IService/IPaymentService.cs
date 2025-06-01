@@ -4,8 +4,8 @@ using System.Security.Claims;
 
 namespace MetroTicketBE.Application.IService
 {
-    public interface IPayosService
+    public interface IPaymentService
     {
-        Task<ResponseDTO> CreateLinkPaymentTicketRoute(ClaimsPrincipal user, CreateLinkPaymentRouteDTO createLinkDTO)
+        Task<ResponseDTO> CreateLinkPaymentTicketRoute(ClaimsPrincipal user, CreateLinkPaymentRouteDTO createLinkDTO);
     }
 }

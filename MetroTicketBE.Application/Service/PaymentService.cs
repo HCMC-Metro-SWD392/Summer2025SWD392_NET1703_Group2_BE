@@ -16,7 +16,7 @@ using System.Security.Claims;
 
 namespace MetroTicketBE.Application.Service
 {
-    public class PayosService : IPayosService
+    public class PaymentService : IPaymentService
     {
         private readonly IConfiguration _configuration;
         private readonly PayOS _payos;
@@ -30,7 +30,7 @@ namespace MetroTicketBE.Application.Service
         private readonly PaymentMethodRepository _paymentMethodRepository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public PayosService
+        public PaymentService
         (
             IConfiguration configuration,
             UserManager<ApplicationUser> userManager,
