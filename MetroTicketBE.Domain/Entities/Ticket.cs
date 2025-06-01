@@ -3,17 +3,18 @@ using MetroTicket.Domain.Entities;
 
 namespace MetroTicketBE.Domain.Entities;
 
-public class Ticket : BaseEntity<Guid, string, string>
+public class Ticket
 {
+    public Guid Id { get; set; }
     public Guid? SubscriptionTicketId { get; set; }
-    public Guid RouteId { get; set; }
+    public Guid TicketRouteId { get; set; }
     public Guid TransactionId { get; set; }
-    public long TicketNumber { get; set; }
+    public required string TicketSerial { get; set; }
     public string Description { get; set; } = null!;
     public TimeSpan Expiration { get; set; }
     public string QrCode { get; set; } = null!;
 
     public SubscriptionTicket? SubscriptionTicket { get; set; }
-    public TicketRoute Route { get; set; } = null!;
-    public Transaction Transaction { get; set; } = null!;
+    public TicketRoute TicketRoute { get; set; } = null!;
+    public PaymentTransaction Transaction { get; set; } = null!;
 }

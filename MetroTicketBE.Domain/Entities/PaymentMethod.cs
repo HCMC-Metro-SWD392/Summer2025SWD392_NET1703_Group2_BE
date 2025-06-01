@@ -8,6 +8,6 @@ namespace MetroTicketBE.Domain.Entities
         public string? Description { get; set; }
 
         public ICollection<PayOSMethod> PayOSMethods { get; set; } = new List<PayOSMethod>();
-        public ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
+        public ICollection<PaymentTransaction> Transactions { get; set; } = new List<PaymentTransaction>();
     }
 }

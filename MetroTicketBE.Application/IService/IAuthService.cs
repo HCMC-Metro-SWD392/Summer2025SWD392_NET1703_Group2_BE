@@ -1,0 +1,13 @@
+﻿using MetroTicketBE.Domain.DTO.Auth;
+
+namespace MetroTicketBE.Application.IService
+{
+    public interface IAuthService
+    {
+        Task<ResponseDTO> RegisterCustomer(RegisterCustomerDTO registerCustomerDTO);
+        Task<ResponseDTO> LoginUser(LoginDTO loginDTO);
+        Task<ResponseDTO> SendVerifyEmail(string email);
+        Task<ResponseDTO> VerifyEmail(string userId, string token);
+        Task<ResponseDTO> Logout(string userId);
+    }
+}
