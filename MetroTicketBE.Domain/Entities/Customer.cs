@@ -14,4 +14,5 @@ public class Customer
 
     public ApplicationUser User { get; set; } = null!;
     public Membership Membership { get; set; } = null!;
+    public ICollection<PaymentTransaction> Transactions { get; set; } = new List<PaymentTransaction>();
 }

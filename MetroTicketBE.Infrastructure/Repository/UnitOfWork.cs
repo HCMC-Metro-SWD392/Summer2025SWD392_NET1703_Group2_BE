@@ -16,6 +16,8 @@ namespace MetroTicketBE.Infrastructure.Repository
         public ICustomerRepository CustomerRepository { get; private set; }
         public IUserManagerRepository UserManagerRepository { get; }
         public IEmailTemplateRepository EmailTemplateRepository { get; }
+        public IPaymentMethodRepository PaymentMethodRepository { get; }
+        public IPaymentTransactionRepository PaymentTransactionRepository { get; }
 
         public UnitOfWork(ApplicationDBContext context, UserManager<ApplicationUser> userManager)
         {
@@ -24,6 +26,8 @@ namespace MetroTicketBE.Infrastructure.Repository
             CustomerRepository = new CustomerRepository(_context);
             UserManagerRepository = new UserManagerRepository(userManager);
             EmailTemplateRepository = new EmailTemplateRepository(_context);
+            PaymentMethodRepository = new PaymentMethodRepository(_context);
+            PaymentTransactionRepository = new PaymentTransactionRepository(_context);
         }
         public async Task<int> SaveAsync()
         {

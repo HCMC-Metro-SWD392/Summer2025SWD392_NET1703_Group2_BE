@@ -323,7 +323,7 @@ namespace MetroTicketBE.Application.Service
                 }
 
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                var confirmationLink = $"{StaticURL.Frontend_Url_Verify_Email}/api/auth/verify-email?email={email}&token={Uri.EscapeDataString(token)}";
+                var confirmationLink = $"{StaticURL.Frontend_Url_Verify_Email}?email={email}&token={Uri.EscapeDataString(token)}";
 
                 await _emailService.SendVerifyEmail(email, confirmationLink);
                 return new ResponseDTO
