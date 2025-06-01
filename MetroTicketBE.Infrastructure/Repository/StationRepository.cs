@@ -37,5 +37,11 @@ namespace MetroTicketBE.Infrastructure.Repository
 
             return totalDistance;
         }
+
+        public async Task<bool> IsExistByName(string stationName)
+        {
+            return await _context.Stations
+                .AnyAsync(s => s.Name == stationName);
+        }
     }
 }
