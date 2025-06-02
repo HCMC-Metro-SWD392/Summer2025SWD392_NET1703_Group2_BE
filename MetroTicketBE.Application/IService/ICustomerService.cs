@@ -6,4 +6,5 @@ namespace MetroTicketBE.Application.IService;
 public interface ICustomerService
 {
     public Task<ResponseDTO> GetCustomerByIdAsync(Guid customerId);
+    public Task<ResponseDTO> UpdateCustomerAsync(Guid customerId, UpdateCustomerDTO updateCustomerDTO);
 }
