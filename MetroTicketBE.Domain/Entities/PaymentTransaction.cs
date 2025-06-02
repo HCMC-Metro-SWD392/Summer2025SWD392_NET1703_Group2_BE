@@ -1,17 +1,18 @@
 ﻿using MetroTicket.Domain.Entities;
+using MetroTicketBE.Domain.Enum;
 
 namespace MetroTicketBE.Domain.Entities;
 
-public class Transaction
+public class PaymentTransaction
 {
     public Guid Id { get; set; }    
-    public required string UserId { get; set; }
+    public Guid CustomerId { get; set; }
     public double TotalPrice { get; set; }
     public Guid? PromotionId { get; set; }
     public Guid PaymentMethodId { get; set; }
-    public Guid Status { get; set; }
+    public PaymentStatus Status { get; set; }
     
-    public ApplicationUser User { get; set; } = null!;
+    public Customer Customer { get; set; } = null!;
 
     public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
 

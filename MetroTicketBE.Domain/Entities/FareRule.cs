@@ -13,6 +13,5 @@ namespace MetroTicketBE.Domain.Entities
         public double MaxDistance { get; set; }
         public int Fare { get; set; }
 
-        public ICollection<MetroLine> MetroLines { get; set; } = new List<MetroLine>();
     }
 }

@@ -5,11 +5,11 @@ using System.Linq.Expressions;
 
 namespace MetroTicketBE.Infrastructure.Repository
 {
-    public class GenericRepository<T> : IRepository<T> where T : class
+    public class Repository<T> : IRepository<T> where T : class
     {
         private readonly ApplicationDBContext _context;
         internal DbSet<T> dbSet;
-        public GenericRepository(ApplicationDBContext context)
+        public Repository(ApplicationDBContext context)
         {
             _context = context;
             dbSet = _context.Set<T>();

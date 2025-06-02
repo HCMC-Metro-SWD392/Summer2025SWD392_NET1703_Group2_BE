@@ -12,7 +12,7 @@ namespace MetroTicketBE.Domain.Entities
         public Guid MetroLineId { get; set; }
         public Guid StationId { get; set; }
         public double DistanceFromStart { get; set; }
-        public int StationOder { get; set; }
+        public int StationOrder { get; set; }
 
         public MetroLine MetroLine { get; set; } = null!;
         public Station Station { get; set; } = null!;

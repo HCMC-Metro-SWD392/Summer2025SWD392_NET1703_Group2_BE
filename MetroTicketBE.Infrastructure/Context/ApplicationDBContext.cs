@@ -1,5 +1,6 @@
 ﻿using MetroTicket.Domain.Entities;
 using MetroTicketBE.Domain.Entities;
+using MetroTicketBE.Infrastructure.Seeding;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,7 +14,7 @@ namespace MetroTicketBE.Infrastructure.Context
         }
         public DbSet<ApplicationUser> User { get; set; }
         public DbSet<Log> Logs { get; set; }
-        public DbSet<Promotion> Discounts { get; set; }
+        public DbSet<Promotion> Promotions { get; set; }
         public DbSet<EmailTemplate> EmailTemplates { get; set; }
         public DbSet<FormRequest> FormRequests { get; set; }
         public DbSet<PayOSMethod> PayOSMethods { get; set; }
@@ -22,9 +23,8 @@ namespace MetroTicketBE.Infrastructure.Context
         public DbSet<SubscriptionTicket> SubscriptionTicket { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<TicketType> TicketTypes { get; set; }
-        public DbSet<TicketRoute> TicketRoutes { get; set; }
         public DbSet<Train> Trains { get; set; }
-        public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<PaymentTransaction> Transactions { get; set; }
         public DbSet<PaymentMethod> PaymentMethods { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Membership> Memberships { get; set; }
@@ -38,38 +38,28 @@ namespace MetroTicketBE.Infrastructure.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            //Seeding
+            ApplicationDBContextSeed.SeedEmailTemplate(modelBuilder);
+        
 
             //Transaction
-            modelBuilder.Entity<Transaction>()
-                .HasOne(t => t.User)
-                .WithMany(u => u.Transactions)
-                .HasForeignKey(t => t.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Transaction>()
+            modelBuilder.Entity<PaymentTransaction>()
                 .HasMany(t => t.Tickets)
                 .WithOne(ticket => ticket.Transaction)
                 .HasForeignKey(ticket => ticket.TransactionId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Transaction>()
+            modelBuilder.Entity<PaymentTransaction>()
                 .HasOne(t => t.Promotion)
                 .WithMany(p => p.Transactions)
                 .HasForeignKey(t => t.PromotionId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-
-            //Ticket Route
-            modelBuilder.Entity<TicketRoute>()
-                .HasOne(tr => tr.FirstStation)
-                .WithMany(s => s.TicketRoutesAsFirstStation)
-                .HasForeignKey(tr => tr.FirstStationId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<TicketRoute>()
-                .HasOne(tr => tr.LastStation)
-                .WithMany(s => s.TicketRoutesAsLastStation)
-                .HasForeignKey(tr => tr.LastStationId)
+            modelBuilder.Entity<PaymentTransaction>()
+                .HasOne(t => t.Customer)
+                .WithMany(c => c.Transactions)
+                .HasForeignKey(t => t.CustomerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             //Ticket
@@ -89,6 +79,19 @@ namespace MetroTicketBE.Infrastructure.Context
                 .HasOne(t => t.Transaction)
                 .WithMany(tr => tr.Tickets)
                 .HasForeignKey(t => t.TransactionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //TicketRoute
+            modelBuilder.Entity<TicketRoute>()
+                .HasOne(tr => tr.StartStation)
+                .WithMany(s => s.TicketRoutesAsFirstStation)
+                .HasForeignKey(tr => tr.StartStationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<TicketRoute>()
+                .HasOne(tr => tr.EndStation)
+                .WithMany(s => s.TicketRoutesAsLastStation)
+                .HasForeignKey(tr => tr.EndStationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             //Process
@@ -125,7 +128,6 @@ namespace MetroTicketBE.Infrastructure.Context
                 .OnDelete(DeleteBehavior.Restrict);
 
             //Customer
-
             modelBuilder.Entity<Customer>()
                 .HasOne(c => c.Membership)
                 .WithMany(m => m.Customers)
@@ -156,12 +158,6 @@ namespace MetroTicketBE.Infrastructure.Context
                 .WithMany(s => s.EndStations)
                 .HasForeignKey(m => m.EndStationId)
                 .HasForeignKey(m => m.EndStationId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<MetroLine>()
-                .HasOne(m => m.FareRule)
-                .WithMany(f => f.MetroLines)
-                .HasForeignKey(m => m.FareRuleId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             //MetroLineStation

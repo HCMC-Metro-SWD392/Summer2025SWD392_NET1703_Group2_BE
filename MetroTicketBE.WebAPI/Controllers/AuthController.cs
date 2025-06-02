@@ -1,5 +1,7 @@
-﻿using MetroTicketBE.Application.IService;
+﻿using MetroTicket.Domain.Entities;
+using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.DTO.Auth;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MetroTicketBE.WebAPI.Controllers
@@ -9,10 +11,12 @@ namespace MetroTicketBE.WebAPI.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, UserManager<ApplicationUser> userManager)
         {
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
+            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         }
 
         [HttpPost("customer/register")]
@@ -52,6 +56,31 @@ namespace MetroTicketBE.WebAPI.Controllers
         public async Task<ActionResult<ResponseDTO>> LoginUser([FromBody] LoginDTO loginDTO)
         {
             var response = await _authService.LoginUser(loginDTO);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpPost]
+        [Route("send-verify-email")]
+        public async Task<ActionResult<ResponseDTO>> SendVerifyEmail([FromBody] SendVerifyEmailDTO sendVerifyEmailDTO)
+        {
+            var response = await _authService.SendVerifyEmail(sendVerifyEmailDTO.Email);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpPost]
+        [Route("verify-email")]
+        [ActionName("verify-email")]
+        public async Task<ActionResult<ResponseDTO>> VerifyEmail([FromQuery] string email, [FromQuery] string token)
+        {
+            var response = await _authService.VerifyEmail(email, token);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpPost]
+        [Route("logout")]
+        public async Task<ActionResult<ResponseDTO>> Logout([FromQuery] string userId)
+        {
+            var response = await _authService.Logout(userId);
             return StatusCode(response.StatusCode, response);
         }
     }

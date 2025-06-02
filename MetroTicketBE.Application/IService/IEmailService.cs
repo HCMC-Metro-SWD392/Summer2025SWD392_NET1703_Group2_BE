@@ -8,9 +8,8 @@ namespace MetroTicketBE.Application.IService
 {
     public interface IEmailService
     {
-        //private Task<bool> SendEmailFromTemplate(string toMail, string templateName, string replacementValue)
-        //{
-
-        //}
+        Task<bool> SendEmailAsync(string to, string subject, string body);
+        Task<bool> SendVerifyEmail(string toMail, string confirmationLink);
+        Task<bool> SendEmailFromTemplate(string toEmail, string templateName, string confirmationLink);
     }
 }

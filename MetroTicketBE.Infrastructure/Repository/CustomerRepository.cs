@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MetroTicketBE.Infrastructure.Repository
 {
-    public class CustomerRepository : GenericRepository<Customer>, ICustomerRepository
+    public class CustomerRepository : Repository<Customer>, ICustomerRepository
     {
         private readonly ApplicationDBContext _context;
 

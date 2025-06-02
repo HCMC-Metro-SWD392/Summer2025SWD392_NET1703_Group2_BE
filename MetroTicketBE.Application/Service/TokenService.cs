@@ -21,6 +21,14 @@ namespace MetroTicketBE.Application.Service
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _redisService = redisService ?? throw new ArgumentNullException(nameof(redisService));
         }
+
+        public async Task<bool> DeleteRefreshToken(string userId)
+        {
+            string key = $"userId:{userId}-refreshToken";
+            var result = await _redisService.DeleteStringAysnc(key);
+            return result;
+        }
+
         public async Task<string> GenerateJwtAccessTokenAsync(ApplicationUser user)
         {
             var userRole = await _userManager.GetRolesAsync(user);

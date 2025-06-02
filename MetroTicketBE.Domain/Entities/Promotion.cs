@@ -13,5 +13,5 @@ public class Promotion
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public DateTime ExpirationDate { get; set; }
 
-    public ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
+    public ICollection<PaymentTransaction> Transactions { get; set; } = new List<PaymentTransaction>();
 }

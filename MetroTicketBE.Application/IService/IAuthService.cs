@@ -6,6 +6,8 @@ namespace MetroTicketBE.Application.IService
     {
         Task<ResponseDTO> RegisterCustomer(RegisterCustomerDTO registerCustomerDTO);
         Task<ResponseDTO> LoginUser(LoginDTO loginDTO);
-        Task<ResponseDTO> SendVerifyEmail(string email, string confirmationLink);
+        Task<ResponseDTO> SendVerifyEmail(string email);
+        Task<ResponseDTO> VerifyEmail(string userId, string token);
+        Task<ResponseDTO> Logout(string userId);
     }
 }

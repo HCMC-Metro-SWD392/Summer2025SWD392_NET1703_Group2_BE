@@ -1,10 +1,5 @@
 ﻿using MetroTicketBE.Application.IService;
 using StackExchange.Redis;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MetroTicketBE.Application.Service
 {
@@ -15,6 +10,14 @@ namespace MetroTicketBE.Application.Service
         {
             _redis = redis ?? throw new ArgumentNullException(nameof(redis));
         }
+
+        public Task<bool> DeleteStringAysnc(string key)
+        {
+            var ceche = _redis.GetDatabase();
+            var result = ceche.KeyDeleteAsync(key);
+            return result;
+        }
+
         public async Task<bool> StoreKeyAsync(string key, string value, TimeSpan? expiry = null)
         {
             var cache = _redis.GetDatabase();

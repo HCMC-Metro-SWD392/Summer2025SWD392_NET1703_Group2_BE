@@ -16,5 +16,5 @@ public class Ticket
 
     public SubscriptionTicket? SubscriptionTicket { get; set; }
     public TicketRoute TicketRoute { get; set; } = null!;
-    public Transaction Transaction { get; set; } = null!;
+    public PaymentTransaction Transaction { get; set; } = null!;
 }

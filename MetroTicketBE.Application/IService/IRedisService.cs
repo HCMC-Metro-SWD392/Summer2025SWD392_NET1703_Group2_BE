@@ -9,5 +9,6 @@ namespace MetroTicketBE.Application.IService
     public interface IRedisService
     {
         Task<bool> StoreKeyAsync(string key, string value, TimeSpan? expiry = null);
+        Task<bool> DeleteStringAysnc(string key);
     }
 }
