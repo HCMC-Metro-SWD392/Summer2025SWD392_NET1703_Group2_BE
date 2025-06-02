@@ -33,7 +33,8 @@ namespace MetroTicketBE.WebAPI.Extentions
             services.AddScoped<IStationService, StationService>();
             // Registering IMetroLineService with its implementation MetroLineService
             services.AddScoped<IMetroLineService, MetroLineService>();
-
+            //
+            services.AddScoped<ISubscriptionService, SubscriptionService>();
             // Register the Identity services with default configuration
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDBContext>()

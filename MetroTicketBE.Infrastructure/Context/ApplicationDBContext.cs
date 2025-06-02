@@ -22,7 +22,6 @@ namespace MetroTicketBE.Infrastructure.Context
         public DbSet<Station> Stations { get; set; }
         public DbSet<SubscriptionTicket> SubscriptionTicket { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
-        public DbSet<TicketType> TicketTypes { get; set; }
         public DbSet<Train> Trains { get; set; }
         public DbSet<PaymentTransaction> Transactions { get; set; }
         public DbSet<PaymentMethod> PaymentMethods { get; set; }
