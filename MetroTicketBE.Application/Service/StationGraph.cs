@@ -10,7 +10,7 @@ namespace MetroTicketBE.WebAPI.Extentions
         {
             foreach (var line in metroLines)
             {
-                var orderedStations = line.MetroLineStations.OrderBy(s => s.StationOder).ToList();
+                var orderedStations = line.MetroLineStations.OrderBy(s => s.StationOrder).ToList();
 
                 for (int i = 0; i < orderedStations.Count - 1; i++)
                 {
