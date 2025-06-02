@@ -1,4 +1,5 @@
 ﻿using MetroTicketBE.Application.IService;
+using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.MetroLineStation;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,7 +17,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpPost]
         [Route("create-metro-line-station")]
-        public async Task<IActionResult> CreateMetroLineStation([FromBody] CreateMetroLineStationDTO createMetroLineStationDTO)
+        public async Task<ActionResult<ResponseDTO>> CreateMetroLineStation([FromBody] CreateMetroLineStationDTO createMetroLineStationDTO)
         {
             var response = await _metroLineStationService.CreateMetroLineStation(createMetroLineStationDTO);
             return StatusCode(response.StatusCode, response);
