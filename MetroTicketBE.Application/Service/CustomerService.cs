@@ -8,13 +8,13 @@ namespace MetroTicketBE.Application.Service;
 
 public class CustomerService: ICustomerService
 {
-    private readonly ICustomerRepository _customerRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public CustomerService(ICustomerRepository customerRepository)
+    public CustomerService(IUnitOfWork unitOfWork)
     {
-        _customerRepository = customerRepository ?? throw new ArgumentNullException(nameof(customerRepository)); 
+        _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
     }
-    
+
     public async Task<ResponseDTO> GetCustomerByIdAsync(Guid customerId)
     {
         try
@@ -30,7 +30,7 @@ public class CustomerService: ICustomerService
                 };
             }
 
-            Customer? customer = await _customerRepository.GetByIdAsync(customerId);
+            Customer? customer = await _unitOfWork.CustomerRepository.GetByIdAsync(customerId);
 
             if (customer is null)
             {
