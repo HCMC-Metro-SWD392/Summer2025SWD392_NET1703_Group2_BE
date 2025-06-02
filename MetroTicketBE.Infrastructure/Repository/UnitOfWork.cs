@@ -23,6 +23,7 @@ namespace MetroTicketBE.Infrastructure.Repository
         public IMetroLineRepository MetroLineRepository { get; private set; }
         public IStationRepository StationRepository { get; private set; }
         public ITicketRouteRepository TicketRouteRepository { get; private set; }
+        public IMetroLineStationRepository MetroLineStationRepository { get; private set; }
 
         public UnitOfWork(ApplicationDBContext context, UserManager<ApplicationUser> userManager)
         {
@@ -38,6 +39,7 @@ namespace MetroTicketBE.Infrastructure.Repository
             MetroLineRepository = new MetroLineRepository(_context);
             StationRepository = new StationRepository(_context);
             TicketRouteRepository = new TicketRouteRepository(_context);
+            MetroLineStationRepository = new MetroLineStationRepository(_context);
         }
         public async Task<int> SaveAsync()
         {

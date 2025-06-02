@@ -4,17 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MetroTicketBE.Domain.Entities
+namespace MetroTicketBE.Domain.DTO.MetroLineStation
 {
-    public class MetroLineStation
+    public class CreateMetroLineStationDTO
     {
-        public Guid Id { get; set; }
         public Guid MetroLineId { get; set; }
         public Guid StationId { get; set; }
         public double DistanceFromStart { get; set; }
-        public int StationOrder { get; set; }
-
-        public MetroLine MetroLine { get; set; } = null!;
-        public Station Station { get; set; } = null!;
+        public int StationOder { get; set; }
     }
 }
