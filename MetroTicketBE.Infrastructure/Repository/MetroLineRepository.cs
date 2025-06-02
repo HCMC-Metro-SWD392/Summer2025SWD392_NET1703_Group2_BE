@@ -18,5 +18,11 @@ namespace MetroTicketBE.Infrastructure.Repository
         {
             return await _context.MetroLines.ToListAsync();
         }
+
+        public async Task<bool> IsExistByMetroLineNumber(int metroLineNumber)
+        {
+            return await _context.MetroLines
+                .AnyAsync(metroLine => metroLine.MetroLineNumber == metroLineNumber);
+        }
     }
 }

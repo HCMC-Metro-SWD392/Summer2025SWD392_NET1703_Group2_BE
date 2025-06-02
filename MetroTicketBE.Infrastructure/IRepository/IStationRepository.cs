@@ -11,5 +11,6 @@ namespace MetroTicketBE.Infrastructure.IRepository
     {
         public double CalculateTotalDistance(List<Guid> stationPath, List<MetroLine> allMetroLines);
         Task<bool> IsExistByName(string stationName);
+        Task<bool> IsExistById(Guid stationId);
     }
 }

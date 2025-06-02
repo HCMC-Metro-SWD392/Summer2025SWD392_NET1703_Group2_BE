@@ -160,12 +160,6 @@ namespace MetroTicketBE.Infrastructure.Context
                 .HasForeignKey(m => m.EndStationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<MetroLine>()
-                .HasOne(m => m.FareRule)
-                .WithMany(f => f.MetroLines)
-                .HasForeignKey(m => m.FareRuleId)
-                .OnDelete(DeleteBehavior.Restrict);
-
             //MetroLineStation
             modelBuilder.Entity<MetroLineStation>()
                 .HasOne(ms => ms.Station)

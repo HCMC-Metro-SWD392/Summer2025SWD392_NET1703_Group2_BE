@@ -9,5 +9,6 @@ namespace MetroTicketBE.Infrastructure.IRepository
 {
     public interface IFareRuleRepository : IRepository<FareRule>
     {
+        Task<bool> IsExistById(Guid fareRuleId);
     }
 }
