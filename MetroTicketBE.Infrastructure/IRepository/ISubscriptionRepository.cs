@@ -3,8 +3,7 @@ using MetroTicketBE.Domain.Entities;
 
 namespace MetroTicketBE.Infrastructure.IRepository;
 
-public interface ISubscriptionRepository
+public interface ISubscriptionRepository: IRepository<SubscriptionTicket>
 {
-    public Task<SubscriptionTicket> AddSubscriptionAsync(SubscriptionTicket subscription);
 
 }

@@ -57,15 +57,14 @@ public SubscriptionService(IUnitOfWork unitOfWork)
                 EndDate = DateTime.Now.AddMonths(1)
             };
 
-            SubscriptionTicket addedSubscription =
-                await _unitOfWork.SubscriptionRepository.AddSubscriptionAsync(subscription);
+                await _unitOfWork.SubscriptionRepository.AddAsync(subscription);
 
             return new ResponseDTO()
             {
                 IsSuccess = true,
                 Message = "Thêm vé tháng thành công",
                 StatusCode = 200,
-                Result = addedSubscription
+                Result = subscription
             };
         }
         catch (Exception ex)

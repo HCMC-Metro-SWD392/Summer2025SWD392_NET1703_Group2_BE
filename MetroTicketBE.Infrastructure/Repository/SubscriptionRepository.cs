@@ -13,10 +13,4 @@ public class SubscriptionRepository: Repository<SubscriptionTicket>, ISubscripti
         _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
-
-    public new async Task<SubscriptionTicket> AddSubscriptionAsync(SubscriptionTicket subscription)
-    {
-        var entityEntry = await _context.SubscriptionTicket.AddAsync(subscription);
-        return entityEntry.Entity;
-    }
 }
