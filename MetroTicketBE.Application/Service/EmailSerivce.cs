@@ -24,16 +24,17 @@ namespace MetroTicketBE.Application.Service
             try
             {
                 var fromEmail = _configuration["EmailSettings:FromEmail"];
-                var fromPassword = _configuration["EmailSettings:FromPassword"];
-                var smtpHost = _configuration["EmailSettings:SmtpHost"];
-                var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"]);
+                var userName = _configuration["EmailSettings:UserName"];
+                var fromPassword = _configuration["EmailSettings:Password"];
+                var smtpHost = _configuration["EmailSettings:Host"];
+                var smtpPort = int.Parse(_configuration["EmailSettings:Port"]);
 
                 var message = new MailMessage(fromEmail, toEmail, subject, body);
                 message.IsBodyHtml = true;
 
                 using var smtpClient = new SmtpClient(smtpHost, smtpPort)
                 {
-                    Credentials = new NetworkCredential(fromEmail, fromPassword),
+                    Credentials = new NetworkCredential(userName, fromPassword),
                     EnableSsl = true
                 };
 
