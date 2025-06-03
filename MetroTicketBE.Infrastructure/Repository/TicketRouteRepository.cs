@@ -1,6 +1,7 @@
 ﻿using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Infrastructure.Context;
 using MetroTicketBE.Infrastructure.IRepository;
+using Microsoft.EntityFrameworkCore;
 
 namespace MetroTicketBE.Infrastructure.Repository
 {
@@ -12,5 +13,11 @@ namespace MetroTicketBE.Infrastructure.Repository
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
+        public async Task<TicketRoute?> GetTicketRouteByStartAndEndStation(Guid StartStation, Guid EndStation)
+        {
+            return await _context.TicketRoutes
+                .FirstOrDefaultAsync(tr => tr.StartStation.Id == StartStation &&
+                                           tr.EndStation.Id == EndStation);
+        }
     }
 }

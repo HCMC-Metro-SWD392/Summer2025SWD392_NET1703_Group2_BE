@@ -24,7 +24,7 @@ namespace MetroTicketBE.Infrastructure.Repository
 
             for (int i = 0; i < stationPath.Count - 1; i++)
             {
-                var currentId = stationPath[1];
+                var currentId = stationPath[i];
                 var nextId = stationPath[i + 1];
 
                 if (stationLookup.TryGetValue(currentId, out var current) &&

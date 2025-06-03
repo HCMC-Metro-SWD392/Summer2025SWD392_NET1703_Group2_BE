@@ -39,7 +39,7 @@ public SubscriptionService(IUnitOfWork unitOfWork)
             };
         }
         
-        double price = customer.CustomerType switch
+        int price = customer.CustomerType switch
         {
             CustomerType.Student => 200000,
             CustomerType.OlderPerson => 150000,

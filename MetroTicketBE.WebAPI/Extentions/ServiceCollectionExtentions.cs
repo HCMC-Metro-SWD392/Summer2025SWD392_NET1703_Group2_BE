@@ -1,4 +1,5 @@
-﻿using MetroTicket.Domain.Entities;
+﻿using AutoMapper;
+using MetroTicket.Domain.Entities;
 using MetroTicketBE.Application.IService;
 using MetroTicketBE.Application.Service;
 using MetroTicketBE.Infrastructure.Context;
@@ -33,8 +34,15 @@ namespace MetroTicketBE.WebAPI.Extentions
             services.AddScoped<IStationService, StationService>();
             // Registering IMetroLineService with its implementation MetroLineService
             services.AddScoped<IMetroLineService, MetroLineService>();
-            //
+            // Registering IPaymentService with its implementation PaymentService
             services.AddScoped<ISubscriptionService, SubscriptionService>();
+            // Registering IMetroLineStationService with its implementation MetroLineStationService
+            services.AddScoped<IMetroLineStationService, MetroLineStationService>();
+            // Registering ITicketRouteService with its implementation TicketRouteService
+            services.AddScoped<ITicketRouteService, TicketRouteService>();
+            services.AddScoped<StationGraph>();
+            // Registering IPaymentService with its implementation PaymentService
+            services.AddScoped<IPaymentService, PaymentService>();
             // Register the Identity services with default configuration
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDBContext>()

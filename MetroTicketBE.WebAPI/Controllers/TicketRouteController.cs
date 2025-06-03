@@ -1,0 +1,32 @@
+﻿using MetroTicketBE.Application.IService;
+using MetroTicketBE.Domain.DTO.Auth;
+using MetroTicketBE.Domain.DTO.TicketRoute;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
+namespace MetroTicketBE.WebAPI.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class TicketRouteController : ControllerBase
+    {
+        private readonly ITicketRouteService _ticketRouteService;
+        public TicketRouteController(ITicketRouteService ticketRouteService)
+        {
+            _ticketRouteService = ticketRouteService ?? throw new ArgumentNullException(nameof(ticketRouteService));
+        }
+        [HttpPost]
+        [Route("create-ticket-route")]
+        public async Task<ActionResult<ResponseDTO>> CreateTicketRoute([FromBody] CreateTicketRouteDTO createTicketRouteDTO)
+        {
+            var response = await _ticketRouteService.CraeteTicketRoute(createTicketRouteDTO);
+            return StatusCode(response.StatusCode, response);
+        }
+        [HttpGet("get-ticket-route-by-from-to/{startStationId}/{endStationId}")]
+        public async Task<ActionResult<ResponseDTO>> GetTicketRouteByFromTo([FromRoute] Guid startStation, Guid endStation)
+        {
+            var response = await _ticketRouteService.GetTicketRouteByFromToAsync(startStation, endStation);
+            return StatusCode(response.StatusCode, response);
+        }
+    }
+}
