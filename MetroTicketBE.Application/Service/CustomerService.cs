@@ -61,9 +61,112 @@ public class CustomerService: ICustomerService
                 StatusCode = 500
             };
         }
-       
     }
 
+    public Task<ResponseDTO> GetCustomerByUserIdAsync(string userId)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Task.FromResult(new ResponseDTO()
+                {
+                    Message = "Mã người dùng không hợp lệ",
+                    Result = null,
+                    IsSuccess = false,
+                    StatusCode = 400
+                });
+            }
+
+            return _unitOfWork.CustomerRepository.GetByUserIdAsync(userId)
+                .ContinueWith(task =>
+                {
+                    Customer? customer = task.Result;
+
+                    if (customer is null)
+                    {
+                        return new ResponseDTO()
+                        {
+                            Message = "Khách hàng không tồn tại",
+                            Result = null,
+                            IsSuccess = false,
+                            StatusCode = 404
+                        };
+                    }
+
+                    return new ResponseDTO()
+                    {
+                        Message = "Lấy thông tin khách hàng thành công",
+                        Result = MapToCustomerResponseDTO(customer),
+                        IsSuccess = true,
+                        StatusCode = 200
+                    };
+                });
+        }
+        catch (Exception exception)
+        {
+            return Task.FromResult(new ResponseDTO()
+            {
+                Message = $"Đã xảy ra lỗi: {exception.Message}",
+                Result = null,
+                IsSuccess = false,
+                StatusCode = 500
+            });
+        }
+    }
+
+    public Task<ResponseDTO> GetCustomerByEmailAsync(string email)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                return Task.FromResult(new ResponseDTO()
+                {
+                    Message = "Email không hợp lệ",
+                    Result = null,
+                    IsSuccess = false,
+                    StatusCode = 400
+                });
+            }
+
+            return _unitOfWork.CustomerRepository.GetByEmailAsync(email)
+                .ContinueWith(task =>
+                {
+                    Customer? customer = task.Result;
+
+                    if (customer is null)
+                    {
+                        return new ResponseDTO()
+                        {
+                            Message = "Khách hàng không tồn tại",
+                            Result = null,
+                            IsSuccess = false,
+                            StatusCode = 404
+                        };
+                    }
+
+                    return new ResponseDTO()
+                    {
+                        Message = "Lấy thông tin khách hàng thành công",
+                        Result = MapToCustomerResponseDTO(customer),
+                        IsSuccess = true,
+                        StatusCode = 200
+                    };
+                });
+        }
+        catch (Exception exception)
+        {
+            return Task.FromResult(new ResponseDTO()
+            {
+                Message = $"Đã xảy ra lỗi: {exception.Message}",
+                Result = null,
+                IsSuccess = false,
+                StatusCode = 500
+            });
+        }
+    }
+    
     public async Task<ResponseDTO> UpdateCustomerAsync(Guid customerId, UpdateCustomerDTO updateCustomerDTO)
     {
         try

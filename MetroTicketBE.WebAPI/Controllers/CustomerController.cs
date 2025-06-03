@@ -41,4 +41,30 @@ public class CustomerController: ControllerBase
         
         return Ok(response);
     }
+    
+    [HttpGet("user/{userId}")]
+    public async Task<ActionResult<ResponseDTO>> GetCustomerByUserIdAsync(string userId)
+    {
+        ResponseDTO response = await _customerService.GetCustomerByUserIdAsync(userId);
+        
+        if (!response.IsSuccess)
+        {
+            return NotFound(response);
+        }
+        
+        return Ok(response);
+    }
+    
+    [HttpGet("email/{email}")]
+    public async Task<ActionResult<ResponseDTO>> GetCustomerByEmailAsync(string email)
+    {
+        ResponseDTO response = await _customerService.GetCustomerByEmailAsync(email);
+        
+        if (!response.IsSuccess)
+        {
+            return NotFound(response);
+        }
+        
+        return Ok(response);
+    }
 }

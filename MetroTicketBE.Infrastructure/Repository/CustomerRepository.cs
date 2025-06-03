@@ -29,6 +29,13 @@ namespace MetroTicketBE.Infrastructure.Repository
                 .FirstOrDefaultAsync(c => c.UserId == userId);
         }
 
+        public async Task<Customer?> GetByEmailAsync(string email)
+        {
+            return await _context.Customers
+                .Include(c => c.User)
+                .FirstOrDefaultAsync(c => c.User.Email == email);
+        }
+
         public void Update(Customer customer)
         {
             _context.Customers.Update(customer);
