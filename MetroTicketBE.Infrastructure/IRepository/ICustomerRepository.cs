@@ -12,6 +12,7 @@ namespace MetroTicketBE.Infrastructure.IRepository
         void Update(Customer customer);
         void UpdateRang(IEnumerable<Customer> customers);
         Task<Customer?> GetByIdAsync(Guid id);
+        Task<Customer?> GetByEmailAsync(string email);
         Task<Customer> AddAsync(Customer customer);
         Task<Customer?> GetByUserIdAsync(string userId);
     }
