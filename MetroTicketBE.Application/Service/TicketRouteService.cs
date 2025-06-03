@@ -1,0 +1,150 @@
+﻿using AutoMapper;
+using MetroTicketBE.Application.IService;
+using MetroTicketBE.Domain.DTO.Auth;
+using MetroTicketBE.Domain.DTO.TicketRoute;
+using MetroTicketBE.Domain.Entities;
+using MetroTicketBE.Infrastructure.IRepository;
+using MetroTicketBE.WebAPI.Extentions;
+
+namespace MetroTicketBE.Application.Service
+{
+    public class TicketRouteService : ITicketRouteService
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+        public TicketRouteService(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        }
+
+        public async Task<ResponseDTO> CraeteTicketRoute(CreateTicketRouteDTO createTicketRouteDTO)
+        {
+            try
+            {
+                var exists = await _unitOfWork.TicketRouteRepository.GetTicketRouteByStartAndEndStation(createTicketRouteDTO.StartStationId, createTicketRouteDTO.EndStationId);
+
+                if (exists is not null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Vé lượt đã tồn tại.",
+                        IsSuccess = false,
+                        StatusCode = 409
+                    };
+                }
+
+                double distance = await CalculateDistanceOfTwoStation(createTicketRouteDTO.StartStationId, createTicketRouteDTO.EndStationId);
+
+                int price = (await _unitOfWork.FareRuleRepository.GetAllAsync())
+                    .Where(fr => fr.MinDistance <= distance && fr.MaxDistance >= distance)
+                    .Select(fr => fr.Fare).FirstOrDefault();
+
+                if (price == 0)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Không tìm thấy giá vé phù hợp với khoảng cách.",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+
+                TicketRoute saveTicketRoute = new TicketRoute
+                {
+                    TicketName = $"Vé lượt từ {createTicketRouteDTO.StartStationId} đến {createTicketRouteDTO.EndStationId}",
+                    StartStationId = createTicketRouteDTO.StartStationId,
+                    EndStationId = createTicketRouteDTO.EndStationId,
+                    Distance = distance,
+                    Price = price
+                };
+
+                var getSaveTicketRoute = _mapper.Map<GetTicketRouteDTO>(saveTicketRoute);
+
+                await _unitOfWork.TicketRouteRepository.AddAsync(saveTicketRoute);
+                await _unitOfWork.SaveAsync();
+
+                return new ResponseDTO
+                {
+                    Message = "Tạo vé lượt thành công",
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Result = getSaveTicketRoute
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Đã xảy ra lỗi khi tạo vé lượt: ", ex);
+            }
+        }
+
+        public async Task<ResponseDTO> GetTicketRouteByFromToAsync(Guid StartStation, Guid EndStation)
+        {
+            try
+            {
+                var ticketRoute = await _unitOfWork.TicketRouteRepository.GetTicketRouteByStartAndEndStation(StartStation, EndStation);
+
+                if (ticketRoute is not null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Lấy vé lượt thành công",
+                        IsSuccess = true,
+                        StatusCode = 200,
+                        Result = ticketRoute
+                    };
+                }
+
+                return new ResponseDTO
+                {
+                    Message = "Không tìm thấy vé lượt cần tìm.",
+                    IsSuccess = false,
+                    StatusCode = 404
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    Message = "Đã xảy ra lỗi khi lấy vé lượt: " + ex.Message,
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
+
+        private async Task<double> CalculateDistanceOfTwoStation(Guid startStationId, Guid endStationId)
+        {
+            try
+            {
+                var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
+
+                var _graph = new StationGraph(allMetroLines);
+
+                var stationPath = _graph.FindShortestPath(startStationId, endStationId);
+
+                // Nếu không tìm thấy đường đi, ném ra ngoại lệ
+                if (stationPath == null || !stationPath.Any())
+                {
+                    throw new Exception("Không tìm được đường đi giữa hai trạm.");
+                }
+
+                double distance = _unitOfWork.StationRepository.CalculateTotalDistance(stationPath, allMetroLines);
+
+                // Kiểm tra khoảng cách tính được có hợp lệ hay không
+                if (distance <= 0)
+                {
+                    throw new Exception("Khoảng cách tính được không hợp lệ.");
+                }
+
+                return distance;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Đã xảy ra lỗi tính khoảng cách: ", ex);
+            }
+        }
+
+    }
+
+}

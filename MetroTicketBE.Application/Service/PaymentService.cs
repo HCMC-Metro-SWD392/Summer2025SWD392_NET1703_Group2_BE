@@ -17,13 +17,11 @@ namespace MetroTicketBE.Application.Service
     {
         private readonly IConfiguration _configuration;
         private readonly PayOS _payos;
-        private readonly StationGraph _stationGraph;
         private readonly IUnitOfWork _unitOfWork;
 
         public PaymentService
         (
             IConfiguration configuration,
-            PayOS payos,
             StationGraph stationGraph,
             IUnitOfWork unitOfWork
         )
@@ -34,14 +32,13 @@ namespace MetroTicketBE.Application.Service
                     _configuration["Payos:API_KEY"] ?? throw new Exception("Cannot find PAYOS_API_KEY"),
                     _configuration["Payos:CHECKSUM_KEY"] ?? throw new Exception("Cannot find PAYOS_CHECKSUM_KEY")
                 );
-            _stationGraph = stationGraph ?? throw new ArgumentNullException(nameof(stationGraph));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         }
         public async Task<ResponseDTO> CreateLinkPaymentTicketRoute(ClaimsPrincipal user, CreateLinkPaymentRouteDTO createLinkDTO)
         {
             try
             {
-                var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+                var userId = "60baa127-8a42-487b-9f7c-470bd56d97b6";
 
                 if (string.IsNullOrEmpty(userId))
                 {
@@ -65,17 +62,21 @@ namespace MetroTicketBE.Application.Service
                     };
 
                 }
+                Promotion? promotion = null;
 
-                var promotion = await _unitOfWork.PromotionRepository.GetByCodeAsync(createLinkDTO.CodePromotion);
-
-                if (promotion is null)
+                if (!string.IsNullOrWhiteSpace(createLinkDTO.CodePromotion))
                 {
-                    return new ResponseDTO
+                    // Kiểm tra mã khuyến mãi nếu có
+                    promotion = await _unitOfWork.PromotionRepository.GetByCodeAsync(createLinkDTO.CodePromotion);
+                    if (promotion is null)
                     {
-                        Message = "Không tìm thấy mã khuyến mãi",
-                        IsSuccess = false,
-                        StatusCode = 404
-                    };
+                        return new ResponseDTO
+                        {
+                            Message = "Không tìm thấy mã khuyến mãi",
+                            IsSuccess = false,
+                            StatusCode = 404
+                        };
+                    }
                 }
                 // Gộp các vé trùng lặp và phân loại ra theo tên vé và giá
                 var ticketRouteItems = createLinkDTO.TicketRoute
@@ -109,7 +110,7 @@ namespace MetroTicketBE.Application.Service
 
                 // tính tổng giá của các vé
 
-                var discountedTicketRoutePrice = await CalculatePriceApplyPromo(ticketRouteTotal, promotion.Id);
+                var discountedTicketRoutePrice = await CalculatePriceApplyPromo(ticketRouteTotal, promotion?.Id);
 
                 var totalPrice = discountedTicketRoutePrice + subscriptionTicketTotal;
 
@@ -154,7 +155,7 @@ namespace MetroTicketBE.Application.Service
                 {
                     CustomerId = customer.Id,
                     TotalPrice = totalPrice,
-                    PromotionId = promotion.Id,
+                    PromotionId = promotion?.Id,
                     PaymentMethodId = paymentMethod.Id,
                     Status = PaymentStatus.Unpaid
                 };
@@ -185,10 +186,14 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        private async Task<int> CalculatePriceApplyPromo(int price, Guid promotionId)
+        private async Task<int> CalculatePriceApplyPromo(int price, Guid? promotionId)
         {
+            if (promotionId is null || promotionId == Guid.Empty)
+            {
+                return price;
+            }
             // Kiểm tra xem có tồn tại mã khuyến mãi không
-            var promotion = await _unitOfWork.PromotionRepository.GetByIdAsync(promotionId);
+            var promotion = await _unitOfWork.PromotionRepository.GetByIdAsync(promotionId.Value);
 
             if (promotion is null)
             {

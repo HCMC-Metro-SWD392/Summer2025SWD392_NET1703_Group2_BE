@@ -14,7 +14,7 @@ public class Ticket
     public TimeSpan Expiration { get; set; }
     public string QrCode { get; set; } = null!;
 
-    public SubscriptionTicket? SubscriptionTicket { get; set; }
+    public SubscriptionTicket? SubscriptionTicket { get; set; } = null!;
     public TicketRoute TicketRoute { get; set; } = null!;
     public PaymentTransaction Transaction { get; set; } = null!;
 }
