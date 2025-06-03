@@ -58,5 +58,30 @@ namespace MetroTicketBE.Application.Service
                 };
             }
         }
+
+        public async Task<ResponseDTO> GetAllStations()
+        {
+            try
+            {
+                var stations = await _unitOfWork.StationRepository.GetAllAsync();
+
+                return new ResponseDTO
+                {
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Message = "Lấy danh sách trạm Metro thành công",
+                    Result = stations
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Message = "Lỗi khi lấy danh sách trạm Metro: " + ex.Message
+                };
+            }
+        }
     }
 }

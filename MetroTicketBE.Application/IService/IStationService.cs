@@ -11,5 +11,6 @@ namespace MetroTicketBE.Application.IService
     public interface IStationService
     {
         Task<ResponseDTO> CreateStation(CreateStationDTO createStationDTO);
+        Task<ResponseDTO> GetAllStations();
     }
 }
