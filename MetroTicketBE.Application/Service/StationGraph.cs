@@ -4,7 +4,7 @@ namespace MetroTicketBE.WebAPI.Extentions
 {
     public class StationGraph
     {
-        private Dictionary<Guid, List<(Guid neighborId, double weight)>> graph = new();
+        private readonly Dictionary<Guid, List<(Guid neighborId, double weight)>> graph = new();
 
         public StationGraph(IEnumerable<MetroLine> metroLines)
         {
@@ -37,6 +37,12 @@ namespace MetroTicketBE.WebAPI.Extentions
 
         public List<Guid> FindShortestPath(Guid startId, Guid endId)
         {
+            if (!graph.ContainsKey(startId))
+                throw new KeyNotFoundException($"Không tìm thấy điểm bắt đầu: {startId}");
+
+            if (!graph.ContainsKey(endId))
+                throw new KeyNotFoundException($"Không tìm thấy điểm kết thúc: {endId}");
+
             var distances = new Dictionary<Guid, double>();
             var previous = new Dictionary<Guid, Guid?>();
             var queue = new PriorityQueue<Guid, double>();

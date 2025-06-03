@@ -15,7 +15,6 @@ namespace MetroTicketBE.Domain.Entities
 
         public ICollection<MetroLineStation> MetroLineStations { get; set; } = new List<MetroLineStation>();
 
-        public FareRule FareRule { get; set; } = null!;
     }
 
 }

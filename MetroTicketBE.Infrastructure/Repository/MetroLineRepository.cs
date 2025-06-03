@@ -16,7 +16,10 @@ namespace MetroTicketBE.Infrastructure.Repository
 
         public async Task<List<MetroLine>> GetAllListAsync()
         {
-            return await _context.MetroLines.ToListAsync();
+            return await _context.MetroLines
+                .Include(mt => mt.MetroLineStations)
+                .ThenInclude(mts => mts.Station)
+                .ToListAsync();
         }
 
         public async Task<bool> IsExistById(Guid id)

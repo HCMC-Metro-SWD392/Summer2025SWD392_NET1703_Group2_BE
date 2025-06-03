@@ -81,7 +81,7 @@ namespace MetroTicketBE.Application.Service
                 {
                     IsSuccess = false,
                     StatusCode = 500,
-                    Message = "Lỗi khi tạo tuyến Metro: " + ex.Message
+                    Message = "Lỗi khi tạo tuyến Metro: " + ex.InnerException?.Message ?? ex.Message
                 };
             }
         }

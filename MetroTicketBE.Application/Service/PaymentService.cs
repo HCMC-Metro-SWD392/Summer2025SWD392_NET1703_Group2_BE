@@ -1,12 +1,10 @@
-﻿using MetroTicket.Domain.Entities;
-using MetroTicketBE.Application.IService;
+﻿using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Domain.DTO.Auth;
-using MetroTicketBE.Domain.DTO.Payos;
+using MetroTicketBE.Domain.DTO.Payment;
 using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Domain.Enum;
 using MetroTicketBE.Infrastructure.IRepository;
-using MetroTicketBE.Infrastructure.Repository;
 using MetroTicketBE.WebAPI.Extentions;
 using Microsoft.Extensions.Configuration;
 using Net.payOS;
@@ -19,13 +17,11 @@ namespace MetroTicketBE.Application.Service
     {
         private readonly IConfiguration _configuration;
         private readonly PayOS _payos;
-        private readonly StationGraph _stationGraph;
         private readonly IUnitOfWork _unitOfWork;
 
         public PaymentService
         (
             IConfiguration configuration,
-            PayOS payos,
             StationGraph stationGraph,
             IUnitOfWork unitOfWork
         )
@@ -36,14 +32,13 @@ namespace MetroTicketBE.Application.Service
                     _configuration["Payos:API_KEY"] ?? throw new Exception("Cannot find PAYOS_API_KEY"),
                     _configuration["Payos:CHECKSUM_KEY"] ?? throw new Exception("Cannot find PAYOS_CHECKSUM_KEY")
                 );
-            _stationGraph = stationGraph ?? throw new ArgumentNullException(nameof(stationGraph));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         }
         public async Task<ResponseDTO> CreateLinkPaymentTicketRoute(ClaimsPrincipal user, CreateLinkPaymentRouteDTO createLinkDTO)
         {
             try
             {
-                var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+                var userId = "60baa127-8a42-487b-9f7c-470bd56d97b6";
 
                 if (string.IsNullOrEmpty(userId))
                 {
@@ -67,40 +62,66 @@ namespace MetroTicketBE.Application.Service
                     };
 
                 }
+                Promotion? promotion = null;
 
-                var promotion = await _unitOfWork.PromotionRepository.GetByCodeAsync(createLinkDTO.CodePromotion);
-
-                if (promotion is null)
+                if (!string.IsNullOrWhiteSpace(createLinkDTO.CodePromotion))
                 {
-                    return new ResponseDTO
+                    // Kiểm tra mã khuyến mãi nếu có
+                    promotion = await _unitOfWork.PromotionRepository.GetByCodeAsync(createLinkDTO.CodePromotion);
+                    if (promotion is null)
                     {
-                        Message = "Không tìm thấy mã khuyến mãi",
-                        IsSuccess = false,
-                        StatusCode = 404
-                    };
+                        return new ResponseDTO
+                        {
+                            Message = "Không tìm thấy mã khuyến mãi",
+                            IsSuccess = false,
+                            StatusCode = 404
+                        };
+                    }
                 }
                 // Gộp các vé trùng lặp và phân loại ra theo tên vé và giá
-                var items = createLinkDTO.Ticket
-                .GroupBy(rt => new { rt.TicketName, rt.Price })
-                .Select(g => new ItemData
-                (
-                    name: g.Key.TicketName,
-                    quantity: g.Count(),
-                    price: g.Key.Price
-                )).ToList();
+                var ticketRouteItems = createLinkDTO.TicketRoute
+                    .GroupBy(rt => new { rt.TicketName, rt.Price })
+                    .Select(g =>
+                    {
+                        var firtstItem = g.First();
+                        return new ItemData
+                        (
+                            name: firtstItem.TicketName,
+                            price: firtstItem.Price,
+                            quantity: g.Count()
+                        );
+                    });
+
+                var subscriptionTicketItems = createLinkDTO.SubscriptionTickets
+                    .GroupBy(st => new { st.Id })
+                    .Select(g =>
+                    {
+                        var firstItem = g.First();
+                        return new ItemData
+                        (
+                            name: firstItem.TicketName,
+                            price: firstItem.Price,
+                            quantity: g.Count()
+                        );
+                    });
+
+                var ticketRouteTotal = ticketRouteItems.Sum(i => i.price * i.quantity);
+                var subscriptionTicketTotal = subscriptionTicketItems.Sum(i => i.price * i.quantity);
 
                 // tính tổng giá của các vé
-                var totalPrice = items.Sum(i => i.price * i.quantity);
 
-                var finalPrice = await CalculatePriceApplyPromo(totalPrice, promotion.Id);
+                var discountedTicketRoutePrice = await CalculatePriceApplyPromo(ticketRouteTotal, promotion?.Id);
 
+                var totalPrice = discountedTicketRoutePrice + subscriptionTicketTotal;
+
+                var allItems = ticketRouteItems.Concat(subscriptionTicketItems).ToList();
                 // Tạo mã đơn hàng duy nhất dựa trên thời gian hiện tại (orderCode)
-                var paymentLinkRequest = new PaymentData
+                PaymentData paymentLinkRequest = new PaymentData
             (
                 orderCode: int.Parse(DateTimeOffset.Now.ToString("ffffff")),
-                amount: finalPrice,
+                amount: totalPrice,
                 description: createLinkDTO.Description,
-                items: items,
+                items: allItems,
                 returnUrl: "https://youtube.com",
                 cancelUrl: "https://facebook.com"
             );
@@ -133,8 +154,8 @@ namespace MetroTicketBE.Application.Service
                 PaymentTransaction paymentTransaction = new PaymentTransaction()
                 {
                     CustomerId = customer.Id,
-                    TotalPrice = finalPrice,
-                    PromotionId = promotion.Id,
+                    TotalPrice = totalPrice,
+                    PromotionId = promotion?.Id,
                     PaymentMethodId = paymentMethod.Id,
                     Status = PaymentStatus.Unpaid
                 };
@@ -165,55 +186,14 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        private async Task<double> CalculateDistanceOfTwoStation(Guid startStationId, Guid endStationId)
+        private async Task<int> CalculatePriceApplyPromo(int price, Guid? promotionId)
         {
-            try
+            if (promotionId is null || promotionId == Guid.Empty)
             {
-                var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
-                var stationPath = _stationGraph.FindShortestPath(startStationId, endStationId);
-                double distance = _unitOfWork.StationRepository.CalculateTotalDistance(stationPath, allMetroLines);
-
-                return distance;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Đã xảy ra lỗi tính khoảng cách: ", ex);
-            }
-        }
-
-        private async Task<double> CalculateTicketRouteAndSave(Guid startStationId, Guid endStationId)
-        {
-            try
-            {
-                double distance = await CalculateDistanceOfTwoStation(startStationId, endStationId);
-
-                int price = (await _unitOfWork.FareRuleRepository.GetAllAsync())
-                    .Where(fr => fr.MinDistance <= distance && fr.MaxDistance >= distance)
-                    .Select(fr => fr.Fare)
-                    .FirstOrDefault();
-
-                var saveTicketRoute = new TicketRoute
-                {
-                    StartStationId = startStationId,
-                    EndStationId = endStationId,
-                    Distance = distance,
-                    Price = price
-                };
-
-                await _unitOfWork.TicketRouteRepository.AddAsync(saveTicketRoute);
-
                 return price;
             }
-            catch (Exception ex)
-            {
-                throw new Exception("Đã xảy ra lỗi tính giá vé: ", ex);
-            }
-        }
-
-        private async Task<int> CalculatePriceApplyPromo(int price, Guid promotionId)
-        {
             // Kiểm tra xem có tồn tại mã khuyến mãi không
-            var promotion = await _unitOfWork.PromotionRepository.GetByIdAsync(promotionId);
+            var promotion = await _unitOfWork.PromotionRepository.GetByIdAsync(promotionId.Value);
 
             if (promotion is null)
             {
@@ -222,7 +202,7 @@ namespace MetroTicketBE.Application.Service
 
             decimal discountPercentage = promotion.Percentage / 100m;
 
-            var finalPrice = price * (1 - promotion.Percentage);
+            var finalPrice = price * (1 - discountPercentage);
 
             return (int)finalPrice;
         }

@@ -10,8 +10,6 @@ namespace MetroTicketBE.Domain.Entities
         public Guid EndStationId { get; set; }
         public double? Distance { get; set; }
         public int Price { get; set; }
-        public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
         public TicketRoutStatus? Status { get; set; } = TicketRoutStatus.Active;
 
         public virtual Station StartStation { get; set; } = null!;

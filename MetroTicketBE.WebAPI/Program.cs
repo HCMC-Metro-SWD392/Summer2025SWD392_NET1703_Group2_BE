@@ -1,5 +1,6 @@
 using Amazon.SimpleEmail;
 using Amazon.SimpleEmailV2;
+using MetroTicketBE.Application.Mappings;
 using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Infrastructure.Context;
 using MetroTicketBE.WebAPI.Extentions;
@@ -31,11 +32,13 @@ public class Program
                         .AllowCredentials();
                 });
             });
-                
+
 
         builder.Services.AddDbContext<ApplicationDBContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString(StaticConnectionString.POSTGRE_DefaultConnection)));
 
+        // Register AutoMapper 
+        builder.Services.AddAutoMapper(typeof(AutoMappingProfile));
 
         // Register services life cycle
         // Base on Extensions.ServiceCollectionExtensions
