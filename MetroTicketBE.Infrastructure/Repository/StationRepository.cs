@@ -49,5 +49,16 @@ namespace MetroTicketBE.Infrastructure.Repository
             return await _context.Stations
                 .AnyAsync(s => s.Name == stationName);
         }
+
+        public async Task<bool> IsExistByAddress(string address)
+        {
+            return await _context.Stations
+                .AnyAsync(s => s.Address == address);
+        }
+
+        public async void Update(Station station)
+        {
+            _context.Stations.Update(station);
+        }
     }
 }

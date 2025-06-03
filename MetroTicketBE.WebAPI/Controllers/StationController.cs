@@ -23,5 +23,23 @@ namespace MetroTicketBE.WebAPI.Controllers
             var response = await _stationService.CreateStation(createStationDTO);
             return StatusCode(response.StatusCode, response);
         }
+        
+
+        [HttpPut]
+        [Route("update-station/{stationId}")]
+        public async Task<ActionResult<ResponseDTO>> UpdateStation(Guid stationId,
+            [FromBody] UpdateStationDTO updateStationDTO)
+        {
+            var response = await _stationService.UpdateStation(stationId, updateStationDTO);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpGet]
+        [Route("get-all-stations")]
+        public async Task<ActionResult<ResponseDTO>> GetAllStations()
+        {
+            var response = await _stationService.GetAllStations();
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }
