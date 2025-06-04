@@ -9,5 +9,6 @@ namespace MetroTicketBE.Infrastructure.IRepository
 {
     public interface IPaymentTransactionRepository : IRepository<PaymentTransaction>
     {
+        Task<PaymentTransaction> GetByIdAsync(Guid id);
     }
 }

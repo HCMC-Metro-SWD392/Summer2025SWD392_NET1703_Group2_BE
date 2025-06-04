@@ -1,11 +1,11 @@
-﻿using MetroTicket.Domain.Entities;
-using MetroTicketBE.Domain.Enum;
+﻿using MetroTicketBE.Domain.Enum;
 
 namespace MetroTicketBE.Domain.Entities;
 
 public class PaymentTransaction
 {
     public Guid Id { get; set; }    
+    public string? OrderCode { get; set; }
     public Guid CustomerId { get; set; }
     public double TotalPrice { get; set; }
     public Guid? PromotionId { get; set; }
@@ -17,4 +17,6 @@ public class PaymentTransaction
     public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
 
     public Promotion Promotion { get; set; } = null!;
+
+    public ICollection<PaymentMethod> PaymentMethods { get; set; } = new List<PaymentMethod>();
 }

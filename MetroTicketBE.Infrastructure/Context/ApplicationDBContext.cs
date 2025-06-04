@@ -23,7 +23,7 @@ namespace MetroTicketBE.Infrastructure.Context
         public DbSet<SubscriptionTicket> SubscriptionTicket { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<Train> Trains { get; set; }
-        public DbSet<PaymentTransaction> Transactions { get; set; }
+        public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
         public DbSet<PaymentMethod> PaymentMethods { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Membership> Memberships { get; set; }
@@ -60,6 +60,12 @@ namespace MetroTicketBE.Infrastructure.Context
                 .HasOne(t => t.Customer)
                 .WithMany(c => c.Transactions)
                 .HasForeignKey(t => t.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<PaymentTransaction>()
+                .HasMany(t => t.PayOSMethods)
+                .WithOne(p => p.)
+                .HasForeignKey(p => p.PaymentMethodId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             //Ticket

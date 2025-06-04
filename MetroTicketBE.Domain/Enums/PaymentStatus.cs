@@ -11,6 +11,6 @@ namespace MetroTicketBE.Domain.Enum
     {
         Unpaid = 0,       // Chưa thanh toán
         Paid = 1,      // Đã thanh toán
-        Refunded = 2 // Đã hoàn tiền
+        Canceled = 2 // Đã hủy thanh toán
     }
 }

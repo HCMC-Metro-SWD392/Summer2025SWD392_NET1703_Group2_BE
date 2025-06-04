@@ -5,7 +5,6 @@ namespace MetroTicketBE.Domain.DTO.Auth
 {
     public class RegisterCustomerDTO
     {
-        [Required(ErrorMessage = "Vui lòng nhập số điện thoại")]
         [RegularExpression(@"^(\+84|0)[1-9]\d{8}$", ErrorMessage = "Số điện thoại không hợp lệ")]
         public string? PhoneNumber { get; set; }
 
