@@ -14,14 +14,5 @@ public class SubcriptionTicketController: ControllerBase
         _subscriptionService = subscriptionService ?? throw new ArgumentNullException(nameof(subscriptionService));
     }
     
-    [HttpPost("{customerId:guid}/subscribe")]
-    public async Task<ActionResult<ResponseDTO>> SubscribeToTicketAsync(Guid customerId)
-    {
-        ResponseDTO response = await _subscriptionService.AddSubscriptionAsync(customerId);
-        if (!response.IsSuccess)
-        {
-            return StatusCode(response.StatusCode, response);
-        }
-        return Ok(response);
-    }
+    
 }

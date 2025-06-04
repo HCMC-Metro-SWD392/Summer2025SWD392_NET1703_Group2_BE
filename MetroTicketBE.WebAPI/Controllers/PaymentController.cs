@@ -14,12 +14,12 @@ namespace MetroTicketBE.WebAPI.Controllers
         {
             _paymentService = paymentService ?? throw new ArgumentNullException(nameof(paymentService));
         }
-        [HttpPost]
-        [Route("create-link-payment-ticket-route")]
-        public async Task<ActionResult<ResponseDTO>> CreateLinkPaymentTicketRoute([FromBody] CreateLinkPaymentRoutePayOSDTO createLinkDTO)
-        {
-            var response = await _paymentService.CreateLinkPaymentTicketRoute(User, createLinkDTO);
-            return StatusCode(response.StatusCode, response);
-        }
+        // [HttpPost]
+        // [Route("create-link-payment-ticket-route")]
+        // public async Task<ActionResult<ResponseDTO>> CreateLinkPaymentTicketRoute([FromBody] CreateLinkPaymentRoutePayOSDTO createLinkDTO)
+        // {
+        //     var response = await _paymentService.CreateLinkPaymentTicketRoute(User, createLinkDTO);
+        //     return StatusCode(response.StatusCode, response);
+        // }
     }
 }
