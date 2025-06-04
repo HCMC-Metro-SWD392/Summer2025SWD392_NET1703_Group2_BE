@@ -4,6 +4,7 @@ using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.Payment;
 using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Domain.Enum;
+using MetroTicketBE.Domain.Enums;
 using MetroTicketBE.Infrastructure.IRepository;
 using MetroTicketBE.WebAPI.Extentions;
 using Microsoft.Extensions.Configuration;
@@ -78,46 +79,34 @@ namespace MetroTicketBE.Application.Service
                         };
                     }
                 }
-                // Gộp các vé trùng lặp và phân loại ra theo tên vé và giá
-                var ticketRouteItems = createLinkDTO.TicketRoute?
-                    .Select(tr =>
+
+                var items = createLinkDTO.TicketRoute is not null
+                    ? createLinkDTO.TicketRoute.Select(tr => new ItemData(tr.TicketName, tr.Price, 1)).ToList()
+                    : createLinkDTO.SubscriptionTickets?.Select(st => new ItemData(st.TicketName, st.Price, 1)).ToList();
+
+                if (items is null || !items.Any())
+                {
+                    return new ResponseDTO
                     {
-                        return new ItemData
-                        (
-                            name: tr.TicketName,
-                            price: tr.Price,
-                            quantity: 1
-                        );
-                    });
+                        Message = "Không có vé nào để thanh toán",
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
 
-                var subscriptionTicketItems = createLinkDTO.SubscriptionTickets?
-                    .Select(st =>
-                    {
-                        return new ItemData
-                        (
-                            name: st.TicketName,
-                            price: st.Price,
-                            quantity: 1
-                        );
-                    });
+                var ticketPrice = items.Sum(item => item.price);
+                var totalPrice = createLinkDTO.TicketRoute is null
+                    ? ticketPrice
+                    : await CalculatePriceApplyPromo(ticketPrice, promotion?.Id);
 
-                var ticketRouteTotal = ticketRouteItems?.Sum(tr => tr.price) ?? 0 ;
-                var subscriptionTicketTotal = subscriptionTicketItems?.Sum(st => st.price) ?? 0;
-
-                // tính tổng giá của các vé
-
-                var discountedTicketRoutePrice = await CalculatePriceApplyPromo(ticketRouteTotal, promotion?.Id);
-
-                var totalPrice = discountedTicketRoutePrice + subscriptionTicketTotal;
-
-                var allItems = ticketRouteItems.Concat(subscriptionTicketItems).ToList();
                 // Tạo mã đơn hàng duy nhất dựa trên thời gian hiện tại (orderCode)
+                var orderCode = int.Parse(DateTimeOffset.Now.ToString("ffffff")) + customer.Id.GetHashCode();
                 PaymentData paymentLinkRequest = new PaymentData
             (
-                orderCode: int.Parse(DateTimeOffset.Now.ToString("ffffff")),
+                orderCode: orderCode,
                 amount: totalPrice,
                 description: createLinkDTO.Description,
-                items: allItems,
+                items: items,
                 returnUrl: "https://youtube.com",
                 cancelUrl: "https://facebook.com"
             );
@@ -150,8 +139,8 @@ namespace MetroTicketBE.Application.Service
                 PaymentTransaction paymentTransaction = new PaymentTransaction()
                 {
                     CustomerId = customer.Id,
-                    OrderCode = Convert.ToString(createLinkDTO.OrderCode),
-                    ItemData = allItems,
+                    OrderCode = Convert.ToString(orderCode),
+                    ItemData = items,
                     TotalPrice = totalPrice,
                     PromotionId = promotion?.Id,
                     PaymentMethodId = paymentMethod.Id,
@@ -209,7 +198,8 @@ namespace MetroTicketBE.Application.Service
                         IsSuccess = false,
                         StatusCode = 404
                     };
-                } else
+                }
+                else
                 {
                     paymentTransaction.Status = paymentStatus.Result.status switch
                     {
@@ -224,8 +214,59 @@ namespace MetroTicketBE.Application.Service
 
                 if (paymentTransaction.Status is PaymentStatus.Paid)
                 {
-                    if (paymentTransaction.Tickets.)
+                    var item = paymentTransaction.ItemData as ItemData;
+                    if (item is null)
+                    {
+                        return new ResponseDTO
+                        {
+                            Message = "Không có vé nào để thanh toán",
+                            IsSuccess = false,
+                            StatusCode = 400
+                        };
+                    }
+
+                    var ticketRoute = await _unitOfWork.TicketRouteRepository.GetByNameAsync(item.name);
+                    var subTicket = await _unitOfWork.SubscriptionRepository.GetByNameAsync(item.name);
+
+                    var expiration = subTicket.TicketType switch
+                    {
+                        SubscriptionTicketType.Daily => TimeSpan.FromDays(1),
+                        SubscriptionTicketType.Monthly => TimeSpan.FromDays(30),
+                        SubscriptionTicketType.Quarterly => TimeSpan.FromDays(90),
+                        SubscriptionTicketType.Yearly => TimeSpan.FromDays(365),
+                        _ => TimeSpan.FromDays(1)
+                    };
+
+                    Ticket ticket = new Ticket()
+                    {
+                        SubscriptionTicketId = subTicket.Id,
+                        TicketRouteId = ticketRoute.Id,
+                        TransactionId = paymentTransactionId,
+                        TicketSerial = Guid.NewGuid().ToString("N"),
+                        StartDate = DateTime.UtcNow,
+                        EndDate = DateTime.UtcNow.Add(expiration),
+                        QrCode = Guid.NewGuid().ToString("N").Substring(0, 10)
+                    };
+
+                    await _unitOfWork.TicketRepository.AddAsync(ticket);
                 }
+
+                await _unitOfWork.SaveAsync();
+                return new ResponseDTO
+                {
+                    Message = "Cập nhật trạng thái thanh toán thành công",
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    Message = $"Đã xảy ra lỗi khi cập nhật trạng thái thanh toán: {ex.Message}",
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
             }
         }
 

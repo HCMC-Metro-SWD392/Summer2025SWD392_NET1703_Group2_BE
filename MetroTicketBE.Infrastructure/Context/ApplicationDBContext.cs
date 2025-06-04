@@ -20,7 +20,7 @@ namespace MetroTicketBE.Infrastructure.Context
         public DbSet<PayOSMethod> PayOSMethods { get; set; }
         public DbSet<Process> Processes { get; set; }
         public DbSet<Station> Stations { get; set; }
-        public DbSet<SubscriptionTicket> SubscriptionTicket { get; set; }
+        public DbSet<SubscriptionTicket> SubscriptionTickets { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<Train> Trains { get; set; }
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
@@ -62,11 +62,11 @@ namespace MetroTicketBE.Infrastructure.Context
                 .HasForeignKey(t => t.CustomerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<PaymentTransaction>()
-                .HasMany(t => t.PayOSMethods)
-                .WithOne(p => p.)
-                .HasForeignKey(p => p.PaymentMethodId)
-                .OnDelete(DeleteBehavior.Restrict);
+            // modelBuilder.Entity<PaymentTransaction>()
+            //     .HasMany(t => t.PayOSMethods)
+            //     .WithOne(p => p.)
+            //     .HasForeignKey(p => p.PaymentMethodId)
+            //     .OnDelete(DeleteBehavior.Restrict);
 
             //Ticket
             modelBuilder.Entity<Ticket>()

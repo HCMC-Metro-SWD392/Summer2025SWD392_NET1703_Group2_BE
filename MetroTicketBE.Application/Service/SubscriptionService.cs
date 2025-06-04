@@ -1,5 +1,6 @@
 ﻿using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.DTO.Auth;
+using MetroTicketBE.Domain.DTO.SubscriptionTicket;
 using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Domain.Enum;
 using MetroTicketBE.Domain.Enums;
@@ -15,66 +16,37 @@ public SubscriptionService(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
     }
-    public async Task<ResponseDTO> AddSubscriptionAsync(Guid customerId)
+
+    public Task<ResponseDTO> CreateSubscriptionAsync(CreateSubscriptionDTO dto)
     {
-        if (customerId == Guid.Empty)
-        {
-            return new ResponseDTO()
-            {
-                IsSuccess = false,
-                Message = "Mã khách hàng không hợp lệ",
-                StatusCode = 400
-            };
-        }
-
-        Customer? customer = await _unitOfWork.CustomerRepository.GetByIdAsync(customerId);
-
-        if (customer is null)
-        {
-            return new ResponseDTO()
-            {
-                IsSuccess = false,
-                Message = "Khách hàng không tồn tại",
-                StatusCode = 404
-            };
-        }
-        
-        int price = customer.CustomerType switch
-        {
-            CustomerType.Student => 200000,
-            CustomerType.OlderPerson => 150000,
-            _ => 300000
-        };
-
         try
         {
-            var subscription = new SubscriptionTicket()
+
+
+            SubscriptionTicket subscriptionTicket = new SubscriptionTicket
             {
-                TicketName = "Vé Tháng",
-                TicketType = TicketType.Monthly,
-                Price = price,
-                StartDate = DateTime.Now,
-                EndDate = DateTime.Now.AddMonths(1)
             };
 
-                await _unitOfWork.SubscriptionRepository.AddAsync(subscription);
+            _unitOfWork.SubscriptionRepository.AddAsync(subscriptionTicket);
+            _unitOfWork.SaveAsync();
 
-            return new ResponseDTO()
+            return Task.FromResult(new ResponseDTO
             {
                 IsSuccess = true,
-                Message = "Thêm vé tháng thành công",
                 StatusCode = 200,
-                Result = subscription
-            };
+                Message = "Đăng ký vé tháng thành công",
+                Result = subscriptionTicket
+            });
         }
         catch (Exception ex)
         {
-            return new ResponseDTO()
+            return Task.FromResult(new ResponseDTO
             {
                 IsSuccess = false,
-                Message = $"Lỗi khi thêm vé tháng: {ex.Message}",
-                StatusCode = 500
-            };
+                StatusCode = 500,
+                Message = "Lỗi khi đăng ký vé tháng: " + ex.Message
+            });
         }
     }
+
 }
