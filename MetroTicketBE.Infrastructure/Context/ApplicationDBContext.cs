@@ -62,11 +62,11 @@ namespace MetroTicketBE.Infrastructure.Context
                 .HasForeignKey(t => t.CustomerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<PaymentTransaction>()
-                .HasMany(t => t.PayOSMethods)
-                .WithOne(p => p.)
-                .HasForeignKey(p => p.PaymentMethodId)
-                .OnDelete(DeleteBehavior.Restrict);
+            // modelBuilder.Entity<PaymentTransaction>()
+            //     .HasMany(t => t.PayOSMethods)
+            //     .WithOne(p => p.)
+            //     .HasForeignKey(p => p.PaymentMethodId)
+            //     .OnDelete(DeleteBehavior.Restrict);
 
             //Ticket
             modelBuilder.Entity<Ticket>()

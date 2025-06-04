@@ -189,47 +189,48 @@ namespace MetroTicketBE.Application.Service
 
         public async Task<ResponseDTO> UpdatePaymentTickerStatusPayOS(ClaimsPrincipal user, Guid paymentTransactionId)
         {
-            try
-            {
-                var paymentTransaction = await _unitOfWork.PaymentTransactionRepository.GetByIdAsync(paymentTransactionId);
-                if (paymentTransaction is null)
-                {
-                    return new ResponseDTO
-                    {
-                        Message = "Không tìm thấy giao dịch",
-                        IsSuccess = false,
-                        StatusCode = 404
-                    };
-                }
-                var oderCode = long.Parse(paymentTransaction.OrderCode ?? throw new Exception("Mã giao dịch không tồn tại"));
-                var paymentStatus = _payos.getPaymentLinkInformation(oderCode);
-
-                if (paymentStatus is null)
-                {
-                    return new ResponseDTO
-                    {
-                        Message = "Không tìm thấy thông tin giao dịch trên hệ thống PayOS",
-                        IsSuccess = false,
-                        StatusCode = 404
-                    };
-                } else
-                {
-                    paymentTransaction.Status = paymentStatus.Result.status switch
-                    {
-                        "PAID" => PaymentStatus.Paid,
-                        "UNPAID" => PaymentStatus.Unpaid,
-                        "CANCELED" => PaymentStatus.Canceled,
-                        _ => paymentTransaction.Status
-                    };
-                }
-
-                _unitOfWork.PaymentTransactionRepository.Update(paymentTransaction);
-
-                if (paymentTransaction.Status is PaymentStatus.Paid)
-                {
-                    
-                }
-            }
+            // try
+            // {
+            //     var paymentTransaction = await _unitOfWork.PaymentTransactionRepository.GetByIdAsync(paymentTransactionId);
+            //     if (paymentTransaction is null)
+            //     {
+            //         return new ResponseDTO
+            //         {
+            //             Message = "Không tìm thấy giao dịch",
+            //             IsSuccess = false,
+            //             StatusCode = 404
+            //         };
+            //     }
+            //     var oderCode = long.Parse(paymentTransaction.OrderCode ?? throw new Exception("Mã giao dịch không tồn tại"));
+            //     var paymentStatus = _payos.getPaymentLinkInformation(oderCode);
+            //
+            //     if (paymentStatus is null)
+            //     {
+            //         return new ResponseDTO
+            //         {
+            //             Message = "Không tìm thấy thông tin giao dịch trên hệ thống PayOS",
+            //             IsSuccess = false,
+            //             StatusCode = 404
+            //         };
+            //     } else
+            //     {
+            //         paymentTransaction.Status = paymentStatus.Result.status switch
+            //         {
+            //             "PAID" => PaymentStatus.Paid,
+            //             "UNPAID" => PaymentStatus.Unpaid,
+            //             "CANCELED" => PaymentStatus.Canceled,
+            //             _ => paymentTransaction.Status
+            //         };
+            //     }
+            //
+            //     _unitOfWork.PaymentTransactionRepository.Update(paymentTransaction);
+            //
+            //     if (paymentTransaction.Status is PaymentStatus.Paid)
+            //     {
+            //         
+            //     }
+            // }
+            return null;
         }
 
         private async Task<int> CalculatePriceApplyPromo(int price, Guid? promotionId)

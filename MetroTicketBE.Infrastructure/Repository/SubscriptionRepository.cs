@@ -13,4 +13,8 @@ public class SubscriptionRepository: Repository<SubscriptionTicket>, ISubscripti
         _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
+    public Task<bool> IsExistedByName(string ticketName)
+    {
+        throw new NotImplementedException();
+    }
 }
