@@ -1,6 +1,5 @@
 ﻿using MetroTicketBE.Domain.DTO.SubscriptionTicket;
 using MetroTicketBE.Domain.DTO.TicketRoute;
-using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Domain.Enum;
 
 namespace MetroTicketBE.Domain.DTO.Payment

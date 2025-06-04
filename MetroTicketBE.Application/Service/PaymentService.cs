@@ -80,33 +80,29 @@ namespace MetroTicketBE.Application.Service
                 }
                 // Gộp các vé trùng lặp và phân loại ra theo tên vé và giá
                 var ticketRouteItems = createLinkDTO.TicketRoute?
-                    .GroupBy(rt => new { rt.TicketName, rt.Price })
-                    .Select(g =>
+                    .Select(tr =>
                     {
-                        var firtstItem = g.First();
                         return new ItemData
                         (
-                            name: firtstItem.TicketName,
-                            price: firtstItem.Price,
-                            quantity: g.Count()
+                            name: tr.TicketName,
+                            price: tr.Price,
+                            quantity: 1
                         );
                     });
 
                 var subscriptionTicketItems = createLinkDTO.SubscriptionTickets?
-                    .GroupBy(st => new { st.Id })
-                    .Select(g =>
+                    .Select(st =>
                     {
-                        var firstItem = g.First();
                         return new ItemData
                         (
-                            name: firstItem.TicketName,
-                            price: firstItem.Price,
-                            quantity: g.Count()
+                            name: st.TicketName,
+                            price: st.Price,
+                            quantity: 1
                         );
                     });
 
-                var ticketRouteTotal = ticketRouteItems.Sum(i => i.price * i.quantity);
-                var subscriptionTicketTotal = subscriptionTicketItems.Sum(i => i.price * i.quantity);
+                var ticketRouteTotal = ticketRouteItems?.Sum(tr => tr.price) ?? 0 ;
+                var subscriptionTicketTotal = subscriptionTicketItems?.Sum(st => st.price) ?? 0;
 
                 // tính tổng giá của các vé
 
@@ -155,6 +151,7 @@ namespace MetroTicketBE.Application.Service
                 {
                     CustomerId = customer.Id,
                     OrderCode = Convert.ToString(createLinkDTO.OrderCode),
+                    ItemData = allItems,
                     TotalPrice = totalPrice,
                     PromotionId = promotion?.Id,
                     PaymentMethodId = paymentMethod.Id,
@@ -227,7 +224,7 @@ namespace MetroTicketBE.Application.Service
 
                 if (paymentTransaction.Status is PaymentStatus.Paid)
                 {
-                    
+                    if (paymentTransaction.Tickets.)
                 }
             }
         }
