@@ -163,7 +163,6 @@ namespace MetroTicketBE.Infrastructure.Context
                 .HasOne(m => m.EndStation)
                 .WithMany(s => s.EndStations)
                 .HasForeignKey(m => m.EndStationId)
-                .HasForeignKey(m => m.EndStationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             //MetroLineStation
