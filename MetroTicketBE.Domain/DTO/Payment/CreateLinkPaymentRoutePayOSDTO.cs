@@ -1,13 +1,11 @@
 ﻿using MetroTicketBE.Domain.DTO.SubscriptionTicket;
 using MetroTicketBE.Domain.DTO.TicketRoute;
-using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Domain.Enum;
 
 namespace MetroTicketBE.Domain.DTO.Payment
 {
     public class CreateLinkPaymentRoutePayOSDTO
     {
-        public long OrderCode { get; set; }
         public List<GetTicketRouteDTO>? TicketRoute { get; set; } = new();
         public List<GetSubscriptionTicketDTO>? SubscriptionTickets { get; set; } = new();
         public string? CodePromotion { get; set; }
