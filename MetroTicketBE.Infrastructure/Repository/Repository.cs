@@ -79,5 +79,15 @@ namespace MetroTicketBE.Infrastructure.Repository
         {
             dbSet.RemoveRange(entities);
         }
+
+        public void Update(T entity)
+        {
+            dbSet.Update(entity);
+        }
+
+        public void UpdateRange(IEnumerable<T> entities)
+        {
+            dbSet.UpdateRange(entities);
+        }
     }
 }

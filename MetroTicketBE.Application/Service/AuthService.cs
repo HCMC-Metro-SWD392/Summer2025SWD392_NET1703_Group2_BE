@@ -211,7 +211,7 @@ namespace MetroTicketBE.Application.Service
                     PhoneNumber = registerCustomerDTO.PhoneNumber,
                     Email = registerCustomerDTO.Email,
                     FullName = registerCustomerDTO.FullName,
-                    UserName = registerCustomerDTO.PhoneNumber
+                    UserName = registerCustomerDTO.Email
                 };
 
                 // Create user in the database

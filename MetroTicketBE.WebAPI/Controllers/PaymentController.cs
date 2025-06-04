@@ -16,7 +16,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         }
         [HttpPost]
         [Route("create-link-payment-ticket-route")]
-        public async Task<ActionResult<ResponseDTO>> CreateLinkPaymentTicketRoute([FromBody] CreateLinkPaymentRouteDTO createLinkDTO)
+        public async Task<ActionResult<ResponseDTO>> CreateLinkPaymentTicketRoute([FromBody] CreateLinkPaymentRoutePayOSDTO createLinkDTO)
         {
             var response = await _paymentService.CreateLinkPaymentTicketRoute(User, createLinkDTO);
             return StatusCode(response.StatusCode, response);

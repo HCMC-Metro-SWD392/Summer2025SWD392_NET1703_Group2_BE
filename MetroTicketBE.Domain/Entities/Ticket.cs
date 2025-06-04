@@ -7,11 +7,12 @@ public class Ticket
 {
     public Guid Id { get; set; }
     public Guid? SubscriptionTicketId { get; set; }
-    public Guid TicketRouteId { get; set; }
+    public Guid? TicketRouteId { get; set; }
     public Guid TransactionId { get; set; }
     public required string TicketSerial { get; set; }
     public string Description { get; set; } = null!;
-    public TimeSpan Expiration { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
     public string QrCode { get; set; } = null!;
 
     public SubscriptionTicket? SubscriptionTicket { get; set; } = null!;
