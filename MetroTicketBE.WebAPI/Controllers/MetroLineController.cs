@@ -24,5 +24,21 @@ namespace MetroTicketBE.WebAPI.Controllers
             var response = await _metroLineService.CreateMetroLine(createMetroLineDTO);
             return StatusCode(response.StatusCode, response);
         }
+        
+        [HttpGet]
+        [Route("metro-lines/all")]
+        public async Task<ActionResult<ResponseDTO>> GetAllMetroLines()
+        {
+            var response = await _metroLineService.GetAllMetroLines();
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpGet]
+        [Route("metro-line/{metroLineId}")]
+        public async Task<ActionResult<ResponseDTO>> GetMetroLineById(Guid metroLineId)
+        {
+            var response = await _metroLineService.GetMetroLineById(metroLineId);
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }
