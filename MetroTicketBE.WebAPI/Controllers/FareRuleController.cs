@@ -24,5 +24,21 @@ namespace MetroTicketBE.WebAPI.Controllers
             return StatusCode(response.StatusCode, response);
         }
 
+        [HttpGet]
+        [Route("fare-rules/all")]
+        public async Task<ActionResult<ResponseDTO>> GetAll()
+        {
+            var response = await _fareRuleService.GetAll();
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpPut]
+        [Route("update-fare-rule")]
+        public async Task<ActionResult<ResponseDTO>> UpdateFareRule([FromBody] UpdateFareRuleDTO updateFareRuleDTO)
+        {
+            var response = await _fareRuleService.UpdateFareRule(updateFareRuleDTO);
+            return StatusCode(response.StatusCode, response);
+
+        }
     }
 }
