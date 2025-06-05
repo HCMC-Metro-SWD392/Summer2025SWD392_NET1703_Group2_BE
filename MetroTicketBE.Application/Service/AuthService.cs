@@ -6,6 +6,7 @@ using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Domain.Enums;
 using MetroTicketBE.Infrastructure.IRepository;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace MetroTicketBE.Application.Service
 {
@@ -38,7 +39,7 @@ namespace MetroTicketBE.Application.Service
             try
             {
                 // Check if phone number exists
-                var user = await _unitOfWork.UserManagerRepository.FindByEmailAsync(loginDTO.Email);
+                var user = await _unitOfWork.UserManagerRepository.GetByEmailAsync(loginDTO.Email);
 
                 if (user is null)
                 {
@@ -120,24 +121,34 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> Logout(string userId)
+        public async Task<ResponseDTO> Logout(ClaimsPrincipal user)
         {
             try
             {
-                var user = await _userManager.FindByIdAsync(userId);
+                var userId = user?.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (userId is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Chưa đăng nhập",
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
 
-                if (user is null)
+                // Find the user by ID
+                var getUser = await _userManager.FindByIdAsync(userId);
+                if (getUser is null)
                 {
                     return new ResponseDTO
                     {
                         Message = "Người dùng không tồn tại",
-                        Result = null,
                         IsSuccess = false,
                         StatusCode = 404
                     };
                 }
 
-                await _userManager.UpdateSecurityStampAsync(user);
+                await _userManager.UpdateSecurityStampAsync(getUser);
                 // Delete the refresh token associated with the user
                 var isDeleted = await _tokenService.DeleteRefreshToken(userId);
                 if (isDeleted is false)
@@ -145,7 +156,6 @@ namespace MetroTicketBE.Application.Service
                     return new ResponseDTO
                     {
                         Message = "Không thể xóa refresh token",
-                        Result = null,
                         IsSuccess = false,
                         StatusCode = 500
                     };
@@ -154,7 +164,6 @@ namespace MetroTicketBE.Application.Service
                 return new ResponseDTO
                 {
                     Message = "Đăng xuất thành công",
-                    Result = null,
                     IsSuccess = true,
                     StatusCode = 200
                 };
@@ -165,7 +174,6 @@ namespace MetroTicketBE.Application.Service
                 {
                     // Return all exception details in the message
                     Message = $"Đã xảy ra lỗi: {ex.Message}",
-                    Result = null,
                     IsSuccess = false,
                     StatusCode = 500
                 };
@@ -306,7 +314,7 @@ namespace MetroTicketBE.Application.Service
         {
             try
             {
-                var user = await _unitOfWork.UserManagerRepository.FindByEmailAsync(email);
+                var user = await _unitOfWork.UserManagerRepository.GetByEmailAsync(email);
                 if (user.EmailConfirmed is true)
                 {
                     return new ResponseDTO

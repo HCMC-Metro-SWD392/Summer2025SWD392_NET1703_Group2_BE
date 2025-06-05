@@ -5,8 +5,8 @@ namespace MetroTicketBE.Infrastructure.IRepository
 {
     public interface IUserManagerRepository
     {
-        Task<ApplicationUser> FindByEmailAsync(string email);
-        Task<ApplicationUser> FindByPhoneNumberAsync(string phoneNumber);
+        Task<ApplicationUser> GetByEmailAsync(string email);
+        Task<ApplicationUser> GetByPhoneNumberAsync(string phoneNumber);
         Task<IdentityResult> CreateAsync(ApplicationUser user, string password);
         Task<IdentityResult> AddtoRoleAsync(ApplicationUser user, string role);
         Task<bool> IsEmailExist(string email);
