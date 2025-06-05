@@ -25,4 +25,11 @@ public class SubscriptionRepository : Repository<SubscriptionTicket>, ISubscript
         return _context.SubscriptionTickets
             .AnyAsync(st => st.TicketName == ticketName);
     }
+
+    public async Task<SubscriptionTicket?> GetByIdAsync(Guid? id)
+    {
+        if (id == null) return null;
+        return await _context.SubscriptionTickets
+            .FirstOrDefaultAsync(st => st.Id == id);
+    }
 }

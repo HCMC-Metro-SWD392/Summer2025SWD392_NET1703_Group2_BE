@@ -4,6 +4,7 @@ namespace MetroTicketBE.Domain.Entities;
 public class Ticket
 {
     public Guid Id { get; set; }
+    public Guid CustomerId { get; set; }
     public Guid? SubscriptionTicketId { get; set; }
     public Guid? TicketRouteId { get; set; }
     public Guid TransactionId { get; set; }

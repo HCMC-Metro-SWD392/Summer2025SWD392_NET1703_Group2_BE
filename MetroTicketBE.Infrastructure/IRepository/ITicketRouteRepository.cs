@@ -6,5 +6,6 @@ namespace MetroTicketBE.Infrastructure.IRepository
     {
         Task<TicketRoute?> GetTicketRouteByStartAndEndStation(Guid StartStation, Guid EndStation);
         Task<TicketRoute?> GetByNameAsync(string name);
+        Task<TicketRoute?> GetByIdAsync(Guid? id);
     }
 }

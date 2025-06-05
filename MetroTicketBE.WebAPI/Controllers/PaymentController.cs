@@ -23,7 +23,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         }
 
         [HttpPut]
-        [Route("payment-transactions/{id}/update-status")]
+        [Route("payment-transactions/update-status/{paymentTransactionId}")]
         public async Task<ActionResult<ResponseDTO>> UpdatePaymentTickerStatusPayOS([FromRoute] Guid paymentTransactionId)
         {
             var response = await _paymentService.UpdatePaymentTickerStatusPayOS(User, paymentTransactionId);

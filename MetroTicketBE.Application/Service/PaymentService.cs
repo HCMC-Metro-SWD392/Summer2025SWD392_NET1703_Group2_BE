@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Net.payOS;
 using Net.payOS.Types;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace MetroTicketBE.Application.Service
 {
@@ -39,7 +40,7 @@ namespace MetroTicketBE.Application.Service
         {
             try
             {
-                var userId = "60baa127-8a42-487b-9f7c-470bd56d97b6";
+                var userId = "4a14671b-6f40-43d4-95be-5bf6f88a9aa9";
 
                 if (string.IsNullOrEmpty(userId))
                 {
@@ -80,11 +81,15 @@ namespace MetroTicketBE.Application.Service
                     }
                 }
 
-                var items = createLinkDTO.TicketRoute is not null
-                    ? createLinkDTO.TicketRoute.Select(tr => new ItemData(tr.TicketName, tr.Price, 1)).ToList()
-                    : createLinkDTO.SubscriptionTickets?.Select(st => new ItemData(st.TicketName, st.Price, 1)).ToList();
+                var ticketRoute = createLinkDTO.TicketRouteId is not null
+                    ? await _unitOfWork.TicketRouteRepository.GetByIdAsync(createLinkDTO.TicketRouteId)
+                    : null;
 
-                if (items is null || !items.Any())
+                var subscriptionTicket = createLinkDTO.SubscriptionTicketId is not null
+                    ? await _unitOfWork.SubscriptionRepository.GetByIdAsync(createLinkDTO.SubscriptionTicketId)
+                    : null;
+
+                if (ticketRoute is null && subscriptionTicket is null)
                 {
                     return new ResponseDTO
                     {
@@ -94,10 +99,21 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                var ticketPrice = items.Sum(item => item.price);
-                var totalPrice = createLinkDTO.TicketRoute is null
-                    ? ticketPrice
-                    : await CalculatePriceApplyPromo(ticketPrice, promotion?.Id);
+                int ticketRoutePrice = ticketRoute?.Distance is not null
+                    ? await CalculatePriceFromDistance(ticketRoute.Distance)
+                    : 0;
+
+                var items = new List<ItemData> {
+                    ticketRoute is not null
+                    ? new ItemData(ticketRoute.TicketName, 1, ticketRoutePrice)
+                    : new ItemData(subscriptionTicket.TicketName, 1, subscriptionTicket.Price)
+                    };
+
+
+                var ticketPrice = ticketRoutePrice + (subscriptionTicket?.Price ?? 0);
+                var totalPrice = ticketRoute is not null
+                    ? await CalculatePriceApplyPromo(ticketPrice, promotion?.Id)
+                    : ticketPrice;
 
                 // Tạo mã đơn hàng duy nhất dựa trên thời gian hiện tại (orderCode)
                 var orderCode = int.Parse(DateTimeOffset.Now.ToString("ffffff")) + customer.Id.GetHashCode();
@@ -105,7 +121,7 @@ namespace MetroTicketBE.Application.Service
             (
                 orderCode: orderCode,
                 amount: totalPrice,
-                description: createLinkDTO.Description,
+                description: "METRO HCMC",
                 items: items,
                 returnUrl: "https://youtube.com",
                 cancelUrl: "https://facebook.com"
@@ -140,7 +156,7 @@ namespace MetroTicketBE.Application.Service
                 {
                     CustomerId = customer.Id,
                     OrderCode = Convert.ToString(orderCode),
-                    ItemData = items,
+                    ItemDataJson = JsonSerializer.Serialize(items),
                     TotalPrice = totalPrice,
                     PromotionId = promotion?.Id,
                     PaymentMethodId = paymentMethod.Id,
@@ -159,7 +175,7 @@ namespace MetroTicketBE.Application.Service
                     },
                     Message = "Tạo liên kết thanh toán thành công",
                     IsSuccess = true,
-                    StatusCode = 200
+                    StatusCode = 201
                 };
             }
             catch (Exception ex)
@@ -182,7 +198,7 @@ namespace MetroTicketBE.Application.Service
                 {
                     return new ResponseDTO
                     {
-                        Message = "Không tìm thấy giao dịch",
+                        Message = $"Không tìm thấy thông tin giao dịch với ID: {paymentTransactionId}.",
                         IsSuccess = false,
                         StatusCode = 404
                     };
@@ -214,7 +230,8 @@ namespace MetroTicketBE.Application.Service
 
                 if (paymentTransaction.Status is PaymentStatus.Paid)
                 {
-                    var item = paymentTransaction.ItemData as ItemData;
+                    var items = JsonSerializer.Deserialize<List<ItemData>>(paymentTransaction.ItemDataJson ?? "");
+                    var item = items?.FirstOrDefault();
                     if (item is null)
                     {
                         return new ResponseDTO
@@ -228,7 +245,7 @@ namespace MetroTicketBE.Application.Service
                     var ticketRoute = await _unitOfWork.TicketRouteRepository.GetByNameAsync(item.name);
                     var subTicket = await _unitOfWork.SubscriptionRepository.GetByNameAsync(item.name);
 
-                    var expiration = subTicket.TicketType switch
+                    var expiration = subTicket?.TicketType switch
                     {
                         SubscriptionTicketType.Daily => TimeSpan.FromDays(1),
                         SubscriptionTicketType.Monthly => TimeSpan.FromDays(30),
@@ -239,13 +256,14 @@ namespace MetroTicketBE.Application.Service
 
                     Ticket ticket = new Ticket()
                     {
-                        SubscriptionTicketId = subTicket.Id,
-                        TicketRouteId = ticketRoute.Id,
+                        CustomerId = paymentTransaction.CustomerId,
+                        SubscriptionTicketId = subTicket?.Id,
+                        TicketRouteId = ticketRoute?.Id,
                         TransactionId = paymentTransactionId,
-                        TicketSerial = Guid.NewGuid().ToString("N"),
+                        TicketSerial = Guid.NewGuid().ToString("N").Substring(0, 10),
                         StartDate = DateTime.UtcNow,
                         EndDate = DateTime.UtcNow.Add(expiration),
-                        QrCode = Guid.NewGuid().ToString("N").Substring(0, 10)
+                        QrCode = Guid.NewGuid().ToString("N"),
                     };
 
                     await _unitOfWork.TicketRepository.AddAsync(ticket);
@@ -256,7 +274,7 @@ namespace MetroTicketBE.Application.Service
                 {
                     Message = "Cập nhật trạng thái thanh toán thành công",
                     IsSuccess = true,
-                    StatusCode = 200
+                    StatusCode = 201
                 };
             }
             catch (Exception ex)
@@ -289,6 +307,13 @@ namespace MetroTicketBE.Application.Service
             var finalPrice = price * (1 - discountPercentage);
 
             return (int)finalPrice;
+        }
+
+        private async Task<int> CalculatePriceFromDistance(double? distance)
+        {
+            return (await _unitOfWork.FareRuleRepository.GetAllAsync())
+            .Where(fr => fr.MinDistance <= distance && fr.MaxDistance >= distance)
+            .Select(fr => fr.Fare).FirstOrDefault();
         }
     }
 }

@@ -13,6 +13,13 @@ namespace MetroTicketBE.Infrastructure.Repository
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
+        public async Task<TicketRoute?> GetByIdAsync(Guid? id)
+        {
+            if (id == null) return null;
+            return await _context.TicketRoutes
+                .FirstOrDefaultAsync(tr => tr.Id == id);
+        }
+
         public async Task<TicketRoute?> GetByNameAsync(string name)
         {
             return await _context.TicketRoutes
