@@ -249,7 +249,7 @@ namespace MetroTicketBE.Application.Service
                     {
                         SubscriptionTicketType.Daily => TimeSpan.FromDays(1),
                         SubscriptionTicketType.Monthly => TimeSpan.FromDays(30),
-                        SubscriptionTicketType.Quarterly => TimeSpan.FromDays(90),
+                        SubscriptionTicketType.Weekly => TimeSpan.FromDays(7),
                         SubscriptionTicketType.Yearly => TimeSpan.FromDays(365),
                         _ => TimeSpan.FromDays(1)
                     };
