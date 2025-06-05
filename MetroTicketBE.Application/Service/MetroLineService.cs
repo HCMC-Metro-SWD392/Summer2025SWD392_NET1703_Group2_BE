@@ -8,16 +8,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
 
 namespace MetroTicketBE.Application.Service
 {
     public class MetroLineService : IMetroLineService
     {
         private readonly IUnitOfWork _unitOfWork;
-
-        public MetroLineService(IUnitOfWork unitOfWork)
+        private readonly IMapper _mapper;
+        public MetroLineService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         public async Task<ResponseDTO> CreateMetroLine(CreateMetroLineDTO createMetroLineDTO)
@@ -93,7 +95,7 @@ namespace MetroTicketBE.Application.Service
         {
             try
             {
-                var metroLines = await _unitOfWork.MetroLineRepository.GetAllAsync();
+                var metroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
                 if (metroLines is null || !metroLines.Any())
                 {
                     return new ResponseDTO
@@ -103,12 +105,13 @@ namespace MetroTicketBE.Application.Service
                         Message = "Không tìm thấy tuyến Metro nào"
                     };
                 }
-
+                var getMetroLines = _mapper.Map<List<GetMetroLineDTO>>(metroLines);
                 return new ResponseDTO
                 {
+                    Message = "Danh sách tuyến Metro",
                     IsSuccess = true,
                     StatusCode = 200,
-                    Result = metroLines
+                    Result = getMetroLines
                 };
             }
             catch (Exception ex)
@@ -126,7 +129,7 @@ namespace MetroTicketBE.Application.Service
         {
             try
             {
-                var metroLine = await _unitOfWork.MetroLineRepository.GetAsync(ml => ml.Id == metroLineId);
+                var metroLine = await _unitOfWork.MetroLineRepository.GetByIdAsync(metroLineId);
                 if (metroLine is null)
                 {
                     return new ResponseDTO
@@ -136,12 +139,12 @@ namespace MetroTicketBE.Application.Service
                         Message = "Không tìm thấy tuyến Metro"
                     };
                 }
-
+                var getMetroLine = _mapper.Map<GetMetroLineDTO>(metroLine);
                 return new ResponseDTO
                 {
                     IsSuccess = true,
                     StatusCode = 200,
-                    Result = metroLine
+                    Result = getMetroLine
                 };
             }
             catch (Exception ex)

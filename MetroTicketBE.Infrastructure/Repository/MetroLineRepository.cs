@@ -17,11 +17,25 @@ namespace MetroTicketBE.Infrastructure.Repository
         public async Task<List<MetroLine>> GetAllListAsync()
         {
             return await _context.MetroLines
+                .AsNoTracking()
+                .Include(mt => mt.StartStation)
+                .Include(mt => mt.EndStation)
                 .Include(mt => mt.MetroLineStations)
                 .ThenInclude(mts => mts.Station)
                 .ToListAsync();
         }
 
+        public async Task<MetroLine?> GetByIdAsync(Guid id)
+        {
+            return await _context.MetroLines
+                .AsNoTracking()
+                .Include(mt => mt.StartStation)
+                .Include(mt => mt.EndStation)
+                .Include(mt => mt.MetroLineStations)
+                .ThenInclude(mts => mts.Station)
+                .FirstOrDefaultAsync(metroLine => metroLine.Id == id);
+        }
+        
         public async Task<bool> IsExistById(Guid id)
         {
             return await _context.MetroLines
