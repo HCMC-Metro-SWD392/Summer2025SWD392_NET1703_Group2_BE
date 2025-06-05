@@ -13,6 +13,12 @@ namespace MetroTicketBE.Infrastructure.Repository
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
+        public async Task<FareRule?> GetByIdAsync(Guid fareRuleId)
+        {
+            return await _context.FareRules
+                .FirstOrDefaultAsync(fareRule => fareRule.Id == fareRuleId);
+        }
+
         public async Task<bool> IsExistById(Guid fareRuleId)
         {
             return await _context.FareRules
