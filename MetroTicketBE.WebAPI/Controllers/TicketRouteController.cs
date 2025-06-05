@@ -22,10 +22,10 @@ namespace MetroTicketBE.WebAPI.Controllers
             var response = await _ticketRouteService.CraeteTicketRoute(createTicketRouteDTO);
             return StatusCode(response.StatusCode, response);
         }
-        [HttpGet("get-ticket-route-by-from-to")]
-        public async Task<ActionResult<ResponseDTO>> GetTicketRouteByFromTo([FromRoute] Guid startStation, Guid endStation)
+        [HttpGet("get-ticket-route-by-from-to/{startStationId:guid}/{endStationId:guid}")]
+        public async Task<ActionResult<ResponseDTO>> GetTicketRouteByFromTo([FromRoute] Guid startStationId, Guid endStationId)
         {
-            var response = await _ticketRouteService.GetTicketRouteByFromToAsync(startStation, endStation);
+            var response = await _ticketRouteService.GetTicketRouteByFromToAsync(startStationId, endStationId);
             return StatusCode(response.StatusCode, response);
         }
     }

@@ -245,11 +245,13 @@ namespace MetroTicketBE.Application.Service
                     var ticketRoute = await _unitOfWork.TicketRouteRepository.GetByNameAsync(item.name);
                     var subTicket = await _unitOfWork.SubscriptionRepository.GetByNameAsync(item.name);
 
-                    var expiration = subTicket?.TicketType switch
+                    var expiration = ticketRoute is not null
+                        ? TimeSpan.FromDays(30)
+                        : subTicket?.TicketType switch
                     {
                         SubscriptionTicketType.Daily => TimeSpan.FromDays(1),
                         SubscriptionTicketType.Monthly => TimeSpan.FromDays(30),
-                        SubscriptionTicketType.Quarterly => TimeSpan.FromDays(90),
+                        SubscriptionTicketType.Weekly => TimeSpan.FromDays(7),
                         SubscriptionTicketType.Yearly => TimeSpan.FromDays(365),
                         _ => TimeSpan.FromDays(1)
                     };
