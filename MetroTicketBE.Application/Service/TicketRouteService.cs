@@ -36,27 +36,12 @@ namespace MetroTicketBE.Application.Service
 
                 double distance = await CalculateDistanceOfTwoStation(createTicketRouteDTO.StartStationId, createTicketRouteDTO.EndStationId);
 
-                int price = (await _unitOfWork.FareRuleRepository.GetAllAsync())
-                    .Where(fr => fr.MinDistance <= distance && fr.MaxDistance >= distance)
-                    .Select(fr => fr.Fare).FirstOrDefault();
-
-                if (price == 0)
-                {
-                    return new ResponseDTO
-                    {
-                        Message = "Không tìm thấy giá vé phù hợp với khoảng cách.",
-                        IsSuccess = false,
-                        StatusCode = 404
-                    };
-                }
-
                 TicketRoute saveTicketRoute = new TicketRoute
                 {
                     TicketName = $"Vé lượt từ {createTicketRouteDTO.StartStationId} đến {createTicketRouteDTO.EndStationId}",
                     StartStationId = createTicketRouteDTO.StartStationId,
                     EndStationId = createTicketRouteDTO.EndStationId,
                     Distance = distance,
-                    Price = price
                 };
 
                 var getSaveTicketRoute = _mapper.Map<GetTicketRouteDTO>(saveTicketRoute);

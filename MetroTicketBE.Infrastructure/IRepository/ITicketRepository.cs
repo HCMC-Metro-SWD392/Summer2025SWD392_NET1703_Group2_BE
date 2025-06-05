@@ -7,8 +7,7 @@ using System.Threading.Tasks;
 
 namespace MetroTicketBE.Infrastructure.IRepository
 {
-    public interface IPaymentTransactionRepository : IRepository<PaymentTransaction>
+    public interface ITicketRepository : IRepository<Ticket>
     {
-        Task<PaymentTransaction?> GetByIdAsync(Guid id);
     }
 }

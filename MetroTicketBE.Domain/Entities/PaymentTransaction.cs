@@ -1,11 +1,14 @@
 ﻿using MetroTicketBE.Domain.Enum;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MetroTicketBE.Domain.Entities;
 
 public class PaymentTransaction
 {
     public Guid Id { get; set; }    
+    
     public string? OrderCode { get; set; }
+    public string? ItemDataJson { get; set; }
     public Guid CustomerId { get; set; }
     public double TotalPrice { get; set; }
     public Guid? PromotionId { get; set; }
