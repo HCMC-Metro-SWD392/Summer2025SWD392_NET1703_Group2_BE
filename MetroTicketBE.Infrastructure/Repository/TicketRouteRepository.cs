@@ -26,11 +26,11 @@ namespace MetroTicketBE.Infrastructure.Repository
                 .FirstOrDefaultAsync(tr => tr.TicketName == name);
         }
 
-        public async Task<TicketRoute?> GetTicketRouteByStartAndEndStation(Guid StartStation, Guid EndStation)
+        public async Task<TicketRoute?> GetTicketRouteByStartAndEndStation(Guid StartStationId, Guid EndStationId)
         {
             return await _context.TicketRoutes
-                .FirstOrDefaultAsync(tr => tr.StartStation.Id == StartStation &&
-                                           tr.EndStation.Id == EndStation);
+                .FirstOrDefaultAsync(tr => tr.StartStation.Id == StartStationId &&
+                                           tr.EndStation.Id == EndStationId);
         }
     }
 }
