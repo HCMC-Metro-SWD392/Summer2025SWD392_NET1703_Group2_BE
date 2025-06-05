@@ -16,5 +16,15 @@ namespace MetroTicketBE.Infrastructure.Repository
         {
             return await _context.MetroLineStations.AnyAsync(x => x.StationOrder == stationOrder);
         }
+        
+        public async Task<List<Station>> GetStationByMetroLineIdAsync(Guid metroLineId)
+        {
+            var stationsInMetroLine = await _context.MetroLineStations
+                .Where(mls => mls.MetroLineId == metroLineId)
+                .OrderBy(mls => mls.StationOrder) // nếu muốn theo thứ tự đi
+                .Select(mls => mls.Station)
+                .ToListAsync();
+            return stationsInMetroLine;
+        }
     }
 }

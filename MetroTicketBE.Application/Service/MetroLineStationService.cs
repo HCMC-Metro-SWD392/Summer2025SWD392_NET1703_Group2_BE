@@ -79,5 +79,49 @@ namespace MetroTicketBE.Application.Service
                 };
             }
         }
+
+        public async Task<ResponseDTO> GetStationByMetroLineIdAsync(Guid metroLineId)
+        {
+            try
+            {
+                if (metroLineId == Guid.Empty)
+                {
+                    return new ResponseDTO
+                    {
+                        StatusCode = 400,
+                        Message = "ID tuyến metro không hợp lệ",
+                        IsSuccess = false
+                    };
+                }
+
+                var station = await _unitOfWork.MetroLineStationRepository.GetStationByMetroLineIdAsync(metroLineId);
+                if (station == null)
+                {
+                    return new ResponseDTO
+                    {
+                        StatusCode = 404,
+                        Message = "Không tìm thấy trạm metro cho tuyến này",
+                        IsSuccess = false
+                    };
+                }
+
+                return new ResponseDTO
+                {
+                    StatusCode = 200,
+                    Message = "Lấy trạm metro thành công",
+                    IsSuccess = true,
+                    Result = station
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    StatusCode = 500,
+                    Message = $"Lỗi MetroLineStationService: {ex.Message}",
+                    IsSuccess = false
+                };
+            }
+        }
     }
 }

@@ -6,5 +6,6 @@ namespace MetroTicketBE.Application.IService
     public interface IMetroLineStationService
     {
         Task<ResponseDTO> CreateMetroLineStation(CreateMetroLineStationDTO createMetroLineStationDTO);
+        Task<ResponseDTO> GetStationByMetroLineIdAsync(Guid metroLineId);
     }
 }
