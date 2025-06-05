@@ -258,7 +258,7 @@ namespace MetroTicketBE.Application.Service
 
                     Ticket ticket = new Ticket()
                     {
-                        //CustomerId = paymentTransaction.CustomerId,
+                        CustomerId = paymentTransaction.CustomerId,
                         SubscriptionTicketId = subTicket?.Id,
                         TicketRouteId = ticketRoute?.Id,
                         TransactionId = paymentTransactionId,
