@@ -100,7 +100,7 @@ namespace MetroTicketBE.Application.Service
                 }
 
                 int ticketRoutePrice = ticketRoute?.Distance is not null
-                    ? await CalculatePriceFromDistance(ticketRoute.Distance)
+                    ? await _unitOfWork.FareRuleRepository.CalculatePriceFromDistance(ticketRoute.Distance)
                     : 0;
 
                 var items = new List<ItemData> {
@@ -309,13 +309,6 @@ namespace MetroTicketBE.Application.Service
             var finalPrice = price * (1 - discountPercentage);
 
             return (int)finalPrice;
-        }
-
-        private async Task<int> CalculatePriceFromDistance(double? distance)
-        {
-            return (await _unitOfWork.FareRuleRepository.GetAllAsync())
-            .Where(fr => fr.MinDistance <= distance && fr.MaxDistance >= distance)
-            .Select(fr => fr.Fare).FirstOrDefault();
         }
     }
 }

@@ -11,5 +11,6 @@ namespace MetroTicketBE.Infrastructure.IRepository
     {
         Task<bool> IsExistById(Guid fareRuleId);
         Task<FareRule?> GetByIdAsync(Guid fareRuleId);
+        Task<int> CalculatePriceFromDistance(double? distance);
     }
 }
