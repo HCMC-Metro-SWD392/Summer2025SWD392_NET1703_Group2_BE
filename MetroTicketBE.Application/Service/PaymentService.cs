@@ -40,7 +40,7 @@ namespace MetroTicketBE.Application.Service
         {
             try
             {
-                var userId = "4a14671b-6f40-43d4-95be-5bf6f88a9aa9";
+                var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
                 if (string.IsNullOrEmpty(userId))
                 {
@@ -274,7 +274,7 @@ namespace MetroTicketBE.Application.Service
                 await _unitOfWork.SaveAsync();
                 return new ResponseDTO
                 {
-                    Message = "Cập nhật trạng thái thanh toán thành công",
+                    Message = $"Cập nhật trạng thái thanh toán thành công",
                     IsSuccess = true,
                     StatusCode = 201
                 };
