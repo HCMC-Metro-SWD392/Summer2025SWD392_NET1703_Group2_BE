@@ -71,12 +71,17 @@ namespace MetroTicketBE.Application.Service
 
                 if (ticketRoute is not null)
                 {
+                    int ticketRoutePrice = await _unitOfWork.FareRuleRepository.CalculatePriceFromDistance(ticketRoute.Distance);
                     return new ResponseDTO
                     {
                         Message = "Lấy vé lượt thành công",
                         IsSuccess = true,
                         StatusCode = 200,
-                        Result = ticketRoute
+                        Result = new
+                        {
+                            TicketRouteId = ticketRoute.Id,
+                            Price = ticketRoutePrice
+                        }
                     };
                 }
 

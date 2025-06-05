@@ -24,5 +24,12 @@ namespace MetroTicketBE.Infrastructure.Repository
             return await _context.FareRules
                 .AnyAsync(fareRule => fareRule.Id == fareRuleId);
         }
+
+        public async Task<int> CalculatePriceFromDistance(double? distance)
+        {
+            return (await this.GetAllAsync())
+            .Where(fr => fr.MinDistance <= distance && fr.MaxDistance >= distance)
+            .Select(fr => fr.Fare).FirstOrDefault();
+        }
     }
 }
