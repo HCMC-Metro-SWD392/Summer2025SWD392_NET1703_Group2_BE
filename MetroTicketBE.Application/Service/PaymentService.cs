@@ -116,7 +116,7 @@ namespace MetroTicketBE.Application.Service
                     : ticketPrice;
 
                 // Tạo mã đơn hàng duy nhất dựa trên thời gian hiện tại (orderCode)
-                var orderCode = int.Parse(DateTimeOffset.Now.ToString("ffffff")) + customer.Id.GetHashCode();
+                var orderCode = Math.Abs(int.Parse(DateTimeOffset.Now.ToString("ffffff")) + customer.Id.GetHashCode());
                 PaymentData paymentLinkRequest = new PaymentData
             (
                 orderCode: orderCode,
