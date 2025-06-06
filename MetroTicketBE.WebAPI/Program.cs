@@ -1,4 +1,5 @@
 using System.Text;
+using MetroTicketBE.Application.Hub;
 using MetroTicketBE.Application.Mappings;
 using MetroTicketBE.Application.Service;
 using MetroTicketBE.Domain.Constants;
@@ -93,7 +94,8 @@ public class Program
 
         app.UseAuthentication();
         app.UseAuthorization();
-        app.MapHub<ChatHub>("/chatHub");
+        app.MapHub<ChatRoomHub>("/chatroomhub");
+        app.MapHub<LobbyHub>("/lobbyhub");
         app.MapControllers();
 
         app.Run();
