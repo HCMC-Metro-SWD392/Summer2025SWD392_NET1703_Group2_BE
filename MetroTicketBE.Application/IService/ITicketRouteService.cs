@@ -9,7 +9,7 @@ namespace MetroTicketBE.Application.IService
     {
         Task<ResponseDTO> CraeteTicketRoute(CreateTicketRouteDTO createTicketRouteDTO);
         Task<ResponseDTO> GetTicketRouteByFromToAsync(Guid StartStation, Guid EndStation);
-        Task<ResponseDTO> GetAllTicketRoutesInActiveAsync
+        Task<ResponseDTO> GetAllTicketRoutesAsync
             (
                 ClaimsPrincipal user,
                 string? filterOn,

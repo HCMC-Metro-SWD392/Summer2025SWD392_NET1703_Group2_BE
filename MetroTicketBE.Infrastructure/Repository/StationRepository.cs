@@ -56,9 +56,12 @@ namespace MetroTicketBE.Infrastructure.Repository
                 .AnyAsync(s => s.Address == address);
         }
 
-        public async void Update(Station station)
+        public Task<string?> GetNameById(Guid stationId)
         {
-            _context.Stations.Update(station);
+            return _context.Stations
+                .Where(s => s.Id == stationId)
+                .Select(s => s.Name)
+                .FirstOrDefaultAsync();
         }
     }
 }
