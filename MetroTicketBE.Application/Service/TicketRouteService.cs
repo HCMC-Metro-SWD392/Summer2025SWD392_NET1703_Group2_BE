@@ -1,10 +1,14 @@
 ﻿using AutoMapper;
 using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.DTO.Auth;
+using MetroTicketBE.Domain.DTO.Ticket;
 using MetroTicketBE.Domain.DTO.TicketRoute;
 using MetroTicketBE.Domain.Entities;
+using MetroTicketBE.Domain.Enum;
+using MetroTicketBE.Domain.Enums;
 using MetroTicketBE.Infrastructure.IRepository;
 using MetroTicketBE.WebAPI.Extentions;
+using System.Security.Claims;
 
 namespace MetroTicketBE.Application.Service
 {
@@ -60,6 +64,106 @@ namespace MetroTicketBE.Application.Service
             catch (Exception ex)
             {
                 throw new Exception("Đã xảy ra lỗi khi tạo vé lượt: ", ex);
+            }
+        }
+
+        public async Task<ResponseDTO> GetAllTicketRoutesInActiveAsync(
+            ClaimsPrincipal user,
+            string? filterOn,
+            string? filterQuery,
+            double? fromPrice,
+            double? toPrice,
+            string? sortBy,
+            bool? isAcsending,
+            TicketRoutStatus ticketType,
+            int pageNumber,
+            int pageSize)
+        {
+            try
+            {
+                var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Người dùng không hợp lệ.",
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
+                var customer = await _unitOfWork.CustomerRepository.GetByUserIdAsync(userId);
+                if (customer is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Không tìm thấy khách hàng.",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+
+                var tickets = (await _unitOfWork.TicketRepository.GetAllAsync(includeProperties: "ApplicationUser"))
+                    .Where(t => t.CustomerId == customer.Id && t.TicketRoute?.Status == ticketType);
+
+                if (!string.IsNullOrEmpty(filterOn) && !string.IsNullOrEmpty(filterQuery))
+                {
+                    string filter = filterOn.Trim().ToLower();
+                    string query = filterQuery.Trim();
+
+                    tickets = filter switch
+                    {
+                        "ticketname" => tickets.Where(t => t.TicketRoute.TicketName.Contains(query, StringComparison.CurrentCultureIgnoreCase)),
+                        "startstation" => tickets.Where(t => t.TicketRoute.StartStation.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase)),
+                        "endstation" => tickets.Where(t => t.TicketRoute.EndStation.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase)),
+                        _ => tickets
+                    };
+                }
+
+                if (!string.IsNullOrEmpty(sortBy))
+                {
+                    tickets = sortBy.Trim().ToLower() switch
+                    {
+                        "ticketname" => isAcsending is true ? tickets.OrderBy(t => t.TicketRoute.TicketName) : tickets.OrderByDescending(t => t.TicketRoute.TicketName),
+                        "startstation" => isAcsending is true ? tickets.OrderBy(t => t.TicketRoute.StartStation.Name) : tickets.OrderByDescending(t => t.TicketRoute.StartStation.Name),
+                        "endstation" => isAcsending is true ? tickets.OrderBy(t => t.TicketRoute.EndStation.Name) : tickets.OrderByDescending(t => t.TicketRoute.EndStation.Name),
+                        _ => tickets
+                    };
+                }
+
+                if (pageNumber > 0 && pageSize > 0)
+                {
+                    tickets = tickets.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+                }
+
+                if (tickets is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Không tìm thấy vé lượt nào.",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+
+                var getTickets = _mapper.Map<List<GetTicketDTO>>(tickets);
+
+                return new ResponseDTO
+                {
+                    Message = "Lấy danh sách vé lượt thành công",
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Result = getTickets
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    Message = "Đã xảy ra lỗi khi lấy danh sách vé lượt: " + ex.Message,
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
             }
         }
 

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using MetroTicketBE.Domain.DTO.MetroLine;
 using MetroTicketBE.Domain.DTO.MetroLineStation;
 using MetroTicketBE.Domain.DTO.Station;
+using MetroTicketBE.Domain.DTO.Ticket;
 
 namespace MetroTicketBE.Application.Mappings
 {
@@ -20,6 +21,7 @@ namespace MetroTicketBE.Application.Mappings
             CreateMap<MetroLine, GetMetroLineDTO>();
             CreateMap<Station, GetStationDTO>();
             CreateMap<MetroLineStation, GetMetroLineStationDTO>();
+            CreateMap<Ticket, GetTicketDTO>();
         }
     }
 }
