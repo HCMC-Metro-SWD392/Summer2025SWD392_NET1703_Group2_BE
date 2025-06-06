@@ -83,4 +83,37 @@ public SubscriptionService(IUnitOfWork unitOfWork)
         }
     }
 
+    public async Task<ResponseDTO> GetAllSubscriptionsAsync()
+    {
+        try
+        {
+            var subscriptions = await _unitOfWork.SubscriptionRepository.GetAllAsync();
+            if (subscriptions == null || !subscriptions.Any())
+            {
+                return new ResponseDTO()
+                {
+                    IsSuccess = false,
+                    StatusCode = 404,
+                    Message = "Không tìm thấy vé nào"
+                };
+            }
+            return new ResponseDTO()
+            {
+                IsSuccess = true,
+                StatusCode = 200,
+                Message = "Lấy danh sách vé thành công",
+                Result = subscriptions
+            };
+            
+        }catch (Exception ex)
+        {
+            return new ResponseDTO()
+            {
+                IsSuccess = false,
+                StatusCode = 500,
+                Message = "Lỗi khi lấy danh sách vé: " + ex.Message
+            };
+        }
+    }
+
 }

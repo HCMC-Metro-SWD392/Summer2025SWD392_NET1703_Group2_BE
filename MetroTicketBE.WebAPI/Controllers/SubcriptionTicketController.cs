@@ -36,4 +36,17 @@ public class SubcriptionTicketController: ControllerBase
         
         return BadRequest(response);
     }
+    
+    [HttpGet]
+    [Route("all")]
+    public async Task<IActionResult> GetAllSubscriptionsAsync()
+    {
+        var response = await _subscriptionService.GetAllSubscriptionsAsync();
+        if (response.IsSuccess)
+        {
+            return Ok(response);
+        }
+        
+        return BadRequest(response);
+    }
 }
