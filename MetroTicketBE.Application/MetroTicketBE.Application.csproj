@@ -9,6 +9,7 @@
     <ItemGroup>
       <PackageReference Include="AutoMapper" Version="14.0.0" />
       <PackageReference Include="AWSSDK.SimpleEmailV2" Version="4.0.0.4" />
+      <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
       <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.11.0" />
       <PackageReference Include="payOS" Version="1.0.9" />
       <PackageReference Include="StackExchange.Redis" Version="2.8.37" />

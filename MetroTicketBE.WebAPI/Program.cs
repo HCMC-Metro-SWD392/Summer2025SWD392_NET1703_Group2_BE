@@ -1,9 +1,14 @@
+using System.Text;
 using MetroTicketBE.Application.Mappings;
+using MetroTicketBE.Application.Service;
 using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Infrastructure.Context;
 using MetroTicketBE.WebAPI.Extentions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace MetroTicketBE.WebAPI;
 
@@ -18,7 +23,8 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddHttpClient();
-
+        
+        builder.Services.AddSignalR();
         builder.Services.AddDbContext<ApplicationDBContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString(StaticConnectionString.POSTGRE_DefaultConnection)));
 
@@ -45,7 +51,6 @@ public class Program
         builder.AddAppAuthentication();
 
         builder.Services.AddAuthorization();
-
         // Register SwaggerGen and config for Authorize
         // Base on Extensions.WebApplicationBuilderExtensions
         builder.AddSwaggerGen();
@@ -55,7 +60,7 @@ public class Program
             {
                 options.AddPolicy("AllowFrontend", policyBuilder =>
                 {
-                    policyBuilder.WithOrigins("https://localhost:5173")
+                    policyBuilder.WithOrigins("http://localhost:5173")
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials();
@@ -88,7 +93,7 @@ public class Program
 
         app.UseAuthentication();
         app.UseAuthorization();
-
+        app.MapHub<ChatHub>("/chatHub");
         app.MapControllers();
 
         app.Run();
