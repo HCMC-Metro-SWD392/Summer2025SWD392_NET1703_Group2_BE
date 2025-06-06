@@ -13,6 +13,6 @@ namespace MetroTicketBE.Infrastructure.IRepository
         Task<bool> IsExistByName(string stationName);
         Task<bool> IsExistById(Guid stationId);
         Task<bool> IsExistByAddress(string stationAddress);
-        void Update(Station station);
+        Task<string?> GetNameById(Guid stationId);
     }
 }

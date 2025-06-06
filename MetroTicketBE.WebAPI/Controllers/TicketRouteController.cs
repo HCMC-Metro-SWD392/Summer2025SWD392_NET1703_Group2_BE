@@ -31,7 +31,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         }
 
         [HttpGet("get-all-ticket-routes")]
-        public async Task<ActionResult<ResponseDTO>> GetAllTicketRoutesInActiveAsync(
+        public async Task<ActionResult<ResponseDTO>> GetAllTicketRoutesAsync(
             [FromQuery] string? filterOn,
             [FromQuery] string? filterQuery,
             [FromQuery] double? fromPrice,
@@ -42,7 +42,7 @@ namespace MetroTicketBE.WebAPI.Controllers
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10)
         {
-            var response = await _ticketRouteService.GetAllTicketRoutesInActiveAsync(User, filterOn, filterQuery, fromPrice, toPrice, sortBy, isAcsending, status, pageNumber, pageSize);
+            var response = await _ticketRouteService.GetAllTicketRoutesAsync(User, filterOn, filterQuery, fromPrice, toPrice, sortBy, isAcsending, status, pageNumber, pageSize);
             return StatusCode(response.StatusCode, response);
         }
     }

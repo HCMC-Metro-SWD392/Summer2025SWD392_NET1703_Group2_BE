@@ -40,9 +40,32 @@ namespace MetroTicketBE.Application.Service
 
                 double distance = await CalculateDistanceOfTwoStation(createTicketRouteDTO.StartStationId, createTicketRouteDTO.EndStationId);
 
+                var startStation = await _unitOfWork.StationRepository.GetNameById(createTicketRouteDTO.StartStationId);
+                if (string.IsNullOrEmpty(startStation))
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Trạm bắt đầu không hợp lệ.",
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
+                var endStation = await _unitOfWork.StationRepository.GetNameById(createTicketRouteDTO.EndStationId);
+
+                if (string.IsNullOrEmpty(endStation))
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Trạm kết thúc không hợp lệ.",
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
                 TicketRoute saveTicketRoute = new TicketRoute
                 {
-                    TicketName = $"Vé lượt từ {createTicketRouteDTO.StartStationId} đến {createTicketRouteDTO.EndStationId}",
+                    TicketName = $"Vé lượt từ {startStation} đến {endStation}",
                     StartStationId = createTicketRouteDTO.StartStationId,
                     EndStationId = createTicketRouteDTO.EndStationId,
                     Distance = distance,
@@ -67,7 +90,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> GetAllTicketRoutesInActiveAsync(
+        public async Task<ResponseDTO> GetAllTicketRoutesAsync(
             ClaimsPrincipal user,
             string? filterOn,
             string? filterQuery,
@@ -103,7 +126,7 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                var tickets = (await _unitOfWork.TicketRepository.GetAllAsync(includeProperties: "ApplicationUser"))
+                var tickets = (await _unitOfWork.TicketRepository.GetAllAsync(includeProperties: "TicketRoute"))
                     .Where(t => t.CustomerId == customer.Id && t.TicketRoute?.Status == ticketType);
 
                 if (!string.IsNullOrEmpty(filterOn) && !string.IsNullOrEmpty(filterQuery))
@@ -136,7 +159,7 @@ namespace MetroTicketBE.Application.Service
                     tickets = tickets.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
                 }
 
-                if (tickets is null)
+                if (tickets is null || !tickets.Any())
                 {
                     return new ResponseDTO
                     {
@@ -145,6 +168,7 @@ namespace MetroTicketBE.Application.Service
                         StatusCode = 404
                     };
                 }
+
 
                 var getTickets = _mapper.Map<List<GetTicketDTO>>(tickets);
 
