@@ -189,11 +189,11 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> UpdatePaymentTickerStatusPayOS(ClaimsPrincipal user, long orderCode)
+        public async Task<ResponseDTO> UpdatePaymentTickerStatusPayOS(ClaimsPrincipal user, string orderCode)
         {
             try
             {
-                var paymentTransaction = await _unitOfWork.PaymentTransactionRepository.GetByOrderCode(orderCode.ToString());
+                var paymentTransaction = await _unitOfWork.PaymentTransactionRepository.GetByOrderCode(orderCode);
                 if (paymentTransaction is null)
                 {
                     return new ResponseDTO
@@ -203,7 +203,7 @@ namespace MetroTicketBE.Application.Service
                         StatusCode = 404
                     };
                 }
-                var paymentStatus = _payos.getPaymentLinkInformation(orderCode);
+                var paymentStatus = _payos.getPaymentLinkInformation(long.Parse(orderCode));
 
                 if (paymentStatus is null)
                 {
