@@ -116,7 +116,7 @@ namespace MetroTicketBE.Application.Service
                     : ticketPrice;
 
                 // Tạo mã đơn hàng duy nhất dựa trên thời gian hiện tại (orderCode)
-                var orderCode = Math.Abs(int.Parse(DateTimeOffset.Now.ToString("ffffff")) + customer.Id.GetHashCode());
+                var orderCode = Math.Abs(int.Parse(DateTimeOffset.Now.ToString("fffffff")) + customer.Id.GetHashCode());
                 PaymentData paymentLinkRequest = new PaymentData
             (
                 orderCode: orderCode,
@@ -189,22 +189,21 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> UpdatePaymentTickerStatusPayOS(ClaimsPrincipal user, Guid paymentTransactionId)
+        public async Task<ResponseDTO> UpdatePaymentTickerStatusPayOS(ClaimsPrincipal user, long orderCode)
         {
             try
             {
-                var paymentTransaction = await _unitOfWork.PaymentTransactionRepository.GetByIdAsync(paymentTransactionId);
+                var paymentTransaction = await _unitOfWork.PaymentTransactionRepository.GetByOrderCode(orderCode.ToString());
                 if (paymentTransaction is null)
                 {
                     return new ResponseDTO
                     {
-                        Message = $"Không tìm thấy thông tin giao dịch với ID: {paymentTransactionId}.",
+                        Message = $"Không tìm thấy mã giao dịch: {orderCode}.",
                         IsSuccess = false,
                         StatusCode = 404
                     };
                 }
-                var oderCode = long.Parse(paymentTransaction.OrderCode ?? throw new Exception("Mã giao dịch không tồn tại"));
-                var paymentStatus = _payos.getPaymentLinkInformation(oderCode);
+                var paymentStatus = _payos.getPaymentLinkInformation(orderCode);
 
                 if (paymentStatus is null)
                 {
@@ -261,7 +260,7 @@ namespace MetroTicketBE.Application.Service
                         CustomerId = paymentTransaction.CustomerId,
                         SubscriptionTicketId = subTicket?.Id,
                         TicketRouteId = ticketRoute?.Id,
-                        TransactionId = paymentTransactionId,
+                        TransactionId = paymentTransaction.Id,
                         TicketSerial = Guid.NewGuid().ToString("N").Substring(0, 10),
                         StartDate = DateTime.UtcNow,
                         EndDate = DateTime.UtcNow.Add(expiration),
