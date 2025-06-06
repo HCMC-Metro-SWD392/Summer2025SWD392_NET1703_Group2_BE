@@ -1,6 +1,7 @@
 ﻿using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.TicketRoute;
+using MetroTicketBE.Domain.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,6 +27,22 @@ namespace MetroTicketBE.WebAPI.Controllers
         public async Task<ActionResult<ResponseDTO>> GetTicketRouteByFromTo([FromRoute] Guid startStationId, Guid endStationId)
         {
             var response = await _ticketRouteService.GetTicketRouteByFromToAsync(startStationId, endStationId);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpGet("get-all-ticket-routes")]
+        public async Task<ActionResult<ResponseDTO>> GetAllTicketRoutesInActiveAsync(
+            [FromQuery] string? filterOn,
+            [FromQuery] string? filterQuery,
+            [FromQuery] double? fromPrice,
+            [FromQuery] double? toPrice,
+            [FromQuery] string? sortBy,
+            [FromQuery] bool? isAcsending,
+            [FromQuery] TicketRoutStatus status = TicketRoutStatus.Inactive,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var response = await _ticketRouteService.GetAllTicketRoutesInActiveAsync(User, filterOn, filterQuery, fromPrice, toPrice, sortBy, isAcsending, status, pageNumber, pageSize);
             return StatusCode(response.StatusCode, response);
         }
     }

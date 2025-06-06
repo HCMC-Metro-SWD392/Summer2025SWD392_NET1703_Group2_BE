@@ -8,8 +8,8 @@ namespace MetroTicketBE.Domain.Enums
 {
     public enum TicketRoutStatus
     {
-        Active = 0,       // Đang hoạt động
-        Inactive = 1,     // Không hoạt động
+        Inactive = 0,     // Không hoạt động
+        Active = 1,       // Đang hoạt động
         Deleted = 2,      // Đã xóa
     }
 }
