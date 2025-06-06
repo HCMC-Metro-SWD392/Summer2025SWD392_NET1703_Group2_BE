@@ -123,8 +123,8 @@ namespace MetroTicketBE.Application.Service
                 amount: totalPrice,
                 description: "METRO HCMC",
                 items: items,
-                returnUrl: "https://youtube.com",
-                cancelUrl: "https://facebook.com"
+                returnUrl: StaticURL.Frontend_Url_Return_Payment,
+                cancelUrl: StaticURL.Frontend_Url_Return_Payment
             );
 
                 if (paymentLinkRequest is null)
