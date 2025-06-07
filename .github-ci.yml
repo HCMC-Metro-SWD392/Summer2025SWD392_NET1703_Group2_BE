@@ -1,0 +1,25 @@
+stages:
+  - deploy_public
+  - deploy_private
+  - build_react
+  - build_aspnet
+  - restart_services
+
+deploy_public_to_private:
+  stage: deploy_public
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh-client git
+    - mkdir -p ~/.ssh
+    - echo "$EC2_SSH_PUBLIC_KEY" | tr -d '\r' > ~/.ssh/id_ed25519  # Dùng private key ec2 public
+    - chmod 700 ~/.ssh
+    - chmod 600 ~/.ssh/id_ed25519
+    - ssh-keyscan -H "$EC2_HOST_PUBLIC" >> ~/.ssh/known_hosts
+  script:
+    - ssh -v "$EC2_USER@$EC2_HOST_PUBLIC" "rm -rf Summer2025SWD392_NET1703_Group2_BE"
+    - ssh -v "$EC2_USER@$EC2_HOST_PUBLIC" "sudo yum install -y git"
+    - ssh -v "$EC2_USER@$EC2_HOST_PUBLIC" "curl -sL https://rpm.nodesource.com/setup_18.x | sudo -E bash -"
+    - ssh -v "$EC2_USER@$EC2_HOST_PUBLIC" "sudo dnf install -y nodejs"
+    - ssh -v "$EC2_USER@$EC2_HOST_PUBLIC" "git clone git@github.com:HCMC-Metro-SWD392/Summer2025SWD392_NET1703_Group2_BE.git"
+    - ssh -v "$EC2_USER@$EC2_HOST_PUBLIC" "cd Summer2025SWD392_NET1703_Group2_BE; sudo yum install -y dotnet-sdk-8.0"
+    - ssh -v "$EC2_USER@$EC2_HOST_PUBLIC" "cd Summer2025SWD392_NET1703_Group2_BE; dotnet publish -c Release"
