@@ -255,12 +255,17 @@ namespace MetroTicketBE.Application.Service
                         _ => TimeSpan.FromDays(1)
                     };
 
+                    int ticketPrice = ticketRoute?.Distance is not null
+                    ? await _unitOfWork.FareRuleRepository.CalculatePriceFromDistance(ticketRoute.Distance)
+                    : subTicket.Price;
+
                     Ticket ticket = new Ticket()
                     {
                         CustomerId = paymentTransaction.CustomerId,
                         SubscriptionTicketId = subTicket?.Id,
                         TicketRouteId = ticketRoute?.Id,
                         TransactionId = paymentTransaction.Id,
+                        Price = ticketPrice,
                         TicketSerial = Guid.NewGuid().ToString("N").Substring(0, 10),
                         StartDate = DateTime.UtcNow,
                         EndDate = DateTime.UtcNow.Add(expiration),
