@@ -2,6 +2,7 @@
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.TicketRoute;
 using MetroTicketBE.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -30,7 +31,9 @@ namespace MetroTicketBE.WebAPI.Controllers
             return StatusCode(response.StatusCode, response);
         }
 
-        [HttpGet("get-all-ticket-routes")]
+        [HttpGet]
+        [Route("get-all-ticket-routes")]
+        [Authorize]
         public async Task<ActionResult<ResponseDTO>> GetAllTicketRoutesAsync(
             [FromQuery] string? filterOn,
             [FromQuery] string? filterQuery,
