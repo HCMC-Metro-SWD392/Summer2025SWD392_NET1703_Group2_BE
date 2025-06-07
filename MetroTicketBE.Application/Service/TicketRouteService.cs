@@ -126,7 +126,7 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                var tickets = (await _unitOfWork.TicketRepository.GetAllAsync(includeProperties: "TicketRoute"))
+                var tickets = (await _unitOfWork.TicketRepository.GetAllAsync(includeProperties: "TicketRoute,TicketRoute.StartStation,TicketRoute.EndStation"))
                     .Where(t => t.CustomerId == customer.Id && t.TicketRoute?.Status == ticketType);
 
                 if (!string.IsNullOrEmpty(filterOn) && !string.IsNullOrEmpty(filterQuery))

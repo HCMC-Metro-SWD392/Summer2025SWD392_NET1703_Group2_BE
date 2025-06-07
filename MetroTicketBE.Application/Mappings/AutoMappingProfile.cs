@@ -22,6 +22,10 @@ namespace MetroTicketBE.Application.Mappings
             CreateMap<Station, GetStationDTO>();
             CreateMap<MetroLineStation, GetMetroLineStationDTO>();
             CreateMap<Ticket, GetTicketDTO>();
+
+            CreateMap<Ticket, GetTicketDTO>()
+                .ForMember(dest => dest.FromStation, opt => opt.MapFrom(src => src.TicketRoute.StartStation.Name))
+                .ForMember(dest => dest.ToStation, opt => opt.MapFrom(src => src.TicketRoute.EndStation.Name));
         }
     }
 }

@@ -70,7 +70,7 @@ public class Program
         });
 
         var app = builder.Build();
-        ApplyMigration();
+        //ApplyMigration();
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
@@ -93,17 +93,17 @@ public class Program
 
         app.Run();
 
-        void ApplyMigration()
-        {
-            using (var scope = app.Services.CreateScope())
-            {
-                var context = scope.ServiceProvider.GetRequiredService<ApplicationDBContext>();
+        //void ApplyMigration()
+        //{
+        //    using (var scope = app.Services.CreateScope())
+        //    {
+        //        var context = scope.ServiceProvider.GetRequiredService<ApplicationDBContext>();
 
-                if (context.Database.GetPendingMigrations().Any())
-                {
-                    context.Database.Migrate();
-                }
-            }
-        }
+        //        if (context.Database.GetPendingMigrations().Any())
+        //        {
+        //            context.Database.Migrate();
+        //        }
+        //    }
+        //}
     }
 }

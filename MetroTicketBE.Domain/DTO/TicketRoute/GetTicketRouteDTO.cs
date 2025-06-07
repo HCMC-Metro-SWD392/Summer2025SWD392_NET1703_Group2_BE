@@ -14,7 +14,6 @@ namespace MetroTicketBE.Domain.DTO.TicketRoute
         public Guid StartStationId { get; set; }
         public Guid EndStationId { get; set; }
         public double? Distance { get; set; }
-        public int Price { get; set; }
         public TicketRoutStatus? Status { get; set; }
     }
 }
