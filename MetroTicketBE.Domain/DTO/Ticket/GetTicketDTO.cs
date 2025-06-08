@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MetroTicketBE.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,5 +19,6 @@ namespace MetroTicketBE.Domain.DTO.Ticket
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public string QrCode { get; set; } = null!;
+        public TicketRouteStatus? TicketRtStatus { get; set; }
     }
 }

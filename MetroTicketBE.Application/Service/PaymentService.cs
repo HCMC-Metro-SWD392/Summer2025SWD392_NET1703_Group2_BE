@@ -20,6 +20,7 @@ namespace MetroTicketBE.Application.Service
         private readonly IConfiguration _configuration;
         private readonly PayOS _payos;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly Random random;
 
         public PaymentService
         (
@@ -35,6 +36,7 @@ namespace MetroTicketBE.Application.Service
                     _configuration["Payos:CHECKSUM_KEY"] ?? throw new Exception("Cannot find PAYOS_CHECKSUM_KEY")
                 );
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            random = new Random();
         }
         public async Task<ResponseDTO> CreateLinkPaymentTicketRoutePayOS(ClaimsPrincipal user, CreateLinkPaymentRoutePayOSDTO createLinkDTO)
         {
@@ -266,7 +268,7 @@ namespace MetroTicketBE.Application.Service
                         TicketRouteId = ticketRoute?.Id,
                         TransactionId = paymentTransaction.Id,
                         Price = ticketPrice,
-                        TicketSerial = Guid.NewGuid().ToString("N").Substring(0, 10),
+                        TicketSerial = string.Concat(Enumerable.Range(0, 10).Select(_ => random.Next(0, 10).ToString())),
                         StartDate = DateTime.UtcNow,
                         EndDate = DateTime.UtcNow.Add(expiration),
                         QrCode = Guid.NewGuid().ToString("N"),
@@ -300,7 +302,8 @@ namespace MetroTicketBE.Application.Service
             {
                 return price;
             }
-            // Kiểm tra xem có tồn tại mã khuyến mãi không
+
+            // Kiểm tra xem có tồn tại mã khuyến mãi không  
             var promotion = await _unitOfWork.PromotionRepository.GetByIdAsync(promotionId.Value);
 
             if (promotion is null)
@@ -308,9 +311,9 @@ namespace MetroTicketBE.Application.Service
                 return price;
             }
 
-            var finalPrice = promotion.PromotionType == PromotionType.Percentage && promotion.Percentage is not null
-                ? price * (1 - promotion.Percentage / 100m)
-                : price - promotion.FixedAmount;
+            var finalPrice = promotion.PromotionType == PromotionType.Percentage && promotion.Percentage.HasValue
+                ? price * (1 - promotion.Percentage.Value / 100m)
+                : price - (promotion.FixedAmount ?? 0);
 
             return (int)finalPrice;
         }

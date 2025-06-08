@@ -1,4 +1,6 @@
 ﻿
+using MetroTicketBE.Domain.Enums;
+
 namespace MetroTicketBE.Domain.Entities;
 
 public class Ticket
@@ -12,6 +14,7 @@ public class Ticket
     public required string TicketSerial { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
+    public TicketRouteStatus? TicketRtStatus { get; set; } = TicketRouteStatus.Inactive;
     public string QrCode { get; set; } = null!;
 
     public SubscriptionTicket? SubscriptionTicket { get; set; } = null!;

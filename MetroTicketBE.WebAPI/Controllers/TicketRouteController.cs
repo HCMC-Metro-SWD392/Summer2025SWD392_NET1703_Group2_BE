@@ -27,25 +27,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [HttpGet("get-ticket-route-by-from-to/{startStationId:guid}/{endStationId:guid}")]
         public async Task<ActionResult<ResponseDTO>> GetTicketRouteByFromTo([FromRoute] Guid startStationId, Guid endStationId)
         {
-            var response = await _ticketRouteService.GetTicketRouteByFromToAsync(startStationId, endStationId);
-            return StatusCode(response.StatusCode, response);
-        }
-
-        [HttpGet]
-        [Route("get-all-ticket-routes")]
-        [Authorize]
-        public async Task<ActionResult<ResponseDTO>> GetAllTicketRoutesAsync(
-            [FromQuery] string? filterOn,
-            [FromQuery] string? filterQuery,
-            [FromQuery] double? fromPrice,
-            [FromQuery] double? toPrice,
-            [FromQuery] string? sortBy,
-            [FromQuery] bool? isAcsending,
-            [FromQuery] TicketRoutStatus status = TicketRoutStatus.Inactive,
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 10)
-        {
-            var response = await _ticketRouteService.GetAllTicketRoutesAsync(User, filterOn, filterQuery, fromPrice, toPrice, sortBy, isAcsending, status, pageNumber, pageSize);
+            var response = await _ticketRouteService.GetTicketRouteByFromTo(startStationId, endStationId);
             return StatusCode(response.StatusCode, response);
         }
     }
