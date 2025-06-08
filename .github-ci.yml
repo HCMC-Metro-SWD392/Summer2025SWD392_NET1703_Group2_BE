@@ -1,25 +1,75 @@
-stages:
-  - deploy_public
-  - deploy_private
-  - build_react
-  - build_aspnet
-  - restart_services
+name: Backend CI/CD
 
-deploy_public_to_private:
-  stage: deploy_public
-  image: alpine:latest
-  before_script:
-    - apk add --no-cache openssh-client git
-    - mkdir -p ~/.ssh
-    - echo "$EC2_SSH_PUBLIC_KEY" | tr -d '\r' > ~/.ssh/id_ed25519  # Dùng private key ec2 public
-    - chmod 700 ~/.ssh
-    - chmod 600 ~/.ssh/id_ed25519
-    - ssh-keyscan -H "$EC2_HOST_PUBLIC" >> ~/.ssh/known_hosts
-  script:
-    - ssh -v "$EC2_USER@$EC2_HOST_PUBLIC" "rm -rf Summer2025SWD392_NET1703_Group2_BE"
-    - ssh -v "$EC2_USER@$EC2_HOST_PUBLIC" "sudo yum install -y git"
-    - ssh -v "$EC2_USER@$EC2_HOST_PUBLIC" "curl -sL https://rpm.nodesource.com/setup_18.x | sudo -E bash -"
-    - ssh -v "$EC2_USER@$EC2_HOST_PUBLIC" "sudo dnf install -y nodejs"
-    - ssh -v "$EC2_USER@$EC2_HOST_PUBLIC" "git clone git@github.com:HCMC-Metro-SWD392/Summer2025SWD392_NET1703_Group2_BE.git"
-    - ssh -v "$EC2_USER@$EC2_HOST_PUBLIC" "cd Summer2025SWD392_NET1703_Group2_BE; sudo yum install -y dotnet-sdk-8.0"
-    - ssh -v "$EC2_USER@$EC2_HOST_PUBLIC" "cd Summer2025SWD392_NET1703_Group2_BE; dotnet publish -c Release"
+on:
+  push:
+    branches:
+      - CICD
+
+env:
+  PROJECT_NAME: Summer2025SWD392_NET1703_Group2_BE
+  DOTNET_VERSION: 8.0.x
+  EC2_HOST: ${{ secrets.EC2_HOST_PUBLIC }}
+  EC2_USER: ${{ secrets.EC2_USER }}
+  SSH_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+
+jobs:
+  build:
+    name: Build ASP.NET Core
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build project
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Publish project
+        run: dotnet publish -c Release -o ./publish
+
+      - name: Create zip artifact
+        run: zip -r publish.zip ./publish
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-publish
+          path: publish.zip
+
+  deploy:
+    name: Deploy to EC2
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download published artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: backend-publish
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${SSH_KEY}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
+
+      - name: Upload to EC2
+        run: |
+          scp publish.zip ${EC2_USER}@${EC2_HOST}:/home/${EC2_USER}/
+          ssh ${EC2_USER}@${EC2_HOST} "
+            rm -rf ~/deploy_temp &&
+            mkdir -p ~/deploy_temp &&
+            unzip -o publish.zip -d ~/deploy_temp &&
+            sudo systemctl stop kestrel-${{ env.PROJECT_NAME }}.service &&
+            sudo cp -r ~/deploy_temp/* /var/www/${{ env.PROJECT_NAME }}/ &&
+            sudo systemctl start kestrel-${{ env.PROJECT_NAME }}.service
+          "
