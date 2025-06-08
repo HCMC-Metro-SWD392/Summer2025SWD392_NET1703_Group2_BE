@@ -6,12 +6,11 @@ using System.Threading.Tasks;
 
 namespace MetroTicketBE.Domain.Enum
 {
-    // Trạng thái lịch làm việc của nhân viên
+    // Trạng thái lịch làm việc của nhân viên  
     public enum StaffScheduleStatus
     {
-        Doing = 0,       // Đang làm việc
-        SickLeave = 1,   // Nghỉ ốm
-        Vacation = 2,    // Nghỉ phép
-        Unavailable = 3,  // Không có mặt
+        Normal = 0,  // Không có vấn đề xảy ra  
+        OnLeave = 1,   // Nghỉ có phép  
+        AbsentWithoutLeave = 2,  // Nghỉ không phép  
     }
 }
