@@ -10,6 +10,7 @@ using MetroTicketBE.Domain.DTO.MetroLine;
 using MetroTicketBE.Domain.DTO.MetroLineStation;
 using MetroTicketBE.Domain.DTO.Station;
 using MetroTicketBE.Domain.DTO.Ticket;
+using MetroTicketBE.Domain.DTO.Promotion;
 
 namespace MetroTicketBE.Application.Mappings
 {
@@ -27,7 +28,7 @@ namespace MetroTicketBE.Application.Mappings
                 .ForMember(dest => dest.FromStation, opt => opt.MapFrom(src => src.TicketRoute.StartStation.Name))
                 .ForMember(dest => dest.ToStation, opt => opt.MapFrom(src => src.TicketRoute.EndStation.Name));
 
-            CreateMap<TicketRoute, GetTicketRouteDTO>();
+            CreateMap<Promotion, GetPromotionDTO>();
         }
     }
 }
