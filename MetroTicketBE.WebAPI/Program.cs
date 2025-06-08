@@ -16,7 +16,7 @@ public class Program
         // Cấu hình Kestrel
         builder.WebHost.ConfigureKestrel(options =>
         {
-            options.ListenAnyIP(5000); // Lắng nghe trên cổng 5000 cho tất cả IP
+            options.ListenAnyIP(5000); // Lắng nghe trên cổng 5000 cho tất cả IP 
         });
 
         builder.Configuration
