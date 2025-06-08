@@ -308,9 +308,9 @@ namespace MetroTicketBE.Application.Service
                 return price;
             }
 
-            decimal discountPercentage = promotion.Percentage / 100m;
-
-            var finalPrice = price * (1 - discountPercentage);
+            var finalPrice = promotion.PromotionType == PromotionType.Percentage && promotion.Percentage is not null
+                ? price * (1 - promotion.Percentage / 100m)
+                : price - promotion.FixedAmount;
 
             return (int)finalPrice;
         }
