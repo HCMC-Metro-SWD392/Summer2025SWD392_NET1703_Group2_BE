@@ -21,7 +21,7 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Setup ASP.NET
+      - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
@@ -78,5 +78,4 @@ jobs:
             sudo cp -r ~/deploy_temp/* /var/www/${{ env.PROJECT_NAME }}/ &&
             sudo systemctl start kestrel-${{ env.PROJECT_NAME }}.service
             sudo systemctl restart kestrel-${{ env.PROJECT_NAME }}.service
-
           "
