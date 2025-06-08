@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace MetroTicketBE.Domain.Enums
 {
-    public enum TicketRoutStatus
+    public enum TicketRouteStatus
     {
-        Inactive = 0,     // Không hoạt động
-        Active = 1,       // Đang hoạt động
-        Used = 2,      // Đã sử dụng
+        Inactive = 0,     // Chưa sử dụng  
+        Active = 1,       // Đang sử dụng  
+        Used = 2,         // Đã sử dụng  
     }
 }
