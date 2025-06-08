@@ -1,5 +1,3 @@
-using Amazon.SimpleEmail;
-using Amazon.SimpleEmailV2;
 using MetroTicketBE.Application.Mappings;
 using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Infrastructure.Context;
@@ -18,24 +16,15 @@ public class Program
         // Add services to the container.
 
         builder.Services.AddControllers();
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
-        builder.Services.AddCors(
-            options =>
-            {
-                options.AddPolicy("AllowFrontend", policyBuilder =>
-                {
-                    policyBuilder.WithOrigins("http://localhost:5173")
-                        .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .AllowCredentials();
-                });
-            });
-
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddHttpClient();
 
         builder.Services.AddDbContext<ApplicationDBContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString(StaticConnectionString.POSTGRE_DefaultConnection)));
+
+        // Set time token
+        builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
+            options.TokenLifespan = TimeSpan.FromMinutes(60));        
 
         // Register AutoMapper 
         builder.Services.AddAutoMapper(typeof(AutoMappingProfile));
@@ -47,6 +36,31 @@ public class Program
         // Register redis services life cycle
         // Base on Extensions.RedisServiceExtensions
         builder.AddRedisCache();
+
+        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+        builder.Services.AddEndpointsApiExplorer();
+
+        // Register Authentication
+        // Base on Extensions.WebApplicationBuilderExtensions
+        builder.AddAppAuthentication();
+
+        builder.Services.AddAuthorization();
+
+        // Register SwaggerGen and config for Authorize
+        // Base on Extensions.WebApplicationBuilderExtensions
+        builder.AddSwaggerGen();
+
+        builder.Services.AddCors(
+            options =>
+            {
+                options.AddPolicy("AllowFrontend", policyBuilder =>
+                {
+                    policyBuilder.WithOrigins("http://localhost:5173")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+                });
+            });
 
         builder.Services.Configure<IdentityOptions>(options =>
         {
@@ -64,12 +78,20 @@ public class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+        else
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
         app.UseCors("AllowFrontend");
         app.UseHttpsRedirection();
 
+        app.UseAuthentication();
         app.UseAuthorization();
 
         app.MapControllers();
+
+        app.Run();
 
         //void ApplyMigration()
         //{
@@ -83,6 +105,5 @@ public class Program
         //        }
         //    }
         //}
-        app.Run();
     }
 }

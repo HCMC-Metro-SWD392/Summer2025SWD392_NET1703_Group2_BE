@@ -1,4 +1,5 @@
 ﻿using MetroTicketBE.Domain.DTO.Auth;
+using System.Security.Claims;
 
 namespace MetroTicketBE.Application.IService
 {
@@ -8,6 +9,6 @@ namespace MetroTicketBE.Application.IService
         Task<ResponseDTO> LoginUser(LoginDTO loginDTO);
         Task<ResponseDTO> SendVerifyEmail(string email);
         Task<ResponseDTO> VerifyEmail(string userId, string token);
-        Task<ResponseDTO> Logout(string userId);
+        Task<ResponseDTO> Logout(ClaimsPrincipal user);
     }
 }

@@ -78,9 +78,9 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpPost]
         [Route("logout")]
-        public async Task<ActionResult<ResponseDTO>> Logout([FromQuery] string userId)
+        public async Task<ActionResult<ResponseDTO>> Logout()
         {
-            var response = await _authService.Logout(userId);
+            var response = await _authService.Logout(User);
             return StatusCode(response.StatusCode, response);
         }
     }

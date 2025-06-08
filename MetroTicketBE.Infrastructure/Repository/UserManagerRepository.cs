@@ -25,7 +25,7 @@ namespace MetroTicketBE.Infrastructure.Repository
             return await _userManager.CreateAsync(user, password);
         }
 
-        public async Task<ApplicationUser> FindByEmailAsync(string email)
+        public async Task<ApplicationUser> GetByEmailAsync(string email)
         {
             return await _userManager.FindByEmailAsync(email)
                    ?? throw new KeyNotFoundException($"Không tìm thấy email: {email}");
@@ -36,7 +36,7 @@ namespace MetroTicketBE.Infrastructure.Repository
             return await _userManager.Users.AnyAsync(u => u.Email == email);
         }
 
-        public async Task<ApplicationUser> FindByPhoneNumberAsync(string phoneNumber)
+        public async Task<ApplicationUser> GetByPhoneNumberAsync(string phoneNumber)
         {
             return await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber)
                 ?? throw new KeyNotFoundException($"Không tìm thấy số điện thoại: {phoneNumber}");
@@ -46,6 +46,5 @@ namespace MetroTicketBE.Infrastructure.Repository
         {
             return await _userManager.Users.AnyAsync(u => u.PhoneNumber == phoneNumber);
         }
-
     }
 }

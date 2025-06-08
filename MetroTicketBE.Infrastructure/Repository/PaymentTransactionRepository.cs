@@ -13,14 +13,22 @@ namespace MetroTicketBE.Infrastructure.Repository
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public async Task<PaymentTransaction> GetByIdAsync(Guid id)
+        public async Task<PaymentTransaction?> GetByIdAsync(Guid id)
         {
             return await _context.PaymentTransactions
                 .Include(pt => pt.Customer)
                 .Include(pt => pt.Tickets)
                 .Include(pt => pt.Promotion)
-                .FirstOrDefaultAsync(pt => pt.Id == id)
-                ?? throw new KeyNotFoundException($"Không tìm thấy thông tin giao dịch với ID: {id}.");
+                .FirstOrDefaultAsync(pt => pt.Id == id);
+        }
+
+        public async Task<PaymentTransaction?> GetByOrderCode(string orderCode)
+        {
+            return await _context.PaymentTransactions
+                .Include(pt => pt.Customer)
+                .Include(pt => pt.Tickets)
+                .Include(pt => pt.Promotion)
+                .FirstOrDefaultAsync(pt => pt.OrderCode == orderCode);
         }
     }
 }

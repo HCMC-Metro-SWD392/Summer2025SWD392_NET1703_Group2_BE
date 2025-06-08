@@ -20,6 +20,7 @@ namespace MetroTicketBE.Infrastructure.IRepository
         ITicketRouteRepository TicketRouteRepository { get; }
         IMetroLineStationRepository MetroLineStationRepository { get; }
         ISubscriptionRepository SubscriptionRepository { get; }
+        ITicketRepository TicketRepository { get; }
         Task<int> SaveAsync();
     }
 }

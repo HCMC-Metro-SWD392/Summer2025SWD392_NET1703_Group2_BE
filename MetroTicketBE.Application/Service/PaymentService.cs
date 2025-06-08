@@ -4,12 +4,14 @@ using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.Payment;
 using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Domain.Enum;
+using MetroTicketBE.Domain.Enums;
 using MetroTicketBE.Infrastructure.IRepository;
 using MetroTicketBE.WebAPI.Extentions;
 using Microsoft.Extensions.Configuration;
 using Net.payOS;
 using Net.payOS.Types;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace MetroTicketBE.Application.Service
 {
@@ -38,7 +40,7 @@ namespace MetroTicketBE.Application.Service
         {
             try
             {
-                var userId = "60baa127-8a42-487b-9f7c-470bd56d97b6";
+                var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
                 if (string.IsNullOrEmpty(userId))
                 {
@@ -78,52 +80,51 @@ namespace MetroTicketBE.Application.Service
                         };
                     }
                 }
-                // Gộp các vé trùng lặp và phân loại ra theo tên vé và giá
-                var ticketRouteItems = createLinkDTO.TicketRoute?
-                    .GroupBy(rt => new { rt.TicketName, rt.Price })
-                    .Select(g =>
+
+                var ticketRoute = createLinkDTO.TicketRouteId is not null
+                    ? await _unitOfWork.TicketRouteRepository.GetByIdAsync(createLinkDTO.TicketRouteId)
+                    : null;
+
+                var subscriptionTicket = createLinkDTO.SubscriptionTicketId is not null
+                    ? await _unitOfWork.SubscriptionRepository.GetByIdAsync(createLinkDTO.SubscriptionTicketId)
+                    : null;
+
+                if (ticketRoute is null && subscriptionTicket is null)
+                {
+                    return new ResponseDTO
                     {
-                        var firtstItem = g.First();
-                        return new ItemData
-                        (
-                            name: firtstItem.TicketName,
-                            price: firtstItem.Price,
-                            quantity: g.Count()
-                        );
-                    });
+                        Message = "Không có vé nào để thanh toán",
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
 
-                var subscriptionTicketItems = createLinkDTO.SubscriptionTickets?
-                    .GroupBy(st => new { st.Id })
-                    .Select(g =>
-                    {
-                        var firstItem = g.First();
-                        return new ItemData
-                        (
-                            name: firstItem.TicketName,
-                            price: firstItem.Price,
-                            quantity: g.Count()
-                        );
-                    });
+                int ticketRoutePrice = ticketRoute?.Distance is not null
+                    ? await _unitOfWork.FareRuleRepository.CalculatePriceFromDistance(ticketRoute.Distance)
+                    : 0;
 
-                var ticketRouteTotal = ticketRouteItems.Sum(i => i.price * i.quantity);
-                var subscriptionTicketTotal = subscriptionTicketItems.Sum(i => i.price * i.quantity);
+                var items = new List<ItemData> {
+                    ticketRoute is not null
+                    ? new ItemData(ticketRoute.TicketName, 1, ticketRoutePrice)
+                    : new ItemData(subscriptionTicket.TicketName, 1, subscriptionTicket.Price)
+                    };
 
-                // tính tổng giá của các vé
 
-                var discountedTicketRoutePrice = await CalculatePriceApplyPromo(ticketRouteTotal, promotion?.Id);
+                var ticketPrice = ticketRoutePrice + (subscriptionTicket?.Price ?? 0);
+                var totalPrice = ticketRoute is not null
+                    ? await CalculatePriceApplyPromo(ticketPrice, promotion?.Id)
+                    : ticketPrice;
 
-                var totalPrice = discountedTicketRoutePrice + subscriptionTicketTotal;
-
-                var allItems = ticketRouteItems.Concat(subscriptionTicketItems).ToList();
                 // Tạo mã đơn hàng duy nhất dựa trên thời gian hiện tại (orderCode)
+                var orderCode = Math.Abs(int.Parse(DateTimeOffset.Now.ToString("fffffff")) + customer.Id.GetHashCode());
                 PaymentData paymentLinkRequest = new PaymentData
             (
-                orderCode: int.Parse(DateTimeOffset.Now.ToString("ffffff")),
+                orderCode: orderCode,
                 amount: totalPrice,
-                description: createLinkDTO.Description,
-                items: allItems,
-                returnUrl: "https://youtube.com",
-                cancelUrl: "https://facebook.com"
+                description: "METRO HCMC",
+                items: items,
+                returnUrl: StaticURL.Frontend_Url_Return_Payment,
+                cancelUrl: StaticURL.Frontend_Url_Return_Payment
             );
 
                 if (paymentLinkRequest is null)
@@ -154,7 +155,8 @@ namespace MetroTicketBE.Application.Service
                 PaymentTransaction paymentTransaction = new PaymentTransaction()
                 {
                     CustomerId = customer.Id,
-                    OrderCode = Convert.ToString(createLinkDTO.OrderCode),
+                    OrderCode = Convert.ToString(orderCode),
+                    ItemDataJson = JsonSerializer.Serialize(items),
                     TotalPrice = totalPrice,
                     PromotionId = promotion?.Id,
                     PaymentMethodId = paymentMethod.Id,
@@ -173,7 +175,7 @@ namespace MetroTicketBE.Application.Service
                     },
                     Message = "Tạo liên kết thanh toán thành công",
                     IsSuccess = true,
-                    StatusCode = 200
+                    StatusCode = 201
                 };
             }
             catch (Exception ex)
@@ -187,50 +189,109 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> UpdatePaymentTickerStatusPayOS(ClaimsPrincipal user, Guid paymentTransactionId)
+        public async Task<ResponseDTO> UpdatePaymentTickerStatusPayOS(ClaimsPrincipal user, string orderCode)
         {
-            // try
-            // {
-            //     var paymentTransaction = await _unitOfWork.PaymentTransactionRepository.GetByIdAsync(paymentTransactionId);
-            //     if (paymentTransaction is null)
-            //     {
-            //         return new ResponseDTO
-            //         {
-            //             Message = "Không tìm thấy giao dịch",
-            //             IsSuccess = false,
-            //             StatusCode = 404
-            //         };
-            //     }
-            //     var oderCode = long.Parse(paymentTransaction.OrderCode ?? throw new Exception("Mã giao dịch không tồn tại"));
-            //     var paymentStatus = _payos.getPaymentLinkInformation(oderCode);
-            //
-            //     if (paymentStatus is null)
-            //     {
-            //         return new ResponseDTO
-            //         {
-            //             Message = "Không tìm thấy thông tin giao dịch trên hệ thống PayOS",
-            //             IsSuccess = false,
-            //             StatusCode = 404
-            //         };
-            //     } else
-            //     {
-            //         paymentTransaction.Status = paymentStatus.Result.status switch
-            //         {
-            //             "PAID" => PaymentStatus.Paid,
-            //             "UNPAID" => PaymentStatus.Unpaid,
-            //             "CANCELED" => PaymentStatus.Canceled,
-            //             _ => paymentTransaction.Status
-            //         };
-            //     }
-            //
-            //     _unitOfWork.PaymentTransactionRepository.Update(paymentTransaction);
-            //
-            //     if (paymentTransaction.Status is PaymentStatus.Paid)
-            //     {
-            //         
-            //     }
-            // }
-            return null;
+            try
+            {
+                var paymentTransaction = await _unitOfWork.PaymentTransactionRepository.GetByOrderCode(orderCode);
+                if (paymentTransaction is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = $"Không tìm thấy mã giao dịch: {orderCode}.",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+                var paymentStatus = _payos.getPaymentLinkInformation(long.Parse(orderCode));
+
+                if (paymentStatus is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Không tìm thấy thông tin giao dịch trên hệ thống PayOS",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+                else
+                {
+                    paymentTransaction.Status = paymentStatus.Result.status switch
+                    {
+                        "PAID" => PaymentStatus.Paid,
+                        "UNPAID" => PaymentStatus.Unpaid,
+                        "CANCELED" => PaymentStatus.Canceled,
+                        _ => paymentTransaction.Status
+                    };
+                }
+
+                _unitOfWork.PaymentTransactionRepository.Update(paymentTransaction);
+
+                if (paymentTransaction.Status is PaymentStatus.Paid)
+                {
+                    var items = JsonSerializer.Deserialize<List<ItemData>>(paymentTransaction.ItemDataJson ?? "");
+                    var item = items?.FirstOrDefault();
+                    if (item is null)
+                    {
+                        return new ResponseDTO
+                        {
+                            Message = "Không có vé nào để thanh toán",
+                            IsSuccess = false,
+                            StatusCode = 400
+                        };
+                    }
+
+                    var ticketRoute = await _unitOfWork.TicketRouteRepository.GetByNameAsync(item.name);
+                    var subTicket = await _unitOfWork.SubscriptionRepository.GetByNameAsync(item.name);
+
+                    var expiration = ticketRoute is not null
+                        ? TimeSpan.FromDays(30)
+                        : subTicket?.TicketType switch
+                    {
+                        SubscriptionTicketType.Daily => TimeSpan.FromDays(1),
+                        SubscriptionTicketType.Monthly => TimeSpan.FromDays(30),
+                        SubscriptionTicketType.Weekly => TimeSpan.FromDays(7),
+                        SubscriptionTicketType.Yearly => TimeSpan.FromDays(365),
+                        _ => TimeSpan.FromDays(1)
+                    };
+
+                    int ticketPrice = ticketRoute?.Distance is not null
+                    ? await _unitOfWork.FareRuleRepository.CalculatePriceFromDistance(ticketRoute.Distance)
+                    : subTicket.Price;
+
+                    Ticket ticket = new Ticket()
+                    {
+                        CustomerId = paymentTransaction.CustomerId,
+                        SubscriptionTicketId = subTicket?.Id,
+                        TicketRouteId = ticketRoute?.Id,
+                        TransactionId = paymentTransaction.Id,
+                        Price = ticketPrice,
+                        TicketSerial = Guid.NewGuid().ToString("N").Substring(0, 10),
+                        StartDate = DateTime.UtcNow,
+                        EndDate = DateTime.UtcNow.Add(expiration),
+                        QrCode = Guid.NewGuid().ToString("N"),
+                    };
+
+                    await _unitOfWork.TicketRepository.AddAsync(ticket);
+                }
+
+                await _unitOfWork.SaveAsync();
+                return new ResponseDTO
+                {
+                    Message = $"Cập nhật trạng thái thanh toán thành công",
+                    IsSuccess = true,
+                    StatusCode = 201
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    Message = $"Đã xảy ra lỗi khi cập nhật trạng thái thanh toán: {ex.Message}",
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
         }
 
         private async Task<int> CalculatePriceApplyPromo(int price, Guid? promotionId)
