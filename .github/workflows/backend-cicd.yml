@@ -58,11 +58,10 @@ jobs:
           echo "EC2_HOST: ${{ secrets.EC2_HOST_PUBLIC }}"
           echo "EC2_USER: ${{ secrets.EC2_USER }}"
           echo "SSH_KEY length: ${#EC2_SSH_PRIVATE_KEY}"
-          echo "SSH_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}"
         env:
           EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           EC2_HOST: ${{ secrets.EC2_HOST_PUBLIC }}
-          SSH_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          EC2_USER: ${{ secrets.EC2_USER }}
           
       - name: Setup SSH
         run: |
