@@ -258,28 +258,44 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                if (updatePromotionDTO.StartDate >= updatePromotionDTO.EndDate)
+                if (updatePromotionDTO.StartDate != default || updatePromotionDTO.EndDate != default)
                 {
-                    return new ResponseDTO
+                    if (updatePromotionDTO.StartDate >= updatePromotionDTO.EndDate)
                     {
-                        IsSuccess = false,
-                        StatusCode = 400,
-                        Message = "Ngày bắt đầu phải trước ngày kết thúc"
-                    };
+                        return new ResponseDTO
+                        {
+                            IsSuccess = false,
+                            StatusCode = 400,
+                            Message = "Ngày bắt đầu phải trước ngày kết thúc"
+                        };
+                    }
+                    // Ngày bắt đầu và kết thúc không thể là quá khứ  
+                    if (updatePromotionDTO.StartDate < DateTime.UtcNow || updatePromotionDTO.EndDate < DateTime.UtcNow)
+                    {
+                        return new ResponseDTO
+                        {
+                            IsSuccess = false,
+                            StatusCode = 400,
+                            Message = "Ngày bắt đầu và kết thúc không thể là quá khứ"
+                        };
+                    }
                 }
-                // Ngày bắt đầu và kết thúc không thể là quá khứ  
-                if (updatePromotionDTO.StartDate < DateTime.UtcNow || updatePromotionDTO.EndDate < DateTime.UtcNow)
+                else if (updatePromotionDTO.StartDate != default)
                 {
-                    return new ResponseDTO
+                    if (updatePromotionDTO.StartDate > promotion.EndDate)
                     {
-                        IsSuccess = false,
-                        StatusCode = 400,
-                        Message = "Ngày bắt đầu và kết thúc không thể là quá khứ"
-                    };
+                        return new ResponseDTO
+                        {
+                            IsSuccess = false,
+                            StatusCode = 400,
+                            Message = "Ngày bắt đầu không thể sau ngày kết thúc"
+                        };
+                    }
                 }
+
                 if (updatePromotionDTO.PromotionType == PromotionType.Percentage)
                 {
-                    if (updatePromotionDTO.Percentage is null || updatePromotionDTO.Percentage < 0 || updatePromotionDTO.Percentage > 100)
+                    if (updatePromotionDTO.Percentage is not null || updatePromotionDTO.Percentage < 0 || updatePromotionDTO.Percentage > 100)
                     {
                         return new ResponseDTO
                         {
