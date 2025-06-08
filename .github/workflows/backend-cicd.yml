@@ -3,7 +3,7 @@ name: Backend CI/CD
 on:
   push:
     branches:
-      - CICD
+      - main
 
 env:
   PROJECT_NAME: Summer2025SWD392_NET1703_Group2_BE
