@@ -8,6 +8,9 @@ on:
 env:
   PROJECT_NAME: Summer2025SWD392_NET1703_Group2_BE
   DOTNET_VERSION: 8.0.x
+  EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+  EC2_HOST: ${{ secrets.EC2_HOST_PUBLIC }}
+  EC2_USER: ${{ secrets.EC2_USER }}
 
 jobs:
   build:
@@ -53,33 +56,21 @@ jobs:
         with:
           name: backend-publish
           
-      - name: Debug Secrets
-        run: |
-          echo "EC2_HOST: ${{ secrets.EC2_HOST_PUBLIC }}"
-          echo "EC2_USER: ${{ secrets.EC2_USER }}"
-          echo "SSH_KEY length: ${#EC2_SSH_PRIVATE_KEY}"
-        env:
-          EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          EC2_HOST: ${{ secrets.EC2_HOST_PUBLIC }}
-          EC2_USER: ${{ secrets.EC2_USER }}
-          
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
           echo "Created ~/.ssh directory"
-          if [ -z "${{ secrets.EC2_SSH_PRIVATE_KEY }}" ]; then echo "Error: EC2_SSH_PRIVATE_KEY is empty"; exit 1; fi
-          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          echo "${{ env.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           echo "Wrote SSH key to id_ed25519"
           chmod 600 ~/.ssh/id_ed25519
           echo "Set permissions for id_ed25519"
-          if [ -z "${{ secrets.EC2_HOST_PUBLIC }}" ]; then echo "Error: EC2_HOST_PUBLIC is empty"; exit 1; fi
-          ssh-keyscan -H "${{ secrets.EC2_HOST_PUBLIC }}" >> ~/.ssh/known_hosts || { echo "ssh-keyscan failed"; exit 1; }
+          ssh-keyscan -H "${{ env.EC2_HOST }}" >> ~/.ssh/known_hosts || { echo "ssh-keyscan failed"; exit 1; }
           echo "Added EC2 host to known_hosts"
 
       - name: Upload to EC2
         run: |
-          scp publish.zip ${EC2_USER}@${EC2_HOST}:/home/${EC2_USER}/
-          ssh ${EC2_USER}@${EC2_HOST} "
+          scp publish.zip ${{ env.EC2_USER }}@${{ env.EC2_HOST }}:/home/$${{ env.EC2_USER }}/
+          ssh ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "
             rm -rf ~/deploy_temp &&
             mkdir -p ~/deploy_temp &&
             unzip -o publish.zip -d ~/deploy_temp &&
