@@ -77,4 +77,6 @@ jobs:
             sudo systemctl stop kestrel-${{ env.PROJECT_NAME }}.service &&
             sudo cp -r ~/deploy_temp/* /var/www/${{ env.PROJECT_NAME }}/ &&
             sudo systemctl start kestrel-${{ env.PROJECT_NAME }}.service
+            sudo systemctl restart kestrel-${{ env.PROJECT_NAME }}.service
+
           "
