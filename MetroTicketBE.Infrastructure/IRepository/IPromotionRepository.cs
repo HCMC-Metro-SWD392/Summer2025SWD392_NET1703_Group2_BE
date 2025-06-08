@@ -11,5 +11,6 @@ namespace MetroTicketBE.Infrastructure.IRepository
     {
         Task<Promotion?> GetByCodeAsync(string code);
         Task<Promotion?> GetByIdAsync(Guid promotionId);
+        Task<bool> IsExistByCode(string code);
     }
 }

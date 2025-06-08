@@ -26,5 +26,11 @@ namespace MetroTicketBE.Infrastructure.Repository
                 Include(p => p.Transactions)
                 .FirstOrDefaultAsync(p => p.Id == promotionId);
         }
+
+        public Task<bool> IsExistByCode(string code)
+        {
+            return _context.Promotions
+                .AnyAsync(p => p.Code == code);
+        }
     }
 }
