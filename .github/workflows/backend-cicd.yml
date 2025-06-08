@@ -69,7 +69,7 @@ jobs:
 
       - name: Upload to EC2
         run: |
-          scp publish.zip ${{ env.EC2_USER }}@${{ env.EC2_HOST }}:/home/$${{ env.EC2_USER }}/
+          scp publish.zip ${{ env.EC2_USER }}@${{ env.EC2_HOST }}:/home/${{ env.EC2_USER }}/
           ssh ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "
             rm -rf ~/deploy_temp &&
             mkdir -p ~/deploy_temp &&
