@@ -49,4 +49,28 @@ public class SubcriptionTicketController: ControllerBase
         
         return BadRequest(response);
     }
+    
+    [HttpGet]
+    [Route("{id:guid}")]
+    public async Task<IActionResult> GetSubscriptionAsync(Guid id)
+    {
+        var response = await _subscriptionService.GetSubscriptionAsync(id);
+        if (response.IsSuccess)
+        {
+            return Ok(response);
+        }
+        return NotFound(response);
+    }
+
+    [HttpPut]
+    [Route("update/{id:guid}")]
+    public async Task<IActionResult> UpdateSubscriptionAsync(Guid id, [FromBody] UpdateSubscriptionDTO dto)
+    {
+        var response = await _subscriptionService.UpdateSubscriptionAsync(id, dto);
+        if (response.IsSuccess)
+        {
+            return Ok(response);
+        }
+        return BadRequest(response);
+    }
 }

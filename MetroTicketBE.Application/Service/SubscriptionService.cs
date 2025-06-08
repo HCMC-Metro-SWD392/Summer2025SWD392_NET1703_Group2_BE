@@ -31,7 +31,7 @@ public SubscriptionService(IUnitOfWork unitOfWork)
                     Message = "Loại vé đã tồn tại"
                 };
             }
-
+                
             SubscriptionTicket subscriptionTicket = new SubscriptionTicket
             {
                 TicketName = dto.TicketName,
@@ -112,6 +112,94 @@ public SubscriptionService(IUnitOfWork unitOfWork)
                 IsSuccess = false,
                 StatusCode = 500,
                 Message = "Lỗi khi lấy danh sách vé: " + ex.Message
+            };
+        }
+    }
+    
+    public async Task<ResponseDTO> UpdateSubscriptionAsync(Guid id, UpdateSubscriptionDTO dto)
+    {
+        try
+        {
+            var subscription = await _unitOfWork.SubscriptionRepository.GetAsync(s => s.Id == id);
+            if (subscription == null)
+            {
+                return new ResponseDTO()
+                {
+                    IsSuccess = false,
+                    StatusCode = 404,
+                    Message = "Không tìm thấy vé"
+                };
+            }
+            if (dto.TicketName != null && dto.TicketName.Trim().Length > 0) 
+            {
+                var isExistSubscription = await _unitOfWork.SubscriptionRepository.IsExistedByName(dto.TicketName);
+                if (isExistSubscription)
+                {
+                    return new ResponseDTO()
+                    {
+                        IsSuccess = false,
+                        StatusCode = 400,
+                        Message = "Tên vé đã tồn tại"
+                    };
+                }
+                subscription.TicketName = dto.TicketName;
+            }
+            if (dto.Price is > 0)
+            {
+                subscription.Price = dto.Price.Value;
+            }
+            
+            _unitOfWork.SubscriptionRepository.Update(subscription);
+            await _unitOfWork.SaveAsync();
+            
+            return new ResponseDTO()
+            {
+                IsSuccess = true,
+                StatusCode = 200,
+                Message = "Cập nhật vé thành công",
+                Result = subscription
+            };
+        }
+        catch (Exception ex)
+        {
+            return new ResponseDTO()
+            {
+                IsSuccess = false,
+                StatusCode = 500,
+                Message = "Lỗi khi cập nhật vé: " + ex.Message
+            };
+        }
+    }
+    
+    public async Task<ResponseDTO> GetSubscriptionAsync(Guid id)
+    {
+        try
+        {
+            var subscription = await _unitOfWork.SubscriptionRepository.GetAsync(s => s.Id == id);
+            if (subscription == null)
+            {
+                return new ResponseDTO()
+                {
+                    IsSuccess = false,
+                    StatusCode = 404,
+                    Message = "Không tìm thấy vé"
+                };
+            }
+            return new ResponseDTO()
+            {
+                IsSuccess = true,
+                StatusCode = 200,
+                Message = "Lấy vé thành công",
+                Result = subscription
+            };
+        }
+        catch (Exception ex)
+        {
+            return new ResponseDTO()
+            {
+                IsSuccess = false,
+                StatusCode = 500,
+                Message = "Lỗi khi lấy vé: " + ex.Message
             };
         }
     }
