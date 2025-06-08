@@ -10,6 +10,6 @@ namespace MetroTicketBE.Domain.Enums
     {
         Inactive = 0,     // Không hoạt động
         Active = 1,       // Đang hoạt động
-        Deleted = 2,      // Đã xóa
+        Used = 2,      // Đã sử dụng
     }
 }
