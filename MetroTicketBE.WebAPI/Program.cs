@@ -1,4 +1,4 @@
-using MetroTicketBE.Application.Mappings;
+﻿using MetroTicketBE.Application.Mappings;
 using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Infrastructure.Context;
 using MetroTicketBE.WebAPI.Extentions;
@@ -13,10 +13,16 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        // Cấu hình Kestrel
+        builder.WebHost.ConfigureKestrel(options =>
+        {
+            options.ListenAnyIP(5000); // Lắng nghe trên cổng 5000 cho tất cả IP
+        });
+
         builder.Configuration
         .SetBasePath(Directory.GetCurrentDirectory())
         .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-
+        
         // Add services to the container.
 
         builder.Services.AddControllers();
