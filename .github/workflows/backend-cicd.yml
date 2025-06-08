@@ -67,9 +67,15 @@ jobs:
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${SSH_KEY}" > ~/.ssh/id_ed25519
+          echo "Created ~/.ssh directory"
+          if [ -z "${{ secrets.EC2_SSH_PRIVATE_KEY }}" ]; then echo "Error: EC2_SSH_PRIVATE_KEY is empty"; exit 1; fi
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          echo "Wrote SSH key to id_ed25519"
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
+          echo "Set permissions for id_ed25519"
+          if [ -z "${{ secrets.EC2_HOST_PUBLIC }}" ]; then echo "Error: EC2_HOST_PUBLIC is empty"; exit 1; fi
+          ssh-keyscan -H "${{ secrets.EC2_HOST_PUBLIC }}" >> ~/.ssh/known_hosts || { echo "ssh-keyscan failed"; exit 1; }
+          echo "Added EC2 host to known_hosts"
 
       - name: Upload to EC2
         run: |
