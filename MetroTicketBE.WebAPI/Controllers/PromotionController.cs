@@ -43,5 +43,13 @@ namespace MetroTicketBE.WebAPI.Controllers
             var response = await _promotionService.GetAll(User, filterOn, filterQuery, sortBy, isAcsending, pageNumber, pageSize);
             return StatusCode(response.StatusCode, response);
         }
+
+        [HttpGet]
+        [Route("get-promotion/{promotionId}")]
+        public async Task<ActionResult<ResponseDTO>> GetPromotionById([FromRoute] Guid promotionId)
+        {
+            var response = await _promotionService.GetPromotionById(promotionId);
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }
