@@ -47,7 +47,8 @@ namespace MetroTicketBE.WebAPI.Extentions
             services.AddScoped<IPromotionService, PromotionService>();
             // Registering ITicketService with its implementation TicketService
             services.AddScoped<ITicketService, TicketService>();
-
+            // Registering ITrainScheduleService with its implementation TrainScheduleService
+            services.AddScoped<ITrainScheduleService, TrainScheduleService>();
 
             // Register the Identity services with default configuration
             services.AddIdentity<ApplicationUser, IdentityRole>()

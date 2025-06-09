@@ -15,6 +15,8 @@ namespace MetroTicketBE.Domain.Entities
 
         public ICollection<MetroLineStation> MetroLineStations { get; set; } = new List<MetroLineStation>();
 
+        public ICollection<TrainSchedule> TrainSchedules { get; set; } = new List<TrainSchedule>();
+
     }
 
 }
