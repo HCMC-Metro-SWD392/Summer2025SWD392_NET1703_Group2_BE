@@ -91,7 +91,18 @@ namespace MetroTicketBE.Application.Service
 
                 var accessToken = await _tokenService.GenerateJwtAccessTokenAsync(user);
                 var refreshToken = await _tokenService.GenerateJwtRefreshTokenAsync(user, loginDTO.RememberMe);
-
+                var responeUser = new UserDTO()
+                {
+                    Id = user.Id,
+                    FullName = user.FullName,
+                    Email = user.Email,
+                    PhoneNumber = user.PhoneNumber,
+                    Address = user.Address,
+                    IdentityId = user.IdentityId,
+                    Sex = user.Sex,
+                    DateOfBirth = user.DateOfBirth,
+                    UserName = user.UserName
+                };
                 await _tokenService.StoreRefreshToken(user.Id, refreshToken, loginDTO.RememberMe);
 
                 await _userManager.ResetAccessFailedCountAsync(user);
@@ -103,7 +114,7 @@ namespace MetroTicketBE.Application.Service
                     {
                         AccessToken = accessToken,
                         RefreshToken = refreshToken,
-                        User = user
+                        User = responeUser
                     },
                     IsSuccess = true,
                     StatusCode = 200
