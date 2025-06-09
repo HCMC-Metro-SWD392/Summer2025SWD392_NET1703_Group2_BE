@@ -28,7 +28,7 @@ namespace MetroTicketBE.Infrastructure.Context
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Membership> Memberships { get; set; }
         public DbSet<MetroLine> MetroLines { get; set; }
-        public DbSet<TrainSchedule> StrainSchedules { get; set; }
+        public DbSet<TrainSchedule> TrainSchedules { get; set; }
         public DbSet<MetroLineStation> MetroLineStations { get; set; }
         public DbSet<Staff> Staffs { get; set; }
         public DbSet<StaffSchedule> StaffSchedules { get; set; }
@@ -180,9 +180,15 @@ namespace MetroTicketBE.Infrastructure.Context
 
             //TrainSchedules
             modelBuilder.Entity<TrainSchedule>()
-                .HasOne(ts => ts.StartStation)
+                .HasOne(ts => ts.Station)
                 .WithMany(s => s.StrainSchedules)
-                .HasForeignKey(ts => ts.StartStationId)
+                .HasForeignKey(ts => ts.StationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<TrainSchedule>()
+                .HasOne(ts => ts.MetroLine)
+                .WithMany(ml => ml.TrainSchedules)
+                .HasForeignKey(ts => ts.MetroLineId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<TrainSchedule>()

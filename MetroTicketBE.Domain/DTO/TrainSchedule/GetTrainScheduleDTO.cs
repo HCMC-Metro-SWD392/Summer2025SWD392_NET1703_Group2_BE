@@ -1,22 +1,17 @@
 ﻿using MetroTicketBE.Domain.Enum;
 using MetroTicketBE.Domain.Enums;
 
-namespace MetroTicketBE.Domain.Entities
+namespace MetroTicketBE.Domain.DTO.TrainSchedule
 {
-    public class TrainSchedule
+    public class GetTrainScheduleDTO
     {
         public Guid Id { get; set; }
-        public Guid? TrainId { get; set; }
         public Guid MetroLineId { get; set; }
+        public string MetroLineName { get; set; } = null!;
         public Guid StationId { get; set; }
+        public string StationName { get; set; } = null!;
         public TimeSpan StartTime { get; set; }
         public TrainScheduleType Direction { get; set; }
         public TrainScheduleStatus Status { get; set; }
-
-        public Station Station { get; set; } = null!;
-
-        public MetroLine MetroLine { get; set; } = null!;
-
-        public ICollection<Train> Trains { get; set; } = new List<Train>();
     }
 }
