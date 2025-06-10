@@ -56,9 +56,13 @@ public SubscriptionService(IUnitOfWork unitOfWork, IMapper mapper)
             {
                 subscriptionTicket.Expiration = 7;
             }
-            else if (dto.TicketType == SubscriptionTicketType.Student)
+            else if (dto.TicketType is SubscriptionTicketType.Student)
             {
-                subscriptionTicket.Expiration = 30; // 6 tháng
+                subscriptionTicket.Expiration = 30;
+            }
+            else if (dto.TicketType is SubscriptionTicketType.Elder or SubscriptionTicketType.Military)
+            {
+                subscriptionTicket.Expiration = 9999; // Vé dành cho người cao tuổi hoặc quân đội có thời hạn sử dụng vô hạn
             }
             else
             {
@@ -91,7 +95,7 @@ public SubscriptionService(IUnitOfWork unitOfWork, IMapper mapper)
         }
     }
 
-    public async Task<ResponseDTO> GetAllSubscriptionsAsync(bool getAll = false)
+    public async Task<ResponseDTO> GetAllSubscriptionsAsync()
     {
         try
         {
@@ -106,16 +110,6 @@ public SubscriptionService(IUnitOfWork unitOfWork, IMapper mapper)
                 };
             }
 
-            if (getAll)
-            {
-                return new ResponseDTO()
-                {
-                    IsSuccess = true,
-                    StatusCode = 200,
-                    Message = "Lấy tất cả vé thành công",
-                    Result = subscriptions
-                };
-            }
             var subscriptionDTO = _mapper.Map<List<GetSubscriptionTicketDTO>>(subscriptions);
             return new ResponseDTO()
             {

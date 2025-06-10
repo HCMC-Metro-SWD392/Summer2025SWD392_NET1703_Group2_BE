@@ -39,9 +39,9 @@ public class SubcriptionTicketController: ControllerBase
     
     [HttpGet]
     [Route("all")]
-    public async Task<IActionResult> GetAllSubscriptionsAsync(bool getAll = false)
+    public async Task<IActionResult> GetAllSubscriptionsAsync()
     {
-        var response = await _subscriptionService.GetAllSubscriptionsAsync(getAll);
+        var response = await _subscriptionService.GetAllSubscriptionsAsync();
         if (response.IsSuccess)
         {
             return Ok(response);
