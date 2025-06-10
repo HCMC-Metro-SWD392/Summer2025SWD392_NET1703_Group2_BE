@@ -62,7 +62,7 @@ public SubscriptionService(IUnitOfWork unitOfWork, IMapper mapper)
             }
             else if (dto.TicketType is SubscriptionTicketType.Elder or SubscriptionTicketType.Military)
             {
-                subscriptionTicket.Expiration = 9999; // Vé dành cho người cao tuổi hoặc quân đội có thời hạn sử dụng vô hạn
+                subscriptionTicket.Expiration = int.MaxValue; // Vé dành cho người cao tuổi hoặc quân đội có thời hạn sử dụng vô hạn
             }
             else
             {
