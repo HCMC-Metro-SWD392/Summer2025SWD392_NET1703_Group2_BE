@@ -1,4 +1,6 @@
-﻿using MetroTicketBE.Application.IService;
+﻿using AutoMapper;
+using MetroTicketBE.Application.IService;
+using MetroTicketBE.Application.Mappings;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.SubscriptionTicket;
 using MetroTicketBE.Domain.Entities;
@@ -11,10 +13,12 @@ namespace MetroTicketBE.Application.Service;
 public class SubscriptionService: ISubscriptionService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
     
-public SubscriptionService(IUnitOfWork unitOfWork)
+public SubscriptionService(IUnitOfWork unitOfWork, IMapper mapper)
     {
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     public async Task<ResponseDTO> CreateSubscriptionAsync(CreateSubscriptionDTO dto)
@@ -52,6 +56,10 @@ public SubscriptionService(IUnitOfWork unitOfWork)
             {
                 subscriptionTicket.Expiration = 7;
             }
+            else if (dto.TicketType == SubscriptionTicketType.Student)
+            {
+                subscriptionTicket.Expiration = 30; // 6 tháng
+            }
             else
             {
                 return new ResponseDTO()
@@ -83,7 +91,7 @@ public SubscriptionService(IUnitOfWork unitOfWork)
         }
     }
 
-    public async Task<ResponseDTO> GetAllSubscriptionsAsync()
+    public async Task<ResponseDTO> GetAllSubscriptionsAsync(bool getAll = false)
     {
         try
         {
@@ -97,12 +105,24 @@ public SubscriptionService(IUnitOfWork unitOfWork)
                     Message = "Không tìm thấy vé nào"
                 };
             }
+
+            if (getAll)
+            {
+                return new ResponseDTO()
+                {
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Message = "Lấy tất cả vé thành công",
+                    Result = subscriptions
+                };
+            }
+            var subscriptionDTO = _mapper.Map<List<GetSubscriptionTicketDTO>>(subscriptions);
             return new ResponseDTO()
             {
                 IsSuccess = true,
                 StatusCode = 200,
                 Message = "Lấy danh sách vé thành công",
-                Result = subscriptions
+                Result = subscriptionDTO
             };
             
         }catch (Exception ex)

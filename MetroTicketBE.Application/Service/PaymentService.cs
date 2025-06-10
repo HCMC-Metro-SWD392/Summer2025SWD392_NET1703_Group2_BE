@@ -100,6 +100,17 @@ namespace MetroTicketBE.Application.Service
                         StatusCode = 400
                     };
                 }
+                var isStudent = customer.CustomerType == CustomerType.Student;
+                bool isExpired = customer.StudentExpiration.HasValue && customer.StudentExpiration.Value < DateTime.UtcNow;
+                if (!isStudent || isExpired && subscriptionTicket.TicketType == SubscriptionTicketType.Student)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Khách hàng không đủ điều kiện để mua vé sinh viên",
+                        IsSuccess = false,
+                        StatusCode = 403
+                    };
+                }
 
                 int ticketRoutePrice = ticketRoute?.Distance is not null
                     ? await _unitOfWork.FareRuleRepository.CalculatePriceFromDistance(ticketRoute.Distance)
