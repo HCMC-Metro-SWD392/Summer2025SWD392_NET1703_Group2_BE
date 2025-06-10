@@ -10,7 +10,7 @@ public class Customer
     public CustomerType CustomerType { get; set; }
     public Guid? MembershipId { get; set; }
     public long Points { get; set; }
-    public TimeSpan? StudentExpiration { get; set; }
+    public DateTime? StudentExpiration { get; set; }
 
     public ApplicationUser User { get; set; } = null!;
     public Membership Membership { get; set; } = null!;

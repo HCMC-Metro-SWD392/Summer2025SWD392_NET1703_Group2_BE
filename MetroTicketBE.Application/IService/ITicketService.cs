@@ -26,5 +26,6 @@ namespace MetroTicketBE.Application.IService
                 int pageNumber,
                 int pageSize
             );
+        Task<ResponseDTO> TicketRouteProcess(Guid ticketRouteId, Guid stationId, Guid metroLineId);
     }
 }

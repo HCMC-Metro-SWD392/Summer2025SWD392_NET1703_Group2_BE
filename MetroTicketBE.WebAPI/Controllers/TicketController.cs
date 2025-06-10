@@ -50,5 +50,13 @@ namespace MetroTicketBE.WebAPI.Controllers
             var response = await _ticketService.ChangeTicketRouteStatus(ticketId);
             return StatusCode(response.StatusCode, response);
         }
+
+        [HttpPut]
+        [Route("ticket-route-process/{ticketRouteId:guid}/{stationId:guid}/{metroLineId:guid}")]
+        public async Task<ActionResult<ResponseDTO>> TicketRouteProcess([FromRoute] Guid ticketRouteId, [FromRoute] Guid stationId, [FromRoute] Guid metroLineId)
+        {
+            var response = await _ticketService.TicketRouteProcess(ticketRouteId, stationId, metroLineId);
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }

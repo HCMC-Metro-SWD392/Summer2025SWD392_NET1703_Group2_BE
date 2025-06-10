@@ -16,6 +16,10 @@ namespace MetroTicketBE.Infrastructure.Repository
         public Task<Ticket?> GetByIdAsync(Guid ticketId)
         {
             return _context.Tickets
+                .Include(t => t.TicketRoute)
+                .ThenInclude(tr => tr.StartStation)
+                .Include(t => t.TicketRoute)
+                .ThenInclude(tr => tr.EndStation)
                 .FirstOrDefaultAsync(t => t.Id == ticketId);
         }
 

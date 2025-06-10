@@ -16,7 +16,7 @@ public class CustomerResponseDTO
     public MembershipDTO? Membership { get; set; }
     public String? IdentityId { get; set; } = null;
     public long? Points { get; set; } = 0;
-    public TimeSpan? StudentExpiration { get; set; }
+    public DateTime? StudentExpiration { get; set; }
 }
 public class MembershipDTO
 {
