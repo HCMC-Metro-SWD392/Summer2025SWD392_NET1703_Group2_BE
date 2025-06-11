@@ -103,32 +103,12 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
                 var isStudent = customer.CustomerType == CustomerType.Student;
-                var isElder = customer.CustomerType == CustomerType.OlderPerson;
-                var isMilitary = customer.CustomerType == CustomerType.Military;
                 bool isExpired = customer.StudentExpiration.HasValue && customer.StudentExpiration.Value < DateTime.UtcNow;
                 if (!isStudent || isExpired && subscriptionTicket is not null && subscriptionTicket.TicketType == SubscriptionTicketType.Student)
                 {
                     return new ResponseDTO
                     {
                         Message = "Khách hàng không đủ điều kiện để mua vé sinh viên",
-                        IsSuccess = false,
-                        StatusCode = 403
-                    };
-                }
-                if (!isElder && subscriptionTicket is not null && subscriptionTicket.TicketType == SubscriptionTicketType.Elder)
-                {
-                    return new ResponseDTO
-                    {
-                        Message = "Khách hàng không đủ điều kiện để mua vé người cao tuổi",
-                        IsSuccess = false,
-                        StatusCode = 403
-                    };
-                }
-                if (!isMilitary && subscriptionTicket is not null && subscriptionTicket.TicketType == SubscriptionTicketType.Military)
-                {
-                    return new ResponseDTO
-                    {
-                        Message = "Khách hàng không đủ điều kiện để mua vé thương binh liệt sĩ",
                         IsSuccess = false,
                         StatusCode = 403
                     };
