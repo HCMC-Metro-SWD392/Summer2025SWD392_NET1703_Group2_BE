@@ -8,5 +8,6 @@ namespace MetroTicketBE.Infrastructure.IRepository
         Task<MetroLine?> GetByIdAsync(Guid id);
         Task<bool> IsExistByMetroLineNumber(int metroLineNumber);
         Task<bool> IsExistById(Guid id);
+        Task<bool> IsSameMetroLine(Guid stationOneId, Guid stationTwoId);
     }
 }

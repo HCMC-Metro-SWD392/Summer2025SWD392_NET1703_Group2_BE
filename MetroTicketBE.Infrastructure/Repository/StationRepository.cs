@@ -63,5 +63,17 @@ namespace MetroTicketBE.Infrastructure.Repository
                 .Select(s => s.Name)
                 .FirstOrDefaultAsync();
         }
+
+        public async Task<int> GetOrderStationById(Guid stationId, Guid metroLineId)
+        {
+            return await _context.Stations
+                .Where(s => s.Id == stationId)
+                .Select(s => s.MetroLineStations
+                .Where(mls => mls.MetroLineId == metroLineId)
+                    .Select(mls => mls.StationOrder)
+                    .FirstOrDefault())
+                .FirstOrDefaultAsync();
+        }
+
     }
 }

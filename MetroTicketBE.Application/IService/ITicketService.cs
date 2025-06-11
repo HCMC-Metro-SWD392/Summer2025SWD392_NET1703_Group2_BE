@@ -27,5 +27,6 @@ namespace MetroTicketBE.Application.IService
                 int pageSize
             );
         Task<ResponseDTO> CreateTicketForSpecialCase(ClaimsPrincipal user, Guid subscriptionId);
+        Task<ResponseDTO> TicketProcess(Guid ticketRouteId, Guid stationId, Guid metroLineId);
     }
 }

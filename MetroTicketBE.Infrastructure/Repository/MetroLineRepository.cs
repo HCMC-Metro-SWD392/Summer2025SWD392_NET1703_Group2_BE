@@ -35,7 +35,7 @@ namespace MetroTicketBE.Infrastructure.Repository
                 .ThenInclude(mts => mts.Station)
                 .FirstOrDefaultAsync(metroLine => metroLine.Id == id);
         }
-        
+
         public async Task<bool> IsExistById(Guid id)
         {
             return await _context.MetroLines
@@ -46,6 +46,16 @@ namespace MetroTicketBE.Infrastructure.Repository
         {
             return await _context.MetroLines
                 .AnyAsync(metroLine => metroLine.MetroLineNumber == metroLineNumber);
+        }
+
+        public async Task<bool> IsSameMetroLine(Guid stationOneId, Guid stationTwoId)
+        {
+            return await _context.MetroLineStations
+                .Where(mls1 => mls1.StationId == stationOneId)
+                .Join(_context.MetroLineStations.Where(mls2 => mls2.StationId == stationTwoId),
+                    mls1 => mls1.MetroLineId,
+                    mls2 => mls2.MetroLineId,
+                    (mls1, mls2) => mls1).AnyAsync();
         }
     }
 }
