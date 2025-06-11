@@ -30,17 +30,16 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpPost]
         [Route("create-train-schedule")]
-        public async Task<ActionResult<ResponseDTO>> CreateTrainSchedule([FromBody] CreateTrainScheduleDTO createTrainScheduleDTO)
+        public async Task<ActionResult<ResponseDTO>> CreateTrainSchedule([FromBody] Guid metroLineId)
         {
-            if (createTrainScheduleDTO is null)
+            if (metroLineId == Guid.Empty)
             {
-                return BadRequest("Invalid train schedule data.");
+                return BadRequest("Invalid metro line ID.");
             }
-            var response = await _trainScheduleService.CreateTrainSchedule(createTrainScheduleDTO);
+            var response = await _trainScheduleService.GenerateTrainSchedules(metroLineId);
             return StatusCode(response.StatusCode, response);
         }
-
-
+        
         [HttpPut]
         [Route("update-train-schedule")]
         public async Task<ActionResult<ResponseDTO>> UpdateTrainSchedule([FromBody] UpdateTrainScheduleDTO updateTrainScheduleDTO)
