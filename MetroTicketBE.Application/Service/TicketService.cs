@@ -79,7 +79,6 @@ namespace MetroTicketBE.Application.Service
                         "ticketname" => isAcsending is true ? tickets.OrderBy(t => t.TicketRoute.TicketName) : tickets.OrderByDescending(t => t.TicketRoute.TicketName),
                         "startstation" => isAcsending is true ? tickets.OrderBy(t => t.TicketRoute.StartStation.Name) : tickets.OrderByDescending(t => t.TicketRoute.StartStation.Name),
                         "endstation" => isAcsending is true ? tickets.OrderBy(t => t.TicketRoute.EndStation.Name) : tickets.OrderByDescending(t => t.TicketRoute.EndStation.Name),
-                        "starttime" => isAcsending is true ? tickets.OrderBy(t => t.StartDate) : tickets.OrderByDescending(t => t.StartDate),
 
                         _ => tickets
                     };
