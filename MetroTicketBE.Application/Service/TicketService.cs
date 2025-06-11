@@ -360,6 +360,7 @@ namespace MetroTicketBE.Application.Service
                     {
                         ticket.TicketRtStatus = TicketRouteStatus.Active;
                         _unitOfWork.TicketRepository.Update(ticket);
+                        await _unitOfWork.SaveAsync();
 
                         return new ResponseDTO
                         {
@@ -387,6 +388,7 @@ namespace MetroTicketBE.Application.Service
                         {
                             ticket.TicketRtStatus = TicketRouteStatus.Inactive;
                             _unitOfWork.TicketRepository.Update(ticket);
+                            await _unitOfWork.SaveAsync();
 
                             return new ResponseDTO
                             {
