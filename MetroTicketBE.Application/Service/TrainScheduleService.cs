@@ -263,6 +263,10 @@ namespace MetroTicketBE.Application.Service
                         "stationname" => isAcsending is true
                             ? trainSchedules.OrderBy(ts => ts.Station.Name)
                             : trainSchedules.OrderByDescending(ts => ts.Station.Name),
+                        "starttime" => isAcsending is true
+                            ? trainSchedules.OrderBy(ts => ts.StartTime)
+                            : trainSchedules.OrderByDescending(ts => ts.StartTime),
+
 
                         _ => trainSchedules
                     };
