@@ -5,7 +5,6 @@ using MetroTicketBE.Domain.DTO.Ticket;
 using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Domain.Enums;
 using MetroTicketBE.Infrastructure.IRepository;
-using System.Net.Sockets;
 using System.Security.Claims;
 
 namespace MetroTicketBE.Application.Service
@@ -80,6 +79,8 @@ namespace MetroTicketBE.Application.Service
                         "ticketname" => isAcsending is true ? tickets.OrderBy(t => t.TicketRoute.TicketName) : tickets.OrderByDescending(t => t.TicketRoute.TicketName),
                         "startstation" => isAcsending is true ? tickets.OrderBy(t => t.TicketRoute.StartStation.Name) : tickets.OrderByDescending(t => t.TicketRoute.StartStation.Name),
                         "endstation" => isAcsending is true ? tickets.OrderBy(t => t.TicketRoute.EndStation.Name) : tickets.OrderByDescending(t => t.TicketRoute.EndStation.Name),
+                        "starttime" => isAcsending is true ? tickets.OrderBy(t => t.StartDate) : tickets.OrderByDescending(t => t.StartDate),
+
                         _ => tickets
                     };
                 }
@@ -204,7 +205,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> TicketRouteProcess(Guid ticketRouteId, Guid stationId, Guid metroLineId)
+        public async Task<ResponseDTO> TicketProcess(Guid ticketRouteId, Guid stationId, Guid metroLineId)
         {
             try
             {
@@ -220,19 +221,34 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                if (ticket.SubscriptionTicketId is not null)
-                {
-                    return new ResponseDTO
-                    {
-                        Message = "Vé này là vé định kỳ, không thể xử lý.",
-                        IsSuccess = false,
-                        StatusCode = 400
-                    };
-                }
-
                 if (ticket.TicketRtStatus == TicketRouteStatus.Inactive)
                 {
-                    if (ticket.TicketRoute?.StartStation is null)
+                    if (ticket.SubscriptionTicketId is not null)
+                    {
+                        if (ticket.EndDate >= DateTime.UtcNow)
+                        {
+                            ticket.TicketRtStatus = TicketRouteStatus.Active;
+                            _unitOfWork.TicketRepository.Update(ticket);
+
+                            return new ResponseDTO
+                            {
+                                Message = "Check-in thành công",
+                                IsSuccess = true,
+                                StatusCode = 200
+                            };
+                        }
+                        else
+                        {
+                            return new ResponseDTO
+                            {
+                                Message = "Vé lượt đã hết hạn sử dụng.",
+                                IsSuccess = false,
+                                StatusCode = 400
+                            };
+                        }
+                    }
+
+                    else if (ticket.TicketRoute?.StartStation is null)
                     {
                         return new ResponseDTO
                         {
@@ -248,7 +264,6 @@ namespace MetroTicketBE.Application.Service
                     {
                         ticket.TicketRtStatus = TicketRouteStatus.Active;
                         _unitOfWork.TicketRepository.Update(ticket);
-                        await _unitOfWork.SaveAsync();
 
                         return new ResponseDTO
                         {
@@ -270,7 +285,32 @@ namespace MetroTicketBE.Application.Service
 
                 else if (ticket.TicketRtStatus == TicketRouteStatus.Active)
                 {
-                    if (ticket.TicketRoute?.EndStation is null)
+                    if (ticket.SubscriptionTicketId is not null)
+                    {
+                        if (ticket.EndDate >= DateTime.UtcNow)
+                        {
+                            ticket.TicketRtStatus = TicketRouteStatus.Inactive;
+                            _unitOfWork.TicketRepository.Update(ticket);
+
+                            return new ResponseDTO
+                            {
+                                Message = "Check-out thành công",
+                                IsSuccess = true,
+                                StatusCode = 200
+                            };
+                        }
+                        else
+                        {
+                            return new ResponseDTO
+                            {
+                                Message = "Vé lượt đã hết hạn sử dụng.",
+                                IsSuccess = false,
+                                StatusCode = 400
+                            };
+                        }
+                    }
+
+                    else if (ticket.TicketRoute?.EndStation is null)
                     {
                         return new ResponseDTO
                         {
@@ -280,7 +320,7 @@ namespace MetroTicketBE.Application.Service
                         };
                     }
 
-                    var result = await CheckOutValidation(ticket, stationId, metroLineId);
+                    var result = await CheckOutTicketRoute(ticket, stationId, metroLineId);
 
                     if (result)
                     {
@@ -328,7 +368,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        private async Task<bool> CheckOutValidation(Ticket ticket, Guid stationId, Guid metroLineId)
+        private async Task<bool> CheckOutTicketRoute(Ticket ticket, Guid stationId, Guid metroLineId)
         {
             var isSuccess = false;
 
