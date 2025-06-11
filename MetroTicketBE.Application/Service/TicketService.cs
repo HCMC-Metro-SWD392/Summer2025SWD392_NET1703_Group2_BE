@@ -6,17 +6,23 @@ using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Domain.Enums;
 using MetroTicketBE.Infrastructure.IRepository;
 using System.Security.Claims;
+using MetroTicketBE.Domain.Entities;
+using MetroTicketBE.Domain.Enum;
+using Net.payOS.Types;
 
 namespace MetroTicketBE.Application.Service
 {
     public class TicketService : ITicketService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly Random random;
+
         private readonly IMapper _mapper;
         public TicketService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            random = new Random();
         }
 
         public async Task<ResponseDTO> GetAllTicketRoutes(
@@ -121,6 +127,97 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
+        public async Task<ResponseDTO> CreateTicketForSpecialCase(ClaimsPrincipal user, Guid subscriptionId)
+        {
+            try
+            {
+                var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Không tìm thấy người dùng",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+
+                var customer = await _unitOfWork.CustomerRepository.GetByUserIdAsync(userId);
+
+                if (customer is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Không tìm thấy khách hàng",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+
+                }
+
+                if (customer.CustomerType != CustomerType.OlderPerson && customer.CustomerType != CustomerType.Military)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Chỉ khách hàng người cao tuổi hoặc quân đội mới có thể tạo vé lượt đặc biệt",
+                        IsSuccess = false,
+                        StatusCode = 403
+                    };
+                }
+                var subscription = await _unitOfWork.SubscriptionRepository.GetByIdAsync(subscriptionId);
+                if (subscription is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Không tìm thấy vé đặc biệt với ID này",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+                var item = subscription.TicketName;
+                var orderCode = Math.Abs(int.Parse(DateTimeOffset.Now.ToString("fffffff")) + customer.Id.GetHashCode());
+                PaymentTransaction transaction = new PaymentTransaction()
+                {
+                    CustomerId = customer.Id,
+                    OrderCode = Convert.ToString(orderCode),
+                    ItemDataJson = item,
+                    TotalPrice = subscription.Price,
+                    PaymentMethodId = _unitOfWork.PaymentMethodRepository.GetByNameAsync("PAYOS").Result.Id,
+                    Status = PaymentStatus.Paid
+                };
+                await _unitOfWork.PaymentTransactionRepository.AddAsync(transaction);
+                await _unitOfWork.SaveAsync();
+                Ticket ticket = new Ticket()
+                {
+                    CustomerId = customer.Id,
+                    SubscriptionTicketId = subscriptionId,
+                    TransactionId = transaction.Id,
+                    Price = subscription.Price,
+                    TicketSerial = string.Concat(Enumerable.Range(0, 10).Select(_ => random.Next(0, 10).ToString())),
+                    StartDate = DateTime.UtcNow,
+                    EndDate = DateTime.UtcNow.AddDays(subscription.Expiration),
+                    QrCode = Guid.NewGuid().ToString(),
+                };
+                await _unitOfWork.TicketRepository.AddAsync(ticket);
+                await _unitOfWork.SaveAsync();
+                return new ResponseDTO()
+                {
+                    Message = "Tạo vé lượt đặc biệt thành công",
+                    IsSuccess = true,
+                    StatusCode = 201,
+                    Result = _mapper.Map<GetTicketDTO>(ticket)
+                };
+            }
+            catch (Exception exception)
+            {
+                return new ResponseDTO()
+                {
+                    Message = "Đã xảy ra lỗi khi tạo vé lượt đặc biệt: " + exception.Message,
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
         public async Task<ResponseDTO> GetTicketBySerial(string serial)
         {
             try

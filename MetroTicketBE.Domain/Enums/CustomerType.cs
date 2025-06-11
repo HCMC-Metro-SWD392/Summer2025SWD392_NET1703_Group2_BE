@@ -11,6 +11,7 @@ namespace MetroTicketBE.Domain.Enums
         Normal = 0, // Khách hàng bình thường
         Student = 1, // Khách hàng học sinh, sinh viên
         OlderPerson = 2, // Khách hàng người cao tuổi
-        Other = 3 // Khách hàng khác
+        Military = 3, // Khách hàng quân đội
+        Other = 4 // Khách hàng khác
     }
 }

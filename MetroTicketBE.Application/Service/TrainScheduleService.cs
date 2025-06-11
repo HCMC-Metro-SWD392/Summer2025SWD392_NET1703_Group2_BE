@@ -22,36 +22,49 @@ namespace MetroTicketBE.Application.Service
         {
             try
             {
-                var isExistTime = await _unitOfWork.TrainScheduleRepository
-                    .IsExistTrainSchedule(createTrainScheduleDTO.MetroLineId, createTrainScheduleDTO.StationId, createTrainScheduleDTO.StartTime, createTrainScheduleDTO.Direction);
+                var schedulesToAdd = new List<TrainSchedule>();
+                TimeSpan interval = TimeSpan.FromMinutes(12);
+                TimeSpan currentTime = createTrainScheduleDTO.StartTime;
 
-                if (isExistTime)
+                while (currentTime <= createTrainScheduleDTO.EndTime)
+                {
+                    // Kiểm tra trùng lịch trình tại mỗi thời điểm
+                    var isExistTime = await _unitOfWork.TrainScheduleRepository
+                        .IsExistTrainSchedule(createTrainScheduleDTO.MetroLineId, createTrainScheduleDTO.StationId, currentTime, createTrainScheduleDTO.Direction);
+
+                    if (!isExistTime)
+                    {
+                        schedulesToAdd.Add(new TrainSchedule
+                        {
+                            MetroLineId = createTrainScheduleDTO.MetroLineId,
+                            StationId = createTrainScheduleDTO.StationId,
+                            StartTime = currentTime,
+                            Direction = createTrainScheduleDTO.Direction
+                        });
+                    }
+
+                    currentTime = currentTime.Add(interval);
+                }
+
+                if (schedulesToAdd.Count == 0)
                 {
                     return new ResponseDTO
                     {
                         StatusCode = 409,
-                        Message = "Lịch trình đã tồn tại cho tuyến metro này, ga này, thời gian bắt đầu và hướng di chuyển.",
+                        Message = "Tất cả các khung giờ đã tồn tại. Không có lịch trình mới nào được tạo.",
                         IsSuccess = false
                     };
                 }
 
-                TrainSchedule trainSchedule = new TrainSchedule
-                {
-                    MetroLineId = createTrainScheduleDTO.MetroLineId,
-                    StationId = createTrainScheduleDTO.StationId,
-                    StartTime = createTrainScheduleDTO.StartTime,
-                    Direction = createTrainScheduleDTO.Direction
-                };
-
-                await _unitOfWork.TrainScheduleRepository.AddAsync(trainSchedule);
+                await _unitOfWork.TrainScheduleRepository.AddRangeAsync(schedulesToAdd);
                 await _unitOfWork.SaveAsync();
 
                 return new ResponseDTO
                 {
                     StatusCode = 201,
-                    Message = "Lịch trình tàu đã được tạo thành công.",
+                    Message = $"Đã tạo thành công {schedulesToAdd.Count} lịch trình tàu.",
                     IsSuccess = true,
-                    Result = trainSchedule
+                    Result = schedulesToAdd
                 };
             }
             catch (Exception ex)
@@ -62,7 +75,7 @@ namespace MetroTicketBE.Application.Service
                     Message = "Đã xảy ra lỗi khi tạo lịch trình tàu: " + ex.Message,
                     IsSuccess = false
                 };
-            };
+            }
         }
 
         public async Task<ResponseDTO> CancelTrainSchedule(Guid trainScheduleId)

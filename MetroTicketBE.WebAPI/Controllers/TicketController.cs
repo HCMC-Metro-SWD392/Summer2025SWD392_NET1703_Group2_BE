@@ -50,6 +50,24 @@ namespace MetroTicketBE.WebAPI.Controllers
             var response = await _ticketService.ChangeTicketRouteStatus(ticketId);
             return StatusCode(response.StatusCode, response);
         }
+        
+        [HttpPost]
+        [Route("create-ticket-for-special-case")]
+        public async Task<ActionResult<ResponseDTO>> CreateTicketForSpecialCase([FromQuery] Guid subscriptionId)
+        {
+            if (subscriptionId == Guid.Empty)
+            {
+                return BadRequest(new ResponseDTO
+                {
+                    IsSuccess = false,
+                    StatusCode = 400,
+                    Message = "Mã đăng ký không hợp lệ"
+                });
+            }
+
+            var response = await _ticketService.CreateTicketForSpecialCase(User, subscriptionId);
+            return StatusCode(response.StatusCode, response);
+        }
 
         [HttpPut]
         [Route("ticket-route-process/{ticketRouteId:guid}/{stationId:guid}/{metroLineId:guid}")]

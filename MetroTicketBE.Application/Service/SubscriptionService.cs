@@ -1,4 +1,6 @@
-﻿using MetroTicketBE.Application.IService;
+﻿using AutoMapper;
+using MetroTicketBE.Application.IService;
+using MetroTicketBE.Application.Mappings;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.SubscriptionTicket;
 using MetroTicketBE.Domain.Entities;
@@ -11,10 +13,12 @@ namespace MetroTicketBE.Application.Service;
 public class SubscriptionService: ISubscriptionService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
     
-public SubscriptionService(IUnitOfWork unitOfWork)
+public SubscriptionService(IUnitOfWork unitOfWork, IMapper mapper)
     {
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     public async Task<ResponseDTO> CreateSubscriptionAsync(CreateSubscriptionDTO dto)
@@ -51,6 +55,14 @@ public SubscriptionService(IUnitOfWork unitOfWork)
             }else if(dto.TicketType == SubscriptionTicketType.Weekly)
             {
                 subscriptionTicket.Expiration = 7;
+            }
+            else if (dto.TicketType is SubscriptionTicketType.Student)
+            {
+                subscriptionTicket.Expiration = 30;
+            }
+            else if (dto.TicketType is SubscriptionTicketType.Elder or SubscriptionTicketType.Military)
+            {
+                subscriptionTicket.Expiration = int.MaxValue; // Vé dành cho người cao tuổi hoặc quân đội có thời hạn sử dụng vô hạn
             }
             else
             {
@@ -97,12 +109,14 @@ public SubscriptionService(IUnitOfWork unitOfWork)
                     Message = "Không tìm thấy vé nào"
                 };
             }
+
+            var subscriptionDTO = _mapper.Map<List<GetSubscriptionTicketDTO>>(subscriptions);
             return new ResponseDTO()
             {
                 IsSuccess = true,
                 StatusCode = 200,
                 Message = "Lấy danh sách vé thành công",
-                Result = subscriptions
+                Result = subscriptionDTO
             };
             
         }catch (Exception ex)

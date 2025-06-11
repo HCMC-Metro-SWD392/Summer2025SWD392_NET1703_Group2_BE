@@ -38,6 +38,8 @@ namespace MetroTicketBE.Application.Service
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             random = new Random();
         }
+
+       
         public async Task<ResponseDTO> CreateLinkPaymentTicketRoutePayOS(ClaimsPrincipal user, CreateLinkPaymentRoutePayOSDTO createLinkDTO)
         {
             try
@@ -98,6 +100,17 @@ namespace MetroTicketBE.Application.Service
                         Message = "Không có vé nào để thanh toán",
                         IsSuccess = false,
                         StatusCode = 400
+                    };
+                }
+                var isStudent = customer.CustomerType == CustomerType.Student;
+                bool isExpired = customer.StudentExpiration.HasValue && customer.StudentExpiration.Value < DateTime.UtcNow;
+                if (!isStudent || isExpired && subscriptionTicket is not null && subscriptionTicket.TicketType == SubscriptionTicketType.Student)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Khách hàng không đủ điều kiện để mua vé sinh viên",
+                        IsSuccess = false,
+                        StatusCode = 403
                     };
                 }
 
