@@ -55,7 +55,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [Route("ticket-route-process/{ticketRouteId:guid}/{stationId:guid}/{metroLineId:guid}")]
         public async Task<ActionResult<ResponseDTO>> TicketRouteProcess([FromRoute] Guid ticketRouteId, [FromRoute] Guid stationId, [FromRoute] Guid metroLineId)
         {
-            var response = await _ticketService.TicketRouteProcess(ticketRouteId, stationId, metroLineId);
+            var response = await _ticketService.TicketProcess(ticketRouteId, stationId, metroLineId);
             return StatusCode(response.StatusCode, response);
         }
     }
