@@ -14,6 +14,7 @@ namespace MetroTicketBE.Domain.DTO.TrainSchedule
         public Guid MetroLineId { get; set; }
         public Guid StationId { get; set; }
         public TimeSpan StartTime { get; set; }
+        public TimeSpan EndTime { get; set; }
         public TrainScheduleType Direction { get; set; }
     }
 }
