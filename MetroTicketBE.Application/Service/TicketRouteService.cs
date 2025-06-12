@@ -140,13 +140,19 @@ namespace MetroTicketBE.Application.Service
 
                 var stationPath = _graph.FindShortestPath(startStationId, endStationId);
 
+                // Log đường đi để kiểm tra
+                var stationNames = stationPath.Select(id =>
+                    allMetroLines.SelectMany(l => l.MetroLineStations)
+                        .FirstOrDefault(s => s.StationId == id)?.Station.Name ?? id.ToString()).ToList();
+                Console.WriteLine("Đường đi: " + string.Join(" -> ", stationNames));
+
                 // Nếu không tìm thấy đường đi, ném ra ngoại lệ
                 if (stationPath == null || !stationPath.Any())
                 {
                     throw new Exception("Không tìm được đường đi giữa hai trạm.");
                 }
 
-                double distance = _unitOfWork.StationRepository.CalculateTotalDistance(stationPath, allMetroLines);
+                double distance = _graph.GetPathDistance(stationPath);
 
                 // Kiểm tra khoảng cách tính được có hợp lệ hay không
                 if (distance <= 0)
