@@ -9,5 +9,7 @@ namespace MetroTicketBE.Application.IService
     {
         Task<ResponseDTO> CraeteTicketRoute(CreateTicketRouteDTO createTicketRouteDTO);
         Task<ResponseDTO> GetTicketRouteByFromTo(Guid StartStation, Guid EndStation);
+
+        Task<double> CalculateDistanceOfTwoStation(Guid startStationId, Guid endStationId);
     }
 }

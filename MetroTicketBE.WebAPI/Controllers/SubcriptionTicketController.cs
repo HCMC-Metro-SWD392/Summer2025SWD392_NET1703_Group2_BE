@@ -27,8 +27,8 @@ public class SubcriptionTicketController: ControllerBase
                 Message = "Dữ liệu không hợp lệ"
             });
         }
-
-        var response = await _subscriptionService.CreateSubscriptionAsync(dto);
+    
+        var response = await _subscriptionService.CreateSubscriptionTicketAsync(dto);
         if (response.IsSuccess)
         {
             return Ok(response);
