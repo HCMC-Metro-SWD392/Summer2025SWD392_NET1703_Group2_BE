@@ -27,18 +27,29 @@ namespace MetroTicketBE.WebAPI.Controllers
             var response = await _trainScheduleService.GetTrainSchedules(trainScheduleId);
             return StatusCode(response.StatusCode, response);
         }
+        [HttpGet]
+        [Route("station/{stationId}")]
+        public async Task<ActionResult<ResponseDTO>> GetTrainSchedulesByStationId(Guid stationId)
+        {
+            if (stationId == Guid.Empty)
+            {
+                return BadRequest("Invalid station ID.");
+            }
+            var response = await _trainScheduleService.GetTrainSchedulesByStationId(stationId);
+            return StatusCode(response.StatusCode, response);
+        }
 
-        // [HttpPost]
-        // [Route("create-train-schedule")]
-        // public async Task<ActionResult<ResponseDTO>> CreateTrainSchedule([FromBody] Guid metroLineId)
-        // {
-        //     if (metroLineId == Guid.Empty)
-        //     {
-        //         return BadRequest("Invalid metro line ID.");
-        //     }
-        //     var response = await _trainScheduleService.GenerateTrainSchedules(metroLineId);
-        //     return StatusCode(response.StatusCode, response);
-        // }
+        [HttpPost]
+        [Route("create-train-schedule")]
+        public async Task<ActionResult<ResponseDTO>> CreateTrainSchedule([FromBody] Guid metroLineId)
+        {
+            if (metroLineId == Guid.Empty)
+            {
+                return BadRequest("Invalid metro line ID.");
+            }
+            var response = await _trainScheduleService.CreateMetroSchedule(metroLineId);
+            return StatusCode(response.StatusCode, response);
+        }
         
         [HttpPut]
         [Route("update-train-schedule")]

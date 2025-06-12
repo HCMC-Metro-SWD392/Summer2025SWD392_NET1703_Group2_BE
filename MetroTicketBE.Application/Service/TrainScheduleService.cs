@@ -79,51 +79,110 @@ namespace MetroTicketBE.Application.Service
                 };
             }
         }
-
-        public async void CreateStationStartTime(Guid metroLineId)
+        
+        public async Task<ResponseDTO> CreateMetroSchedule(Guid metroLineId)
         {
-            
+             var metroLine = await _unitOfWork.MetroLineRepository.GetByIdAsync(metroLineId);
+    if (metroLine == null) return new ResponseDTO()
+    {
+        StatusCode = 404,
+        Message = "Tuyến metro không tồn tại.",
+        IsSuccess = false
+    };
+
+    var orderedStations = await _unitOfWork.MetroLineStationRepository.GetStationByMetroLineIdAsync(metroLineId);
+    if (orderedStations == null || !orderedStations.Any()) return new ResponseDTO()
+    {
+        StatusCode = 404,
+        Message = "Không tìm thấy trạm nào trong tuyến metro này.",
+        IsSuccess = false
+    };
+
+    var schedulesToAdd = new List<TrainSchedule>();
+
+    TimeSpan intervalBetweenStations = TimeSpan.FromMinutes(3);       // Thời gian di chuyển giữa các ga
+    TimeSpan intervalBetweenTrains = TimeSpan.FromMinutes(12);        // Giãn cách giữa các chuyến
+    TimeSpan turnaroundBreakTime = TimeSpan.FromMinutes(3);           // Thời gian nghỉ để quay đầu
+    TimeSpan totalOperationDuration = TimeSpan.FromHours(17);         // Tổng thời gian vận hành
+    TimeSpan firstDepartureTime = metroLine.StartTime;                // Giờ bắt đầu từ metroLine
+    TimeSpan lastDepartureTime = firstDepartureTime.Add(totalOperationDuration); // Giới hạn giờ khởi hành chuyến Up cuối
+    
+    
+    
+    TimeSpan currentUpDeparture = firstDepartureTime;
+
+    while (currentUpDeparture <= lastDepartureTime)
+    {
+        // === Chiều UP: từ ga đầu → ga cuối ===
+        TimeSpan upTime = currentUpDeparture;
+        foreach (var station in orderedStations)
+        {
+            schedulesToAdd.Add(new TrainSchedule
+            {
+                Id = Guid.NewGuid(),
+                MetroLineId = metroLineId,
+                StationId = station.Id,
+                StartTime = upTime,
+                Direction = TrainScheduleType.Up,
+                Status = TrainScheduleStatus.Normal
+            });
+
+            upTime = upTime.Add(intervalBetweenStations);
         }
 
-        private async void GenerateTrainSchedule(Guid metroLineId)
-        {
-            var metroLine = await _unitOfWork.MetroLineRepository.GetByIdAsync(metroLineId);
-            var orderedStations = await _unitOfWork.MetroLineStationRepository.GetStationByMetroLineIdAsync(metroLineId);
-            
-            TimeSpan interval = TimeSpan.FromMinutes(3);
-            var schedulesToAdd = new List<TrainSchedule>();
-            TimeSpan currentUpTime = metroLine.StartTime;
-            for (int i = 0; i < orderedStations.Count; i++)
-            {
-                schedulesToAdd.Add(new TrainSchedule()
-                {
-                    MetroLineId = metroLineId,
-                    StationId = orderedStations[i].Id,
-                    StartTime = currentUpTime,
-                    Direction = TrainScheduleType.Up,
-                    Status = TrainScheduleStatus.Normal
-                });
-                currentUpTime = currentUpTime.Add(interval);
-            }
-            
-            TimeSpan currentDownTime = metroLine.StartTime;
-            for (int i = orderedStations.Count - 1; i >= 0; i--)
-            {
-                schedulesToAdd.Add(new TrainSchedule
-                {
-                    Id = Guid.NewGuid(),
-                    TrainId = null,
-                    MetroLineId = metroLine.Id,
-                    StationId = orderedStations[i].Id,
-                    StartTime = currentDownTime,
-                    Direction = TrainScheduleType.Down,
-                    Status = TrainScheduleStatus.Normal
-                });
-                currentDownTime = currentDownTime.Add(interval);
-            }
-            await _unitOfWork.TrainScheduleRepository.AddRangeAsync(schedulesToAdd);
-            await _unitOfWork.SaveAsync();
+        // === Chiều DOWN: từ ga cuối → ga đầu (sau khi nghỉ) ===
+        TimeSpan downDeparture = upTime.Add(turnaroundBreakTime);
+        TimeSpan downTime = downDeparture;
 
+        for (int i = orderedStations.Count - 1; i >= 0; i--)
+        {
+            schedulesToAdd.Add(new TrainSchedule
+            {
+                Id = Guid.NewGuid(),
+                MetroLineId = metroLineId,
+                StationId = orderedStations[i].Id,
+                StartTime = downTime,
+                Direction = TrainScheduleType.Down,
+                Status = TrainScheduleStatus.Normal
+            });
+
+            downTime = downTime.Add(intervalBetweenStations);
+        }
+
+        // Tăng thời gian xuất phát của chuyến kế tiếp
+        currentUpDeparture = currentUpDeparture.Add(intervalBetweenTrains);
+    }
+
+    await _unitOfWork.TrainScheduleRepository.AddRangeAsync(schedulesToAdd);
+    await _unitOfWork.SaveAsync();
+            return new ResponseDTO()
+            {
+                StatusCode = 201,
+                Message = "Đã tạo lịch trình cho tất cả các trạm thành công.",
+                IsSuccess = true,
+                Result = null
+            };
+        }
+
+        public async Task<ResponseDTO> GetTrainSchedulesByStationId(Guid stationId)
+        {
+            if (stationId == Guid.Empty)
+            {
+                return new ResponseDTO
+                {
+                    StatusCode = 400,
+                    Message = "ID ga không hợp lệ.",
+                    IsSuccess = false
+                };
+            }
+            var schedules = await _unitOfWork.TrainScheduleRepository.GetByStationIdSortedAsync(stationId);
+            return new ResponseDTO()
+            {
+                StatusCode = 200,
+                Message = "Lấy lịch trình thành công.",
+                IsSuccess = true,
+                Result = schedules
+            };
         }
         public async Task<ResponseDTO> CancelTrainSchedule(Guid trainScheduleId)
         {
