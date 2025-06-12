@@ -11,5 +11,10 @@ public class SubscriptionTicket
     public SubscriptionTicketType TicketType { get; set; }
     public int Price { get; set; }
     public int Expiration { get; set; }
+    public Guid StartSationId { get; set; }
+    public Guid EndStationId { get; set; }
     public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
+
+    public Station StartStation { get; set; } = null!;
+    public Station EndStation { get; set; } = null!;
 }

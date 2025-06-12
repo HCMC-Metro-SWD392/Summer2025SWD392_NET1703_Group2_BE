@@ -18,6 +18,6 @@ namespace MetroTicketBE.Domain.DTO.Ticket
         public string? TicketSerial { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        public TicketRouteStatus? TicketRtStatus { get; set; }
+        public TicketStatus? TicketRtStatus { get; set; }
     }
 }
