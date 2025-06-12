@@ -311,19 +311,17 @@ namespace MetroTicketBE.Application.Service
                         }
                     }
 
-                    else if (ticket.TicketRoute?.EndStation is null)
-                    {
-                        return new ResponseDTO
-                        {
-                            Message = "Lỗi không tìm thấy trạm kết thúc hoặc chưa check-in.",
-                            IsSuccess = false,
-                            StatusCode = 400
-                        };
-                    }
+                    //else if (ticket.TicketRoute?.EndStation is null)
+                    //{
+                    //    return new ResponseDTO
+                    //    {
+                    //        Message = "Lỗi không tìm thấy trạm kết thúc hoặc chưa check-in.",
+                    //        IsSuccess = false,
+                    //        StatusCode = 400
+                    //    };
+                    //}
 
-                    var result = await CheckOutTicketRoute(ticket, stationId, metroLineId);
-
-                    if (result)
+                    else if (await CheckOutTicketRoute(ticket, stationId, metroLineId))
                     {
                         return new ResponseDTO
                         {

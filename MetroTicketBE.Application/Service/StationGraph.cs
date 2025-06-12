@@ -22,6 +22,25 @@ namespace MetroTicketBE.WebAPI.Extentions
                     AddEdge(current.StationId, next.StationId, distance);
                     AddEdge(next.StationId, current.StationId, distance);
                 }
+
+                var stationGroups = metroLines
+                    .SelectMany(ml => ml.MetroLineStations)
+                    .GroupBy(mls => mls.StationId)
+                    .Where(g => g.Count() > 1);
+
+                foreach (var group in stationGroups)
+                {
+                    var stations = group.ToList();
+
+                    for (int i = 0; i < stations.Count; i++)
+                    {
+                        for (int j = i + 1; j < stations.Count; j++)
+                        {
+                            AddEdge(stations[i].StationId, stations[j].StationId, 0); // Assuming 0 weight for same station connections
+                            AddEdge(stations[j].StationId, stations[i].StationId, 0); // Assuming 0 weight for same station connections
+                        }
+                    }
+                }
             }
         }
 
@@ -91,5 +110,29 @@ namespace MetroTicketBE.WebAPI.Extentions
             path.Insert(0, startId);
             return path;
         }
+        public double GetPathDistance(List<Guid> path)
+        {
+            if (path == null || path.Count < 2) return 0;
+
+            double totalDistance = 0;
+            for (int i = 0; i < path.Count - 1; i++)
+            {
+                var from = path[i];
+                var to = path[i + 1];
+                var edge = graph[from]?.Find(e => e.neighborId == to);
+                if (edge.HasValue)
+                {
+                    totalDistance += edge.Value.weight;
+                }
+                else
+                {
+                    throw new Exception($"Không tìm thấy cạnh từ {from} đến {to}");
+                }
+            }
+            return totalDistance;
+        }
     }
 }
+
+    
+
