@@ -100,6 +100,9 @@ namespace MetroTicketBE.Infrastructure.Context
                 .HasForeignKey(tr => tr.EndStationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            //
+            
+
             //Process
             modelBuilder.Entity<Process>()
                 .HasOne(p => p.StationCheckIn)

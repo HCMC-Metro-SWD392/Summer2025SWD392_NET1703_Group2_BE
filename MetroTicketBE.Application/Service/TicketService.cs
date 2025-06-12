@@ -6,9 +6,9 @@ using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Domain.Enums;
 using MetroTicketBE.Infrastructure.IRepository;
 using System.Security.Claims;
-using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Domain.Enum;
-using Net.payOS.Types;
+using MetroTicketBE.WebAPI.Extentions;
+using System.Net.Sockets;
 
 namespace MetroTicketBE.Application.Service
 {
@@ -33,7 +33,7 @@ namespace MetroTicketBE.Application.Service
             double? toPrice,
             string? sortBy,
             bool? isAcsending,
-            TicketRouteStatus ticketType,
+            TicketStatus ticketType,
             int pageNumber,
             int pageSize)
         {
@@ -268,7 +268,7 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                if (ticket.TicketRtStatus == TicketRouteStatus.Used)
+                if (ticket.TicketRtStatus == TicketStatus.Used)
                 {
                     return new ResponseDTO
                     {
@@ -278,7 +278,7 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                ticket.TicketRtStatus = ticket.TicketRtStatus == TicketRouteStatus.Active ? TicketRouteStatus.Inactive : TicketRouteStatus.Active;
+                ticket.TicketRtStatus = ticket.TicketRtStatus == TicketStatus.Active ? TicketStatus.Inactive : TicketStatus.Active;
 
                 _unitOfWork.TicketRepository.Update(ticket);
                 await _unitOfWork.SaveAsync();
@@ -301,157 +301,77 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> TicketProcess(Guid ticketRouteId, Guid stationId, Guid metroLineId)
+        public async Task<ResponseDTO> CheckInTicketProcess(Guid ticketId, Guid stationId)
         {
             try
             {
-                var ticket = await _unitOfWork.TicketRepository.GetByIdAsync(ticketRouteId);
+                var ticket = await _unitOfWork.TicketRepository.GetByIdAsync(ticketId);
 
                 if (ticket is null)
                 {
                     return new ResponseDTO
                     {
-                        Message = "Không tìm thấy vé lượt cần xử lý.",
+                        Message = "Không tìm thấy vé cần xử lý.",
                         IsSuccess = false,
                         StatusCode = 404
                     };
                 }
 
-                if (ticket.TicketRtStatus == TicketRouteStatus.Inactive)
+                if (ticket.EndDate < DateTime.UtcNow)
                 {
-                    if (ticket.SubscriptionTicketId is not null)
-                    {
-                        if (ticket.EndDate >= DateTime.UtcNow)
-                        {
-                            ticket.TicketRtStatus = TicketRouteStatus.Active;
-                            _unitOfWork.TicketRepository.Update(ticket);
-
-                            return new ResponseDTO
-                            {
-                                Message = "Check-in thành công",
-                                IsSuccess = true,
-                                StatusCode = 200
-                            };
-                        }
-                        else
-                        {
-                            return new ResponseDTO
-                            {
-                                Message = "Vé lượt đã hết hạn sử dụng.",
-                                IsSuccess = false,
-                                StatusCode = 400
-                            };
-                        }
-                    }
-
-                    else if (ticket.TicketRoute?.StartStation is null)
-                    {
-                        return new ResponseDTO
-                        {
-                            Message = "Lỗi không tìm thấy trạm bắt đầu.",
-                            IsSuccess = false,
-                            StatusCode = 400
-                        };
-                    }
-
-                    var isCorrectStation = ticket.TicketRoute.StartStation.Id == stationId;
-
-                    if (isCorrectStation)
-                    {
-                        ticket.TicketRtStatus = TicketRouteStatus.Active;
-                        _unitOfWork.TicketRepository.Update(ticket);
-                        await _unitOfWork.SaveAsync();
-
-                        return new ResponseDTO
-                        {
-                            Message = "Vé lượt đã được check-in thành công.",
-                            IsSuccess = true,
-                            StatusCode = 200
-                        };
-                    }
-                    else
-                    {
-                        return new ResponseDTO
-                        {
-                            Message = "Trạm không đúng với trạm bắt đầu của vé lượt.",
-                            IsSuccess = false,
-                            StatusCode = 400
-                        };
-                    }
-                }
-
-                else if (ticket.TicketRtStatus == TicketRouteStatus.Active)
-                {
-                    if (ticket.SubscriptionTicketId is not null)
-                    {
-                        if (ticket.EndDate >= DateTime.UtcNow)
-                        {
-                            ticket.TicketRtStatus = TicketRouteStatus.Inactive;
-                            _unitOfWork.TicketRepository.Update(ticket);
-                            await _unitOfWork.SaveAsync();
-
-                            return new ResponseDTO
-                            {
-                                Message = "Check-out thành công",
-                                IsSuccess = true,
-                                StatusCode = 200
-                            };
-                        }
-                        else
-                        {
-                            return new ResponseDTO
-                            {
-                                Message = "Vé lượt đã hết hạn sử dụng.",
-                                IsSuccess = false,
-                                StatusCode = 400
-                            };
-                        }
-                    }
-
-                    //else if (ticket.TicketRoute?.EndStation is null)
-                    //{
-                    //    return new ResponseDTO
-                    //    {
-                    //        Message = "Lỗi không tìm thấy trạm kết thúc hoặc chưa check-in.",
-                    //        IsSuccess = false,
-                    //        StatusCode = 400
-                    //    };
-                    //}
-
-                    else if (await CheckOutTicketRoute(ticket, stationId, metroLineId))
-                    {
-                        return new ResponseDTO
-                        {
-                            Message = "Vé lượt đã được check-out thành công.",
-                            IsSuccess = true,
-                            StatusCode = 200
-                        };
-                    }
-
                     return new ResponseDTO
                     {
-                        Message = "Trạm không đúng với phạm vi cho phép kết thúc của vé lượt (nằm ngoài vùng cho phép check-uot).",
+                        Message = "Vé đã hết hạn sử dụng.",
                         IsSuccess = false,
                         StatusCode = 400
                     };
                 }
 
-                else if (ticket.TicketRtStatus == TicketRouteStatus.Used)
+                if (ticket.TicketRtStatus == TicketStatus.Used)
                 {
                     return new ResponseDTO
                     {
-                        Message = "Vé lượt đã được sử dụng.",
+                        Message = "Vé đã được sử dụng.",
                         IsSuccess = false,
                         StatusCode = 400
                     };
                 }
 
-                return new ResponseDTO
+                if (ticket.TicketRtStatus == TicketStatus.Active)
                 {
-                    Message = "Đã xảy ra lỗi không kích hoạt luồng điều khiển sử dụng vé",
-                    IsSuccess = false,
-                    StatusCode = 400
-                };
+                    return new ResponseDTO
+                    {
+                        Message = "Vé đã được check-in trước đó.",
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
+                var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
+
+                var _graph = new StationGraph(allMetroLines);
+
+                var stationPath = new List<Guid>();
+
+                if (ticket.TicketRoute is not null)
+                {
+                    stationPath = _graph.FindShortestPath(ticket.TicketRoute.StartStation.Id, ticket.TicketRoute.EndStationId);
+                    return await CheckInTicketRouteAndSubProcess(ticket, stationId, stationPath);
+                }
+                else if (ticket.SubscriptionTicket is not null)
+                {
+                    stationPath = _graph.FindShortestPath(ticket.SubscriptionTicket.StartSationId, ticket.SubscriptionTicket.EndStationId);
+                    return await CheckInTicketRouteAndSubProcess(ticket, stationId, stationPath);
+                }
+                else
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Vé lỗi định dạng không thể xác định vé lượt hay vé kỳ",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
             }
             catch (Exception ex)
             {
@@ -464,32 +384,200 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        private async Task<bool> CheckOutTicketRoute(Ticket ticket, Guid stationId, Guid metroLineId)
+        public async Task<ResponseDTO> CheckOutTicketProcess(Guid ticketId, Guid stationId)
         {
-            var isSuccess = false;
-
-            if (ticket.TicketRoute.EndStation.Id == stationId)
+            try
             {
-                ticket.TicketRtStatus = TicketRouteStatus.Used;
-                _unitOfWork.TicketRepository.Update(ticket);
-                await _unitOfWork.SaveAsync();
-                isSuccess = true;
-            }
-            else if (await _unitOfWork.MetroLineRepository.IsSameMetroLine(ticket.TicketRoute.EndStation.Id, stationId))
-            {
-                int orderStart = await _unitOfWork.StationRepository.GetOrderStationById(ticket.TicketRoute.StartStation.Id, metroLineId);
-                int orderEnd = await _unitOfWork.StationRepository.GetOrderStationById(ticket.TicketRoute.EndStation.Id, metroLineId);
-                int order = await _unitOfWork.StationRepository.GetOrderStationById(stationId, metroLineId);
+                var ticket = await _unitOfWork.TicketRepository.GetByIdAsync(ticketId);
 
-                if ((orderStart <= order && order <= orderEnd) || (orderStart >= order && order >= orderEnd))
+                if (ticket is null)
                 {
-                    ticket.TicketRtStatus = TicketRouteStatus.Used;
-                    _unitOfWork.TicketRepository.Update(ticket);
-                    await _unitOfWork.SaveAsync();
-                    isSuccess = true;
+                    return new ResponseDTO
+                    {
+                        Message = "Không tìm thấy vé cần xử lý.",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+
+                if (ticket.EndDate < DateTime.UtcNow)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Vé đã hết hạn sử dụng.",
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
+                if (ticket.TicketRtStatus == TicketStatus.Used)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Vé đã được sử dụng.",
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
+                if (ticket.TicketRtStatus == TicketStatus.Inactive)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Vé chưa được check-in trước đó.",
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
+                var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
+
+                var _graph = new StationGraph(allMetroLines);
+
+                var stationPath = new List<Guid>();
+
+                if (ticket.TicketRoute is not null)
+                {
+                    stationPath = _graph.FindShortestPath(ticket.TicketRoute.StartStation.Id, ticket.TicketRoute.EndStationId);
+                    return await CheckOutTicketRouteProcess(ticket, stationId, stationPath);
+                }
+                else if (ticket.SubscriptionTicket is not null)
+                {
+                    stationPath = _graph.FindShortestPath(ticket.SubscriptionTicket.StartSationId, ticket.SubscriptionTicket.EndStationId);
+                    return await CheckOutProcessSubscriptionTicket(ticket, stationId, stationPath);
+                }
+                else
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Vé lỗi định dạng không thể xác định vé lượt hay vé kỳ",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
                 }
             }
-            return isSuccess;
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    Message = "Đã xảy ra lỗi khi xử lý vé lượt: " + ex.Message,
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
         }
+
+        private async Task<ResponseDTO> CheckOutProcessSubscriptionTicket(Ticket ticket, Guid stationId, List<Guid> stationPath)
+        {
+
+            if (stationPath.Contains(stationId))
+            {
+                ticket.TicketRtStatus = TicketStatus.Inactive;
+                _unitOfWork.TicketRepository.Update(ticket);
+                await _unitOfWork.SaveAsync();
+                return new ResponseDTO
+                {
+                    Message = "Vé đã được check-out thành công.",
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
+            }
+            else
+            {
+                return new ResponseDTO
+                {
+                    Message = "Trạm không đúng với phạm vi cho phép kết thúc của vé (nằm ngoài vùng cho phép check-out).",
+                    IsSuccess = false,
+                    StatusCode = 400
+                };
+            }
+        }
+
+
+
+
+        private async Task<ResponseDTO> CheckInTicketRouteAndSubProcess(Ticket ticket, Guid stationId, List<Guid> stationPath)
+        {
+            // Check log stations path
+            //var stationNames = stationPath.Select(id =>
+            //allMetroLines.SelectMany(l => l.MetroLineStations)
+            //    .FirstOrDefault(s => s.StationId == id)?.Station.Name ?? id.ToString()).ToList();
+            //Console.WriteLine("Đường đi: " + string.Join(" -> ", stationNames));
+
+            // Check if the station is within the allowed range for check-out
+
+            if (stationPath.Contains(stationId))
+            {
+                ticket.TicketRtStatus = TicketStatus.Active;
+                _unitOfWork.TicketRepository.Update(ticket);
+                await _unitOfWork.SaveAsync();
+                return new ResponseDTO
+                {
+                    Message = "Vé đã được check-in thành công.",
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
+            }
+            else
+            {
+                return new ResponseDTO
+                {
+                    Message = "Trạm không đúng với phạm vi cho phép bắt đầu của vé (nằm ngoài vùng cho phép check-in).",
+                    IsSuccess = false,
+                    StatusCode = 400
+                };
+            }
+
+        }
+
+        private async Task<ResponseDTO> CheckOutTicketRouteProcess(Ticket ticket, Guid stationId, List<Guid> stationPath)
+        {
+            // Check log stations path
+            //var stationNames = stationPath.Select(id =>
+            //allMetroLines.SelectMany(l => l.MetroLineStations)
+            //    .FirstOrDefault(s => s.StationId == id)?.Station.Name ?? id.ToString()).ToList();
+            //Console.WriteLine("Đường đi: " + string.Join(" -> ", stationNames));
+
+            // Check if the station is within the allowed range for check-out
+
+            if (stationPath.Contains(stationId))
+            {
+                ticket.TicketRtStatus = TicketStatus.Used;
+                _unitOfWork.TicketRepository.Update(ticket);
+                await _unitOfWork.SaveAsync();
+                return new ResponseDTO
+                {
+                    Message = "Vé lượt đã được check-out thành công.",
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
+            }
+            else
+            {
+                return new ResponseDTO
+                {
+                    Message = "Trạm không đúng với phạm vi cho phép kết thúc của vé lượt (nằm ngoài vùng cho phép check-uot).",
+                    IsSuccess = false,
+                    StatusCode = 400
+                };
+            }
+        }
+
+        //private async Task<bool> CheckOutTicket(Ticket ticket, Guid stationId, Guid metroLineId)
+        //{
+        //    var isSuccess = false;
+        //    int orderStart = await _unitOfWork.StationRepository.GetOrderStationById(ticket.TicketRoute.StartStation.Id, metroLineId);
+        //    int orderEnd = await _unitOfWork.StationRepository.GetOrderStationById(ticket.TicketRoute.EndStation.Id, metroLineId);
+        //    int order = await _unitOfWork.StationRepository.GetOrderStationById(stationId, metroLineId);
+
+        //    if ((orderStart <= order && order <= orderEnd) || (orderStart >= order && order >= orderEnd))
+        //    {
+        //        ticket.TicketRtStatus = TicketStatus.Used;
+        //        _unitOfWork.TicketRepository.Update(ticket);
+        //        await _unitOfWork.SaveAsync();
+        //        isSuccess = true;
+        //    }
+        //    return isSuccess;
+        //}
     }
 }

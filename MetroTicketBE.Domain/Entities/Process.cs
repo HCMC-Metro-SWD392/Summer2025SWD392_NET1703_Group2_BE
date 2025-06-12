@@ -14,5 +14,4 @@ public class Process
     public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
     public Station StationCheckIn { get; set; } = null!;
     public Station StationCheckOut { get; set; } = null!;
-
 }

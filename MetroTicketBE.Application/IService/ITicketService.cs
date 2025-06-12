@@ -22,11 +22,13 @@ namespace MetroTicketBE.Application.IService
                 double? toPrice,
                 string? sortBy,
                 bool? isAcsending,
-                TicketRouteStatus ticketType,
+                TicketStatus ticketType,
                 int pageNumber,
                 int pageSize
             );
         Task<ResponseDTO> CreateTicketForSpecialCase(ClaimsPrincipal user, Guid subscriptionId);
-        Task<ResponseDTO> TicketProcess(Guid ticketRouteId, Guid stationId, Guid metroLineId);
+        Task<ResponseDTO> CheckInTicketProcess(Guid ticketRouteId, Guid stationId);
+        Task<ResponseDTO> CheckOutTicketProcess(Guid ticketRouteId, Guid stationId);
+
     }
 }
