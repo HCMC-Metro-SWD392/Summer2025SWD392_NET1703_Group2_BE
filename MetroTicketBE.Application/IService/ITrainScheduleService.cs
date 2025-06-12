@@ -7,8 +7,8 @@ namespace MetroTicketBE.Application.IService
     {
         Task<ResponseDTO> GetTrainSchedules(Guid trainScheduleId);
         Task<ResponseDTO> GetTrainSchedulesByStationId(Guid stationId);
-        Task<ResponseDTO> CreateTrainSchedule(CreateTrainScheduleDTO createTrainScheduleDTO);
-        Task<ResponseDTO> CreateMetroSchedule (Guid metroLineId);
+        Task<ResponseDTO> GenerateScheduleForMetroLine(Guid metroLineId);
+        //Task<ResponseDTO> CreateMetroSchedule (Guid metroLineId);
         Task<ResponseDTO> UpdateTrainSchedule(UpdateTrainScheduleDTO updateTrainScheduleDTO);
         Task<ResponseDTO> CancelTrainSchedule(Guid trainScheduleId);
         Task<ResponseDTO> GetAll

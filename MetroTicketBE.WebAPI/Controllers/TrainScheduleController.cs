@@ -47,7 +47,7 @@ namespace MetroTicketBE.WebAPI.Controllers
             {
                 return BadRequest("Invalid metro line ID.");
             }
-            var response = await _trainScheduleService.CreateMetroSchedule(metroLineId);
+            var response = await _trainScheduleService.GenerateScheduleForMetroLine(metroLineId);
             return StatusCode(response.StatusCode, response);
         }
         
