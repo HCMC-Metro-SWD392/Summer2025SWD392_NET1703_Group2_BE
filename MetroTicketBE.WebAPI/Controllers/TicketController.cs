@@ -2,7 +2,6 @@
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MetroTicketBE.WebAPI.Controllers
@@ -27,7 +26,7 @@ namespace MetroTicketBE.WebAPI.Controllers
             [FromQuery] double? toPrice,
             [FromQuery] string? sortBy,
             [FromQuery] bool? isAcsending,
-            [FromQuery] TicketRouteStatus status = TicketRouteStatus.Inactive,
+            [FromQuery] TicketStatus status = TicketStatus.Inactive,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10)
         {
@@ -50,7 +49,7 @@ namespace MetroTicketBE.WebAPI.Controllers
             var response = await _ticketService.ChangeTicketRouteStatus(ticketId);
             return StatusCode(response.StatusCode, response);
         }
-        
+
         [HttpPost]
         [Route("create-ticket-for-special-case")]
         public async Task<ActionResult<ResponseDTO>> CreateTicketForSpecialCase([FromQuery] Guid subscriptionId)
@@ -70,10 +69,18 @@ namespace MetroTicketBE.WebAPI.Controllers
         }
 
         [HttpPut]
-        [Route("ticket-route-process/{ticketRouteId:guid}/{stationId:guid}/{metroLineId:guid}")]
-        public async Task<ActionResult<ResponseDTO>> TicketRouteProcess([FromRoute] Guid ticketRouteId, [FromRoute] Guid stationId, [FromRoute] Guid metroLineId)
+        [Route("check-in-ticket-process/{ticketId:guid}/{stationId:guid}")]
+        public async Task<ActionResult<ResponseDTO>> TicketProcess([FromRoute] Guid ticketId, [FromRoute] Guid stationId)
         {
-            var response = await _ticketService.TicketProcess(ticketRouteId, stationId, metroLineId);
+            var response = await _ticketService.CheckInTicketProcess(ticketId, stationId);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpPut]
+        [Route("check-out-ticket-process/{ticketId:guid}/{stationId:guid}")]
+        public async Task<ActionResult<ResponseDTO>> CheckOutTicketProcess([FromRoute] Guid ticketId, [FromRoute] Guid stationId)
+        {
+            var response = await _ticketService.CheckOutTicketProcess(ticketId, stationId);
             return StatusCode(response.StatusCode, response);
         }
     }
