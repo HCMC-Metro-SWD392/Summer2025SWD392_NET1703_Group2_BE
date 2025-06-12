@@ -28,17 +28,17 @@ namespace MetroTicketBE.WebAPI.Controllers
             return StatusCode(response.StatusCode, response);
         }
 
-        [HttpPost]
-        [Route("create-train-schedule")]
-        public async Task<ActionResult<ResponseDTO>> CreateTrainSchedule([FromBody] Guid metroLineId)
-        {
-            if (metroLineId == Guid.Empty)
-            {
-                return BadRequest("Invalid metro line ID.");
-            }
-            var response = await _trainScheduleService.GenerateTrainSchedules(metroLineId);
-            return StatusCode(response.StatusCode, response);
-        }
+        // [HttpPost]
+        // [Route("create-train-schedule")]
+        // public async Task<ActionResult<ResponseDTO>> CreateTrainSchedule([FromBody] Guid metroLineId)
+        // {
+        //     if (metroLineId == Guid.Empty)
+        //     {
+        //         return BadRequest("Invalid metro line ID.");
+        //     }
+        //     var response = await _trainScheduleService.GenerateTrainSchedules(metroLineId);
+        //     return StatusCode(response.StatusCode, response);
+        // }
         
         [HttpPut]
         [Route("update-train-schedule")]

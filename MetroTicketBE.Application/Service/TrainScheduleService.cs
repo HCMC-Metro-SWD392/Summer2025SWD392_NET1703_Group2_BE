@@ -80,22 +80,18 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> GenerateTrainSchedules(Guid metroLineId)
+        public async void CreateStationStartTime(Guid metroLineId)
+        {
+            
+        }
+
+        private async void GenerateTrainSchedule(Guid metroLineId)
         {
             var metroLine = await _unitOfWork.MetroLineRepository.GetByIdAsync(metroLineId);
             var orderedStations = await _unitOfWork.MetroLineStationRepository.GetStationByMetroLineIdAsync(metroLineId);
             
-            TimeSpan interval = TimeSpan.FromMinutes(12);
+            TimeSpan interval = TimeSpan.FromMinutes(3);
             var schedulesToAdd = new List<TrainSchedule>();
-            if (metroLine is null)
-            {
-                return new ResponseDTO
-                {
-                    StatusCode = 404,
-                    Message = "Tuyến metro không tồn tại.",
-                    IsSuccess = false
-                };
-            }
             TimeSpan currentUpTime = metroLine.StartTime;
             for (int i = 0; i < orderedStations.Count; i++)
             {
@@ -127,24 +123,6 @@ namespace MetroTicketBE.Application.Service
             }
             await _unitOfWork.TrainScheduleRepository.AddRangeAsync(schedulesToAdd);
             await _unitOfWork.SaveAsync();
-            if (schedulesToAdd.Count == 0)
-            {
-                return new ResponseDTO
-                {
-                    StatusCode = 409,
-                    Message = "Không có lịch trình mới nào được tạo.",
-                    IsSuccess = false
-                };
-            }
-
-            return new ResponseDTO()
-            {
-                StatusCode = 201,
-                Message =
-                    $"Đã tạo thành công {schedulesToAdd.Count} lịch trình tàu cho tuyến metro {metroLine.MetroName}.",
-                IsSuccess = true,
-                Result = null
-            };
 
         }
         public async Task<ResponseDTO> CancelTrainSchedule(Guid trainScheduleId)
