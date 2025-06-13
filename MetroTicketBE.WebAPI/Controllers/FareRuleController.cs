@@ -28,8 +28,6 @@ namespace MetroTicketBE.WebAPI.Controllers
         [Route("fare-rules/all")]
         public async Task<ActionResult<ResponseDTO>> GetAll
             (
-            [FromQuery] string? filterOn,
-            [FromQuery] string? filterQuery,
             [FromQuery] string? sortBy,
             [FromQuery] bool? isAcsending,
             [FromQuery] int pageNumber = 1,
