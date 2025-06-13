@@ -64,9 +64,9 @@ public class SubscriptionTicketController: ControllerBase
     
     [HttpGet]
     [Route("by-station/{startStationId:guid}/{endStationId:guid}")]
-    public async Task<IActionResult> GetSubscriptionByStationAsync(Guid startStationId, Guid endStationId)
+    public async Task<IActionResult> GetSubscriptionByStationAsync(Guid startStationId, Guid endStationId, Guid ticketTypeId)
     {
-        var response = await _subscriptionService.GetSubscriptionByStationAsync(startStationId, endStationId);
+        var response = await _subscriptionService.GetSubscriptionByStationAsync(startStationId, endStationId, ticketTypeId);
         if (response.IsSuccess)
         {
             return Ok(response);

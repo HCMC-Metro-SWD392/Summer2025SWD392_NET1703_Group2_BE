@@ -10,6 +10,6 @@ public interface ISubscriptionService
     public Task<ResponseDTO> GetAllSubscriptionsAsync();
     public Task<ResponseDTO> UpdateSubscriptionAsync(Guid id, UpdateSubscriptionDTO dto);
     public Task<ResponseDTO> GetSubscriptionAsync(Guid id);
-    public Task<ResponseDTO> GetSubscriptionByStationAsync(Guid startStationId, Guid endStationId);
+    public Task<ResponseDTO> GetSubscriptionByStationAsync(Guid startStationId, Guid endStationId, Guid ticketTypeId);
 
 }
