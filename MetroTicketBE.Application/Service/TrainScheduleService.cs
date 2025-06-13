@@ -28,32 +28,62 @@ namespace MetroTicketBE.Application.Service
 
         public async Task<ResponseDTO> GenerateScheduleForMetroLine(Guid metroLineId)
         {
-            var allSchedules = new List<TrainSchedule>();
-            var orderedStations = await _unitOfWork.MetroLineStationRepository.GetStationByMetroLineIdAsync(metroLineId);
-            
-            var forwardSchedules = await GenerateDirectionSchedules(metroLineId, orderedStations, TrainScheduleType.Forward);
-            allSchedules.AddRange(forwardSchedules);
-
-            
-            var backwardStations = new List<Station>(orderedStations);
-            backwardStations.Reverse();
-            var backwardSchedules = await GenerateDirectionSchedules(metroLineId, backwardStations, TrainScheduleType.Backward);
-            allSchedules.AddRange(backwardSchedules);
-            await _unitOfWork.TrainScheduleRepository.AddRangeAsync(allSchedules);
-            await _unitOfWork.SaveAsync();
-
-            return new ResponseDTO()
+            try
             {
-                StatusCode = 200,
-                Message = "Lịch trình cho tuyến metro đã được tạo thành công.",
-                IsSuccess = true,
-                Result = null,
-            };
+                if (metroLineId == Guid.Empty)
+                {
+                    return new ResponseDTO()
+                    {
+                        StatusCode = 400,
+                        Message = "ID tuyến metro không hợp lệ.",
+                        IsSuccess = false
+                    };
+                }
+                var allSchedules = new List<TrainSchedule>();
+                var orderedStations =
+                    await _unitOfWork.MetroLineStationRepository.GetStationByMetroLineIdAsync(metroLineId);
+                var metroLine = await _unitOfWork.MetroLineRepository.GetByIdAsync(metroLineId);
 
+                var forwardSchedules =
+                    await GenerateDirectionSchedules(metroLineId, orderedStations, TrainScheduleType.Forward);
+                allSchedules.AddRange(forwardSchedules);
+
+                int singleTripDurationInSeconds = (orderedStations.Count - 1) *
+                                                  (TravelTimeBetweenStationsInSeconds + DwellTimeAtStationInSeconds);
+                int turnAroundTimeInSeconds = 300; // Giả sử thời gian quay đầu là 5 phút
+
+                TimeSpan backwardStartTime = metroLine.StartTime
+                                             + TimeSpan.FromSeconds(singleTripDurationInSeconds +
+                                                                    turnAroundTimeInSeconds);
+                var backwardStations = new List<Station>(orderedStations);
+                backwardStations.Reverse();
+                var backwardSchedules =
+                    await GenerateDirectionSchedules(metroLineId, backwardStations, TrainScheduleType.Backward, backwardStartTime);
+                allSchedules.AddRange(backwardSchedules);
+                await _unitOfWork.TrainScheduleRepository.AddRangeAsync(allSchedules);
+                await _unitOfWork.SaveAsync();
+
+                return new ResponseDTO()
+                {
+                    StatusCode = 200,
+                    Message = "Lịch trình cho tuyến metro đã được tạo thành công.",
+                    IsSuccess = true,
+                    Result = null,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO()
+                {
+                    StatusCode = 500,
+                    Message = "Đã xảy ra lỗi khi tạo lịch trình cho tuyến metro: " + ex.Message,
+                    IsSuccess = false
+                };
+            }
         }
 
         private async Task<List<TrainSchedule>> GenerateDirectionSchedules(Guid metroLineId, List<Station> orderedStations,
-            TrainScheduleType direction)
+            TrainScheduleType direction, TimeSpan? currentStartTime = null)
         {
             var directionSchedules = new List<TrainSchedule>();
             // Sử dụng await thay vì .Result để tránh deadlock

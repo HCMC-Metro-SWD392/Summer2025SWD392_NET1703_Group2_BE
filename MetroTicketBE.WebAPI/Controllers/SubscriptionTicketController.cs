@@ -16,6 +16,7 @@ public class SubscriptionTicketController: ControllerBase
     }
     
     [HttpPost]
+    [Route("create-subscription-ticket")]
     public async Task<IActionResult> CreateSubscriptionAsync([FromBody] CreateSubscriptionDTO dto)
     {
         if (dto == null)

@@ -149,7 +149,7 @@ public SubscriptionService(IUnitOfWork unitOfWork, IMapper mapper, ITicketRouteS
         var price = await _fareRuleRepository.CalculatePriceFromDistance(distance) * ticketType.FareCoefficient;
         var saveSubscriptionTicket = new SubscriptionTicket()
         {
-            TicketName = $"Vé {ticketType.DisplayName} từ {startStation} đến {endStation}",
+            TicketName = $"{ticketType.DisplayName} từ {startStation} đến {endStation}",
             StartStationId = createSubscriptionDTO.StartStationId,
             EndStationId = createSubscriptionDTO.EndStationId,
             Expiration = ticketType.Expiration,
