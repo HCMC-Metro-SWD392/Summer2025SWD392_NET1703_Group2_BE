@@ -7,10 +7,10 @@ namespace MetroTicketBE.WebAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SubcriptionTicketController: ControllerBase
+public class SubscriptionTicketController: ControllerBase
 {
     private readonly ISubscriptionService _subscriptionService;
-    public SubcriptionTicketController(ISubscriptionService subscriptionService)
+    public SubscriptionTicketController(ISubscriptionService subscriptionService)
     {
         _subscriptionService = subscriptionService ?? throw new ArgumentNullException(nameof(subscriptionService));
     }
@@ -64,9 +64,9 @@ public class SubcriptionTicketController: ControllerBase
     
     [HttpGet]
     [Route("by-station/{startStationId:guid}/{endStationId:guid}")]
-    public async Task<IActionResult> GetSubscriptionByStationAsync(Guid startStationId, Guid endStationId)
+    public async Task<IActionResult> GetSubscriptionByStationAsync(Guid startStationId, Guid endStationId, Guid ticketTypeId)
     {
-        var response = await _subscriptionService.GetSubscriptionByStationAsync(startStationId, endStationId);
+        var response = await _subscriptionService.GetSubscriptionByStationAsync(startStationId, endStationId, ticketTypeId);
         if (response.IsSuccess)
         {
             return Ok(response);

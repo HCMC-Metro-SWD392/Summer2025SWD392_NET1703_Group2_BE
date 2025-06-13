@@ -1,12 +1,13 @@
 ﻿using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.TrainSchedule;
+using MetroTicketBE.Domain.Enums;
 
 namespace MetroTicketBE.Application.IService
 {
     public interface ITrainScheduleService
     {
         Task<ResponseDTO> GetTrainSchedules(Guid trainScheduleId);
-        Task<ResponseDTO> GetTrainSchedulesByStationId(Guid stationId);
+        Task<ResponseDTO> GetTrainSchedulesByStationId(Guid stationId,  TrainScheduleType? direction);
         Task<ResponseDTO> GenerateScheduleForMetroLine(Guid metroLineId);
         //Task<ResponseDTO> CreateMetroSchedule (Guid metroLineId);
         Task<ResponseDTO> UpdateTrainSchedule(UpdateTrainScheduleDTO updateTrainScheduleDTO);
