@@ -149,6 +149,7 @@ namespace MetroTicketBE.Application.Service
                         "code" => isAcsending == true ? promotions.OrderBy(p => p.Code) : promotions.OrderByDescending(p => p.Code),
                         "startdate" => isAcsending == true ? promotions.OrderBy(p => p.StartDate) : promotions.OrderByDescending(p => p.StartDate),
                         "enddate" => isAcsending == true ? promotions.OrderBy(p => p.EndDate) : promotions.OrderByDescending(p => p.EndDate),
+                        "createdat" => isAcsending == true ? promotions.OrderBy(p => p.CreatedAt) : promotions.OrderByDescending(p => p.CreatedAt),
                         _ => promotions
                     };
                 }

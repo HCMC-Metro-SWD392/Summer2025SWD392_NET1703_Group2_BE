@@ -1,8 +1,10 @@
 ﻿using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.FareRule;
+using MetroTicketBE.Domain.DTO.Promotion;
 using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Infrastructure.IRepository;
+using System.Globalization;
 using System.Security.Claims;
 
 namespace MetroTicketBE.Application.Service
@@ -60,18 +62,44 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> GetAll()
+        public async Task<ResponseDTO> GetAll(ClaimsPrincipal user, string? sortBy, bool? isAcsending, int pageNumber, int pageSize)
         {
             try
             {
-                var fareRules = await _unitOfWork.FareRuleRepository.GetAllAsync();
-                if (fareRules is null || !fareRules.Any())
+                var fareRule = await _unitOfWork.FareRuleRepository.GetAllAsync();
+
+                if (!string.IsNullOrEmpty(sortBy))
+                {
+                    fareRule = sortBy.Trim().ToLower() switch
+                    {
+                        "price" => isAcsending == true ? fareRule.OrderBy(f => f.Fare) : fareRule.OrderByDescending(p => p.Fare),
+                        "mindistance" => isAcsending == true ? fareRule.OrderBy(p => p.MinDistance) : fareRule.OrderByDescending(p => p.MinDistance),
+                        "createdat" => isAcsending == true ? fareRule.OrderBy(p => p.CreatedAt) : fareRule.OrderByDescending(p => p.CreatedAt),
+                        _ => fareRule
+                    };
+                }
+
+                if (pageNumber <= 0 || pageSize <= 0)
                 {
                     return new ResponseDTO
                     {
                         IsSuccess = false,
-                        Message = "Không có quy tắc vé nào",
-                        StatusCode = 404
+                        StatusCode = 400,
+                        Message = "Số trang và kích thước trang phải lớn hơn 0"
+                    };
+                }
+                else
+                {
+                    fareRule = fareRule.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+                }
+
+                if (fareRule is null || !fareRule.Any())
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        StatusCode = 404,
+                        Message = "Không tìm thấy mã giảm giá nào"
                     };
                 }
                 return new ResponseDTO
@@ -79,7 +107,7 @@ namespace MetroTicketBE.Application.Service
                     IsSuccess = true,
                     Message = "Lấy danh sách quy tắc vé thành công",
                     StatusCode = 200,
-                    Result = fareRules
+                    Result = fareRule
                 };
             }
             catch (Exception ex)
