@@ -22,6 +22,7 @@ namespace MetroTicketBE.Infrastructure.Repository
                 .Include(mt => mt.EndStation)
                 .Include(mt => mt.MetroLineStations)
                 .ThenInclude(mts => mts.Station)
+                .OrderBy(mts => mts.CreatedAt)
                 .ToListAsync();
         }
 
