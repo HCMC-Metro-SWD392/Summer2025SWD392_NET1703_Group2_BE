@@ -7,10 +7,10 @@ namespace MetroTicketBE.WebAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SubcriptionTicketController: ControllerBase
+public class SubscriptionTicketController: ControllerBase
 {
     private readonly ISubscriptionService _subscriptionService;
-    public SubcriptionTicketController(ISubscriptionService subscriptionService)
+    public SubscriptionTicketController(ISubscriptionService subscriptionService)
     {
         _subscriptionService = subscriptionService ?? throw new ArgumentNullException(nameof(subscriptionService));
     }

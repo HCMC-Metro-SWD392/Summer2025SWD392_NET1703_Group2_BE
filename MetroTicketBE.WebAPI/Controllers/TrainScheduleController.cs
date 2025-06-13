@@ -1,6 +1,7 @@
 ﻿using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.TrainSchedule;
+using MetroTicketBE.Domain.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,13 +30,13 @@ namespace MetroTicketBE.WebAPI.Controllers
         }
         [HttpGet]
         [Route("station/{stationId}")]
-        public async Task<ActionResult<ResponseDTO>> GetTrainSchedulesByStationId(Guid stationId)
+        public async Task<ActionResult<ResponseDTO>> GetTrainSchedulesByStationId(Guid stationId,  TrainScheduleType? direction)
         {
             if (stationId == Guid.Empty)
             {
                 return BadRequest("Invalid station ID.");
             }
-            var response = await _trainScheduleService.GetTrainSchedulesByStationId(stationId);
+            var response = await _trainScheduleService.GetTrainSchedulesByStationId(stationId, direction);
             return StatusCode(response.StatusCode, response);
         }
 
