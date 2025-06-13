@@ -65,7 +65,7 @@ public class Program
             {
                 options.AddPolicy("AllowFrontend", policyBuilder =>
                 {
-                    policyBuilder.WithOrigins("http://localhost:5173", "http://54.251.226.229")
+                    policyBuilder.WithOrigins("http://localhost:5173", "http://54.251.226.229", "https://metrohcmc.xyz")
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials();
