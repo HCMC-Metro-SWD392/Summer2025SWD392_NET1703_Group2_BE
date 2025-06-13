@@ -6,7 +6,7 @@ namespace MetroTicketBE.Domain.DTO.SubscriptionTicket
     {
         public Guid Id { get; set; }
         public string TicketName { get; set; } = null!;
-        public required TicketType TicketType { get; set; }
+        public Guid TicketTypeId { get; set; }
         public int Price { get; set; }
         public int Expiration { get; set; }
     }

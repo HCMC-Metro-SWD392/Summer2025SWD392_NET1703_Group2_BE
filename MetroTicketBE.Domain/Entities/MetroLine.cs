@@ -10,6 +10,8 @@ namespace MetroTicketBE.Domain.Entities
         public Guid StartStationId { get; set; }
         public Guid EndStationId { get; set; }
 
+        public TimeSpan StartTime { get; set; }
+        public TimeSpan EndTime { get; set; }
         public Station StartStation { get; set; } = null!;
         public Station EndStation { get; set; } = null!;
 

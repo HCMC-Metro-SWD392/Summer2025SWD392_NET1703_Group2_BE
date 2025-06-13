@@ -6,7 +6,9 @@ namespace MetroTicketBE.Application.IService
     public interface ITrainScheduleService
     {
         Task<ResponseDTO> GetTrainSchedules(Guid trainScheduleId);
-        Task<ResponseDTO> CreateTrainSchedule(CreateTrainScheduleDTO createTrainScheduleDTO);
+        Task<ResponseDTO> GetTrainSchedulesByStationId(Guid stationId);
+        Task<ResponseDTO> GenerateScheduleForMetroLine(Guid metroLineId);
+        //Task<ResponseDTO> CreateMetroSchedule (Guid metroLineId);
         Task<ResponseDTO> UpdateTrainSchedule(UpdateTrainScheduleDTO updateTrainScheduleDTO);
         Task<ResponseDTO> CancelTrainSchedule(Guid trainScheduleId);
         Task<ResponseDTO> GetAll

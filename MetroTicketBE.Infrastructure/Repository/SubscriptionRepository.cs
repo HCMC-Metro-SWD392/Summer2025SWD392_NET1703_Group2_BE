@@ -37,10 +37,20 @@ public class SubscriptionRepository: Repository<SubscriptionTicket>, ISubscripti
             .AnyAsync(st => st.TicketName == ticketName);
     }
 
+    public Task<SubscriptionTicket?> GetByStartAndEndStationAsync(Guid startStationId, Guid endStationId)
+    {
+        return _context.SubscriptionTickets
+            .FirstOrDefaultAsync(st => st.StartStationId == startStationId && st.EndStationId == endStationId);
+    }
     public async Task<SubscriptionTicket?> GetByIdAsync(Guid? id)
     {
         if (id == null) return null;
         return await _context.SubscriptionTickets
             .FirstOrDefaultAsync(st => st.Id == id);
+    }
+
+    public Task<SubscriptionTicket?> GetByTicketTypeIdAsync(Guid ticketTypeId)
+    {
+        return _context.SubscriptionTickets.FirstOrDefaultAsync(st => st.TicketTypeId == ticketTypeId);
     }
 }

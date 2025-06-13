@@ -130,7 +130,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        private async Task<double> CalculateDistanceOfTwoStation(Guid startStationId, Guid endStationId)
+        public async Task<double> CalculateDistanceOfTwoStation(Guid startStationId, Guid endStationId)
         {
             try
             {

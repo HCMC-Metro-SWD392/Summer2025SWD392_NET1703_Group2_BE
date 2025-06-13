@@ -5,7 +5,8 @@ namespace MetroTicketBE.Application.IService;
 
 public interface ISubscriptionService
 {
-    public Task<ResponseDTO> CreateSubscriptionAsync(CreateSubscriptionDTO dto);
+    //public Task<ResponseDTO> CreateSubscriptionAsync(CreateSubscriptionDTO dto);
+    Task<ResponseDTO> CreateSubscriptionTicketAsync(CreateSubscriptionDTO createSubscriptionDTO);
     public Task<ResponseDTO> GetAllSubscriptionsAsync();
     public Task<ResponseDTO> UpdateSubscriptionAsync(Guid id, UpdateSubscriptionDTO dto);
     public Task<ResponseDTO> GetSubscriptionAsync(Guid id);

@@ -21,6 +21,7 @@ namespace MetroTicketBE.Infrastructure.Context
         public DbSet<Process> Processes { get; set; }
         public DbSet<Station> Stations { get; set; }
         public DbSet<SubscriptionTicket> SubscriptionTickets { get; set; }
+        public DbSet<SubscriptionTicketType> SubscriptionTicketTypes { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<Train> Trains { get; set; }
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
@@ -100,9 +101,23 @@ namespace MetroTicketBE.Infrastructure.Context
                 .HasForeignKey(tr => tr.EndStationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            //
+            //SubscriptionTicket
+            modelBuilder.Entity<SubscriptionTicket>()
+                .HasOne(st => st.StartStation)
+                .WithMany(s => s.SubscriptionTicketsAsStartStation)
+                .HasForeignKey(st => st.StartStationId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<SubscriptionTicket>()
+                .HasOne(st => st.EndStation)
+                .WithMany(s => s.SubscriptionTicketsAsEndStation)
+                .HasForeignKey(st => st.EndStationId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<SubscriptionTicket>()
+                .HasOne(st => st.TicketType)
+                .WithMany(tt => tt.SubscriptionTickets)
+                .HasForeignKey(st => st.TicketTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
             
-
             //Process
             modelBuilder.Entity<Process>()
                 .HasOne(p => p.StationCheckIn)
