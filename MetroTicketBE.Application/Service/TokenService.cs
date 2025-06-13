@@ -86,6 +86,11 @@ namespace MetroTicketBE.Application.Service
             return refreshToken;
         }
 
+        public string GenerateQRCodeAsync(Guid ticketId)
+        {
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes($"{ticketId}_{DateTime.UtcNow.Ticks}"));
+        }
+
         public async Task<bool> StoreRefreshToken(string userId, string refreshToken, bool rememberMe)
         {
             string redisKey = $"userId:{userId}-refreshToken";
@@ -102,6 +107,20 @@ namespace MetroTicketBE.Application.Service
             return rememberMe
                 ? TimeSpan.FromDays(int.Parse(rememberMeDays ?? "7")) // Nếu RememberMe là true, token sẽ hết hạn mặc định là 7 ngày
                 : TimeSpan.FromHours(int.Parse(shortHours ?? "3")); // Nếu RememberMe là false, token sẽ hết hạn mặc định là 3 giờ
+        }
+
+        public async Task<string> GetQRCodeAndRefreshAsync(Guid ticketId)
+        {
+            string redisKey = $"ticketId:{ticketId}-QRCode";
+            var qrCode = GenerateQRCodeAsync(ticketId);
+
+            if (!string.IsNullOrEmpty(qrCode))
+            {
+                return qrCode;
+            }
+
+            await _redisService.StoreKeyAsync(redisKey, qrCode, TimeSpan.FromMinutes(1)); // Lưu QR code vào Redis với thời gian hết hạn là 1 phút
+            return qrCode;
         }
     }
 }

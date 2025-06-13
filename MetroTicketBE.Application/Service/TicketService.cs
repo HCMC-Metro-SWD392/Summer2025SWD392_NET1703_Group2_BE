@@ -16,13 +16,15 @@ namespace MetroTicketBE.Application.Service
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly Random random;
+        private readonly ITokenService _tokenService;
 
         private readonly IMapper _mapper;
-        public TicketService(IUnitOfWork unitOfWork, IMapper mapper)
+        public TicketService(IUnitOfWork unitOfWork, IMapper mapper, ITokenService tokenService)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             random = new Random();
+            _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
         }
 
         public async Task<ResponseDTO> GetAllTicketRoutes(
@@ -562,6 +564,54 @@ namespace MetroTicketBE.Application.Service
                 };
             }
         }
+
+        public async Task<ResponseDTO> GetORCode(Guid ticketId)
+        {
+            try
+            {
+                var ticket = await _unitOfWork.TicketRepository.GetByIdAsync(ticketId);
+
+                if (ticket is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Không tìm thấy vé cần lấy QR code.",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+
+                if (ticket.TicketRoute is not null)
+                {
+                    ticket.QrCode = _tokenService.GenerateQRCodeAsync(ticket.Id);
+                }
+                else
+                {
+                    ticket.QrCode = await _tokenService.GetQRCodeAndRefreshAsync(ticket.Id);
+                }
+
+                _unitOfWork.TicketRepository.Update(ticket);
+                await _unitOfWork.SaveAsync();
+
+                return new ResponseDTO
+                {
+                    Message = "Lấy QR code thành công",
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Result = ticket.QrCode
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    Message = "Đã xảy ra lỗi khi lấy QR code: " + ex.Message,
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
+
 
         //private async Task<bool> CheckOutTicket(Ticket ticket, Guid stationId, Guid metroLineId)
         //{
