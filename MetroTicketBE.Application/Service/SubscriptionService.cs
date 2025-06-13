@@ -150,7 +150,7 @@ public SubscriptionService(IUnitOfWork unitOfWork, IMapper mapper, ITicketRouteS
         var price = await _fareRuleRepository.CalculatePriceFromDistance(distance) * ticketType.FareCoefficient;
         var saveSubscriptionTicket = new SubscriptionTicket()
         {
-            TicketName = $"Vé {ticketType.Name} từ {startStation} đến {endStation}",
+            TicketName = $"Vé {ticketType.DisplayName} từ {startStation} đến {endStation}",
             StartStationId = createSubscriptionDTO.StartStationId,
             EndStationId = createSubscriptionDTO.EndStationId,
             Expiration = ticketType.Expiration,
@@ -255,6 +255,39 @@ public SubscriptionService(IUnitOfWork unitOfWork, IMapper mapper, ITicketRouteS
                 IsSuccess = false,
                 StatusCode = 500,
                 Message = "Lỗi khi cập nhật vé: " + ex.Message
+            };
+        }
+    }
+    
+    public async Task<ResponseDTO> GetSubscriptionByStationAsync(Guid startStationId, Guid endStationId)
+    {
+        try
+        {
+            var subscription = await _unitOfWork.SubscriptionRepository.GetByStartAndEndStationAsync(startStationId, endStationId);
+            if (subscription == null)
+            {
+                return new ResponseDTO()
+                {
+                    IsSuccess = false,
+                    StatusCode = 404,
+                    Message = "Không tìm thấy vé cho tuyến đường này"
+                };
+            }
+            return new ResponseDTO()
+            {
+                IsSuccess = true,
+                StatusCode = 200,
+                Message = "Lấy vé thành công",
+                Result = subscription
+            };
+        }
+        catch (Exception ex)
+        {
+            return new ResponseDTO()
+            {
+                IsSuccess = false,
+                StatusCode = 500,
+                Message = "Lỗi khi lấy vé: " + ex.Message
             };
         }
     }

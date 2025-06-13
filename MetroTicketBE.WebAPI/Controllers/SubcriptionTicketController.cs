@@ -61,6 +61,18 @@ public class SubcriptionTicketController: ControllerBase
         }
         return NotFound(response);
     }
+    
+    [HttpGet]
+    [Route("by-station/{startStationId:guid}/{endStationId:guid}")]
+    public async Task<IActionResult> GetSubscriptionByStationAsync(Guid startStationId, Guid endStationId)
+    {
+        var response = await _subscriptionService.GetSubscriptionByStationAsync(startStationId, endStationId);
+        if (response.IsSuccess)
+        {
+            return Ok(response);
+        }
+        return NotFound(response);
+    }
 
     [HttpPut]
     [Route("update/{id:guid}")]
