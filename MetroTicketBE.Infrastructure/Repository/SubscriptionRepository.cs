@@ -46,6 +46,7 @@ public class SubscriptionRepository: Repository<SubscriptionTicket>, ISubscripti
     {
         if (id == null) return null;
         return await _context.SubscriptionTickets
+            .Include(st => st.TicketType)
             .FirstOrDefaultAsync(st => st.Id == id);
     }
 
