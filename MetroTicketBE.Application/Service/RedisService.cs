@@ -25,5 +25,12 @@ namespace MetroTicketBE.Application.Service
 
             return result;
         }
+
+        public async Task<string?> RetrieveString(string key)
+        {
+            var cache = _redis.GetDatabase();
+            var result = await cache.StringGetAsync(key);
+            return result;
+        }
     }
 }

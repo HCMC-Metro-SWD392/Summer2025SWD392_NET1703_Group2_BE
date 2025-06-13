@@ -69,18 +69,18 @@ namespace MetroTicketBE.WebAPI.Controllers
         }
 
         [HttpPut]
-        [Route("check-in-ticket-process/{ticketId:guid}/{stationId:guid}")]
-        public async Task<ActionResult<ResponseDTO>> CheckInTicketProcess([FromRoute] Guid ticketId, [FromRoute] Guid stationId)
+        [Route("check-in-ticket-process/{stationId:guid}")]
+        public async Task<ActionResult<ResponseDTO>> CheckInTicketProcess([FromQuery] string qrCode, [FromRoute] Guid stationId)
         {
-            var response = await _ticketService.CheckInTicketProcess(ticketId, stationId);
+            var response = await _ticketService.CheckInTicketProcess(qrCode, stationId);
             return StatusCode(response.StatusCode, response);
         }
 
         [HttpPut]
-        [Route("check-out-ticket-process/{ticketId:guid}/{stationId:guid}")]
-        public async Task<ActionResult<ResponseDTO>> CheckOutTicketProcess([FromRoute] Guid ticketId, [FromRoute] Guid stationId)
+        [Route("check-out-ticket-process/{stationId:guid}")]
+        public async Task<ActionResult<ResponseDTO>> CheckOutTicketProcess([FromQuery] string qrCode, [FromRoute] Guid stationId)
         {
-            var response = await _ticketService.CheckOutTicketProcess(ticketId, stationId);
+            var response = await _ticketService.CheckOutTicketProcess(qrCode, stationId);
             return StatusCode(response.StatusCode, response);
         }
 
@@ -97,7 +97,7 @@ namespace MetroTicketBE.WebAPI.Controllers
                     Message = "Mã vé không hợp lệ"
                 });
             }
-            var response = await _ticketService.GetORCode(ticketId);
+            var response = await _ticketService.GetORCode(User,ticketId);
             return StatusCode(response.StatusCode, response);
         }
     }

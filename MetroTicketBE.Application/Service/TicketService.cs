@@ -303,11 +303,22 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> CheckInTicketProcess(Guid ticketId, Guid stationId)
+        public async Task<ResponseDTO> CheckInTicketProcess(string qrCode, Guid stationId)
         {
             try
             {
-                var ticket = await _unitOfWork.TicketRepository.GetByIdAsync(ticketId);
+                var ticketId = await _tokenService.GetValueByKeyAsync($"qrCode:{qrCode}-ticketId");
+                if (ticketId is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "QR code không hợp lệ hoặc đã hết hạn.",
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
+                var ticket = await _unitOfWork.TicketRepository.GetByIdAsync(Guid.Parse(ticketId));
 
                 if (ticket is null)
                 {
@@ -386,11 +397,23 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> CheckOutTicketProcess(Guid ticketId, Guid stationId)
+        public async Task<ResponseDTO> CheckOutTicketProcess(string qrCode, Guid stationId)
         {
             try
             {
-                var ticket = await _unitOfWork.TicketRepository.GetByIdAsync(ticketId);
+                var ticketId = await _tokenService.GetValueByKeyAsync($"qrCode:{qrCode}-ticketId");
+
+                if (ticketId is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "QR code không hợp lệ hoặc đã hết hạn.",
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
+                var ticket = await _unitOfWork.TicketRepository.GetByIdAsync(Guid.Parse(ticketId));
 
                 if (ticket is null)
                 {
@@ -565,7 +588,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> GetORCode(Guid ticketId)
+        public async Task<ResponseDTO> GetORCode(ClaimsPrincipal user, Guid ticketId)
         {
             try
             {
@@ -580,18 +603,39 @@ namespace MetroTicketBE.Application.Service
                         StatusCode = 404
                     };
                 }
+                var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Người dùng không hợp lệ.",
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
+                var customer = await _unitOfWork.CustomerRepository.GetByUserIdAsync(userId);
+
+                if (customer is null || customer.Id != ticket.CustomerId)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Bạn không có quyền truy cập mã QR của vé này.",
+                        IsSuccess = false,
+                        StatusCode = 403
+                    };
+                }
 
                 if (ticket.TicketRoute is not null)
                 {
-                    ticket.QrCode = _tokenService.GenerateQRCodeAsync(ticket.Id);
+                    ticket.QrCode = _tokenService.GenerateQRCodeAsync();
+                    _unitOfWork.TicketRepository.Update(ticket);
+                    await _unitOfWork.SaveAsync();
                 }
                 else
                 {
                     ticket.QrCode = await _tokenService.GetQRCodeAndRefreshAsync(ticket.Id);
                 }
-
-                _unitOfWork.TicketRepository.Update(ticket);
-                await _unitOfWork.SaveAsync();
 
                 return new ResponseDTO
                 {

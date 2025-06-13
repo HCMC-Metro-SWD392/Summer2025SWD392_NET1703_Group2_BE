@@ -14,10 +14,10 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Cấu hình Kestrel
-        builder.WebHost.ConfigureKestrel(options =>
-        {
-            options.ListenAnyIP(5000); // Lắng nghe trên cổng 5000 cho tất cả IP 
-        });
+        //builder.WebHost.ConfigureKestrel(options =>
+        //{
+        //    options.ListenAnyIP(5000); // Lắng nghe trên cổng 5000 cho tất cả IP 
+        //});
 
         builder.Configuration
         .SetBasePath(Directory.GetCurrentDirectory())
@@ -65,7 +65,7 @@ public class Program
             {
                 options.AddPolicy("AllowFrontend", policyBuilder =>
                 {
-                    policyBuilder.WithOrigins("http://localhost:5173", "http://54.251.226.229")
+                    policyBuilder.WithOrigins("http://localhost:5173", "http://54.251.226.229", "https://metrohcmc.xyz")
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials();
