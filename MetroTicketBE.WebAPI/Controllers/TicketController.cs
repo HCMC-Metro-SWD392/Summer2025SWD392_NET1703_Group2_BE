@@ -85,7 +85,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         }
 
         [HttpGet]
-        [Route("get-or-code/{ticketId:guid}")]
+        [Route("get-qr-code/{ticketId:guid}")]
         public async Task<ActionResult<ResponseDTO>> GetORCode([FromRoute] Guid ticketId)
         {
             if (ticketId == Guid.Empty)
