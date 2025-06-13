@@ -28,6 +28,7 @@ public class SubscriptionRepository: Repository<SubscriptionTicket>, ISubscripti
     public async Task<SubscriptionTicket?> GetByNameAsync(string ticketName)
     {
         return await _context.SubscriptionTickets
+            .Include(st => st.TicketType)
             .FirstOrDefaultAsync(st => st.TicketName == ticketName);
     }
 

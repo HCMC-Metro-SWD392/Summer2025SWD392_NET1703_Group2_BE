@@ -20,6 +20,10 @@ namespace MetroTicketBE.Infrastructure.Repository
                 .ThenInclude(tr => tr.StartStation)
                 .Include(t => t.TicketRoute)
                 .ThenInclude(tr => tr.EndStation)
+                .Include(t => t.SubscriptionTicket)
+                .ThenInclude(st => st.StartStation)
+                .Include(t => t.SubscriptionTicket)
+                .ThenInclude(st => st.EndStation)
                 .FirstOrDefaultAsync(t => t.Id == ticketId);
         }
 
@@ -30,6 +34,10 @@ namespace MetroTicketBE.Infrastructure.Repository
                 .ThenInclude(tr => tr.StartStation)
                 .Include(t => t.TicketRoute)
                 .ThenInclude(tr => tr.EndStation)
+                .Include(t => t.SubscriptionTicket)
+                .ThenInclude(st => st.StartStation)
+                .Include(t => t.SubscriptionTicket)
+                .ThenInclude(st => st.EndStation)
                 .FirstOrDefaultAsync(t => t.TicketSerial == serial);
         }
     }

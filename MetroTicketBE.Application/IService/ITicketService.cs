@@ -28,8 +28,8 @@ namespace MetroTicketBE.Application.IService
                 int pageSize
             );
         Task<ResponseDTO> CreateTicketForSpecialCase(ClaimsPrincipal user, Guid subscriptionId);
-        Task<ResponseDTO> CheckInTicketProcess(Guid ticketRouteId, Guid stationId);
-        Task<ResponseDTO> CheckOutTicketProcess(Guid ticketRouteId, Guid stationId);
-        Task<ResponseDTO> GetORCode(Guid ticketId);
+        Task<ResponseDTO> CheckInTicketProcess(string qrCode, Guid stationId);
+        Task<ResponseDTO> CheckOutTicketProcess(string qrCode, Guid stationId);
+        Task<ResponseDTO> GetORCode(ClaimsPrincipal user, Guid ticketId);
     }
 }

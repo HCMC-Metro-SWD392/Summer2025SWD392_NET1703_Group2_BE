@@ -9,6 +9,7 @@ namespace MetroTicketBE.Infrastructure.IRepository
         Task<bool> StoreRefreshToken(string userId, string refreshToken, bool rememberMe);
         Task<bool> DeleteRefreshToken(string userId);
         Task<string> GetQRCodeAndRefreshAsync(Guid ticketId);
-        string GenerateQRCodeAsync(Guid ticketId);
+        string GenerateQRCodeAsync();
+        Task<string?> GetValueByKeyAsync(string key);
     }
 }
