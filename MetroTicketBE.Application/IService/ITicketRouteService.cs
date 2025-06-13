@@ -1,7 +1,6 @@
 ﻿using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.TicketRoute;
-using MetroTicketBE.Domain.Enums;
-using System.Security.Claims;
+
 
 namespace MetroTicketBE.Application.IService
 {
@@ -9,7 +8,7 @@ namespace MetroTicketBE.Application.IService
     {
         Task<ResponseDTO> CraeteTicketRoute(CreateTicketRouteDTO createTicketRouteDTO);
         Task<ResponseDTO> GetTicketRouteByFromTo(Guid StartStation, Guid EndStation);
-
         Task<double> CalculateDistanceOfTwoStation(Guid startStationId, Guid endStationId);
+        //Task<ResponseDTO> ChangeTicketStartStation
     }
 }

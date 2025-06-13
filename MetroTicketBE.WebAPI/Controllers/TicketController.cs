@@ -83,5 +83,22 @@ namespace MetroTicketBE.WebAPI.Controllers
             var response = await _ticketService.CheckOutTicketProcess(ticketId, stationId);
             return StatusCode(response.StatusCode, response);
         }
+
+        [HttpGet]
+        [Route("get-or-code/{ticketId:guid}")]
+        public async Task<ActionResult<ResponseDTO>> GetORCode([FromRoute] Guid ticketId)
+        {
+            if (ticketId == Guid.Empty)
+            {
+                return BadRequest(new ResponseDTO
+                {
+                    IsSuccess = false,
+                    StatusCode = 400,
+                    Message = "Mã vé không hợp lệ"
+                });
+            }
+            var response = await _ticketService.GetORCode(ticketId);
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }

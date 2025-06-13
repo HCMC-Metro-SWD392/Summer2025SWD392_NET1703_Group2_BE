@@ -1,4 +1,5 @@
 ﻿using MetroTicketBE.Domain.DTO.Auth;
+using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Domain.Enums;
 using System;
 using System.Collections.Generic;
@@ -29,6 +30,6 @@ namespace MetroTicketBE.Application.IService
         Task<ResponseDTO> CreateTicketForSpecialCase(ClaimsPrincipal user, Guid subscriptionId);
         Task<ResponseDTO> CheckInTicketProcess(Guid ticketRouteId, Guid stationId);
         Task<ResponseDTO> CheckOutTicketProcess(Guid ticketRouteId, Guid stationId);
-
+        Task<ResponseDTO> GetORCode(Guid ticketId);
     }
 }

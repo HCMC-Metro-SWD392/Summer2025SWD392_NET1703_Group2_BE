@@ -15,7 +15,7 @@ public class Ticket
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public TicketStatus? TicketRtStatus { get; set; } = TicketStatus.Inactive;
-    public string QrCode { get; set; } = null!;
+    public string? QrCode { get; set; } = null!;
 
     public SubscriptionTicket? SubscriptionTicket { get; set; } = null!;
     public TicketRoute? TicketRoute { get; set; } = null!;

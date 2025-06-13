@@ -277,8 +277,7 @@ namespace MetroTicketBE.Application.Service
                         Price = ticketPrice,
                         TicketSerial = string.Concat(Enumerable.Range(0, 10).Select(_ => random.Next(0, 10).ToString())),
                         StartDate = DateTime.UtcNow,
-                        EndDate = DateTime.UtcNow.Add(expiration),
-                        QrCode = Guid.NewGuid().ToString("N"),
+                        EndDate = DateTime.UtcNow.Add(expiration)
                     };
 
                     await _unitOfWork.TicketRepository.AddAsync(ticket);

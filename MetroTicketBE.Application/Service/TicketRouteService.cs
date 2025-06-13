@@ -1,14 +1,10 @@
 ﻿using AutoMapper;
 using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.DTO.Auth;
-using MetroTicketBE.Domain.DTO.Ticket;
 using MetroTicketBE.Domain.DTO.TicketRoute;
 using MetroTicketBE.Domain.Entities;
-using MetroTicketBE.Domain.Enum;
-using MetroTicketBE.Domain.Enums;
 using MetroTicketBE.Infrastructure.IRepository;
 using MetroTicketBE.WebAPI.Extentions;
-using System.Security.Claims;
 
 namespace MetroTicketBE.Application.Service
 {
@@ -167,7 +163,5 @@ namespace MetroTicketBE.Application.Service
                 throw new Exception("Đã xảy ra lỗi tính khoảng cách: ", ex);
             }
         }
-
     }
-
 }
