@@ -53,7 +53,7 @@ namespace MetroTicketBE.Application.Service
         }
 
         private async Task<List<TrainSchedule>> GenerateDirectionSchedules(Guid metroLineId, List<Station> orderedStations,
-            TrainScheduleType direction)
+            TrainScheduleType direction, TimeSpan? currentStartTime = null)
         {
             var directionSchedules = new List<TrainSchedule>();
             // Sử dụng await thay vì .Result để tránh deadlock
