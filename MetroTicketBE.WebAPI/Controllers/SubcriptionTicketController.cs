@@ -27,8 +27,8 @@ public class SubcriptionTicketController: ControllerBase
                 Message = "Dữ liệu không hợp lệ"
             });
         }
-
-        var response = await _subscriptionService.CreateSubscriptionAsync(dto);
+    
+        var response = await _subscriptionService.CreateSubscriptionTicketAsync(dto);
         if (response.IsSuccess)
         {
             return Ok(response);
@@ -55,6 +55,18 @@ public class SubcriptionTicketController: ControllerBase
     public async Task<IActionResult> GetSubscriptionAsync(Guid id)
     {
         var response = await _subscriptionService.GetSubscriptionAsync(id);
+        if (response.IsSuccess)
+        {
+            return Ok(response);
+        }
+        return NotFound(response);
+    }
+    
+    [HttpGet]
+    [Route("by-station/{startStationId:guid}/{endStationId:guid}")]
+    public async Task<IActionResult> GetSubscriptionByStationAsync(Guid startStationId, Guid endStationId)
+    {
+        var response = await _subscriptionService.GetSubscriptionByStationAsync(startStationId, endStationId);
         if (response.IsSuccess)
         {
             return Ok(response);

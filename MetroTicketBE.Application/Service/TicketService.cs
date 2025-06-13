@@ -197,7 +197,7 @@ namespace MetroTicketBE.Application.Service
                     Price = subscription.Price,
                     TicketSerial = string.Concat(Enumerable.Range(0, 10).Select(_ => random.Next(0, 10).ToString())),
                     StartDate = DateTime.UtcNow,
-                    EndDate = DateTime.UtcNow.AddDays(subscription.Expiration),
+                    EndDate = DateTime.UtcNow.AddDays(subscription.TicketType.Expiration),
                     QrCode = Guid.NewGuid().ToString(),
                 };
                 await _unitOfWork.TicketRepository.AddAsync(ticket);
@@ -362,7 +362,7 @@ namespace MetroTicketBE.Application.Service
                 }
                 else if (ticket.SubscriptionTicket is not null)
                 {
-                    stationPath = _graph.FindShortestPath(ticket.SubscriptionTicket.StartSationId, ticket.SubscriptionTicket.EndStationId);
+                    stationPath = _graph.FindShortestPath(ticket.SubscriptionTicket.StartStationId, ticket.SubscriptionTicket.EndStationId);
                     return await CheckInTicketRouteAndSubProcess(ticket, stationId, stationPath);
                 }
                 else
@@ -445,7 +445,7 @@ namespace MetroTicketBE.Application.Service
                 }
                 else if (ticket.SubscriptionTicket is not null)
                 {
-                    stationPath = _graph.FindShortestPath(ticket.SubscriptionTicket.StartSationId, ticket.SubscriptionTicket.EndStationId);
+                    stationPath = _graph.FindShortestPath(ticket.SubscriptionTicket.StartStationId, ticket.SubscriptionTicket.EndStationId);
                     return await CheckOutProcessSubscriptionTicket(ticket, stationId, stationPath);
                 }
                 else

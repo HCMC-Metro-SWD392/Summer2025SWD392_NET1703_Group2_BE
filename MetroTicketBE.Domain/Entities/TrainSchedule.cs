@@ -10,7 +10,6 @@ namespace MetroTicketBE.Domain.Entities
         public Guid MetroLineId { get; set; }
         public Guid StationId { get; set; }
         public TimeSpan StartTime { get; set; }
-        public TimeSpan EndTime { get; set; }
         public TrainScheduleType Direction { get; set; }
         public TrainScheduleStatus Status { get; set; }
 

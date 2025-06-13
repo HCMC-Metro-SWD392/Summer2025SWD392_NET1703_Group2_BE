@@ -12,5 +12,7 @@ namespace MetroTicketBE.Infrastructure.IRepository
             TrainScheduleType? direction);
 
         Task<TrainSchedule?> GetByIdAsync(Guid id);
+        Task<List<TrainSchedule>> GetByStationIdSortedAsync(Guid stationId);
+
     }
 }

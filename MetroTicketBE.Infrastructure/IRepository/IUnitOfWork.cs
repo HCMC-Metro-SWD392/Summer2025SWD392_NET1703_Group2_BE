@@ -22,6 +22,7 @@ namespace MetroTicketBE.Infrastructure.IRepository
         ISubscriptionRepository SubscriptionRepository { get; }
         ITicketRepository TicketRepository { get; }
         ITrainScheduleRepository TrainScheduleRepository { get; }
+        ISubscriptionTicketTypeRepository SubscriptionTicketTypeRepository { get; }
         Task<int> SaveAsync();
     }
 }

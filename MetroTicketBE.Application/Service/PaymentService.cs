@@ -12,6 +12,7 @@ using Net.payOS;
 using Net.payOS.Types;
 using System.Security.Claims;
 using System.Text.Json;
+using SubscriptionTicketType = MetroTicketBE.Domain.Entities.SubscriptionTicketType;
 
 namespace MetroTicketBE.Application.Service
 {
@@ -104,7 +105,7 @@ namespace MetroTicketBE.Application.Service
                 }
                 var isStudent = customer.CustomerType == CustomerType.Student;
                 bool isExpired = customer.StudentExpiration.HasValue && customer.StudentExpiration.Value < DateTime.UtcNow;
-                if (!isStudent || isExpired && subscriptionTicket is not null && subscriptionTicket.TicketType == SubscriptionTicketType.Student)
+                if (!isStudent || isExpired && subscriptionTicket is not null && subscriptionTicket.TicketType.Name is "student" )
                 {
                     return new ResponseDTO
                     {
@@ -261,14 +262,7 @@ namespace MetroTicketBE.Application.Service
 
                     var expiration = ticketRoute is not null
                         ? TimeSpan.FromDays(30)
-                        : subTicket?.TicketType switch
-                    {
-                        SubscriptionTicketType.Daily => TimeSpan.FromDays(1),
-                        SubscriptionTicketType.Monthly => TimeSpan.FromDays(30),
-                        SubscriptionTicketType.Weekly => TimeSpan.FromDays(7),
-                        SubscriptionTicketType.Yearly => TimeSpan.FromDays(365),
-                        _ => TimeSpan.FromDays(1)
-                    };
+                        : TimeSpan.FromDays(subTicket.TicketType.Expiration);
 
                     int ticketPrice = ticketRoute?.Distance is not null
                     ? await _unitOfWork.FareRuleRepository.CalculatePriceFromDistance(ticketRoute.Distance)
