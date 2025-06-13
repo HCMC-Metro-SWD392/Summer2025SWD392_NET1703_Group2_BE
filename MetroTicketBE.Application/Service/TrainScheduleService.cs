@@ -34,6 +34,7 @@ namespace MetroTicketBE.Application.Service
             var forwardSchedules = await GenerateDirectionSchedules(metroLineId, orderedStations, TrainScheduleType.Forward);
             allSchedules.AddRange(forwardSchedules);
 
+            
             var backwardStations = new List<Station>(orderedStations);
             backwardStations.Reverse();
             var backwardSchedules = await GenerateDirectionSchedules(metroLineId, backwardStations, TrainScheduleType.Backward);
