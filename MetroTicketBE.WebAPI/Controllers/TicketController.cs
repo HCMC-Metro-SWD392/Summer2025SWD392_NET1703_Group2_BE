@@ -70,7 +70,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpPut]
         [Route("check-in-ticket-process/{ticketId:guid}/{stationId:guid}")]
-        public async Task<ActionResult<ResponseDTO>> TicketProcess([FromRoute] Guid ticketId, [FromRoute] Guid stationId)
+        public async Task<ActionResult<ResponseDTO>> CheckInTicketProcess([FromRoute] Guid ticketId, [FromRoute] Guid stationId)
         {
             var response = await _ticketService.CheckInTicketProcess(ticketId, stationId);
             return StatusCode(response.StatusCode, response);
