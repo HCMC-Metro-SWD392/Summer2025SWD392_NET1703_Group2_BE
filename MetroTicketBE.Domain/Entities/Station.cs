@@ -6,7 +6,9 @@ public class Station
     public required string Name { get; set; }
     public string Address { get; set; } = null!;
     public string Description { get; set; } = null!;
-
+    
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    
     public ICollection<TicketRoute> TicketRoutesAsFirstStation { get; set; } = new List<TicketRoute>();
     public ICollection<TicketRoute> TicketRoutesAsLastStation { get; set; } = new List<TicketRoute>();
     

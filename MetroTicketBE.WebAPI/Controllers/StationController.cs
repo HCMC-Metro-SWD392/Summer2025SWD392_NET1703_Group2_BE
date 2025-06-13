@@ -36,9 +36,9 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpGet]
         [Route("get-all-stations")]
-        public async Task<ActionResult<ResponseDTO>> GetAllStations()
+        public async Task<ActionResult<ResponseDTO>> GetAllStations(bool? isAscending)
         {
-            var response = await _stationService.GetAllStations();
+            var response = await _stationService.GetAllStations(isAscending);
             return StatusCode(response.StatusCode, response);
         }
         

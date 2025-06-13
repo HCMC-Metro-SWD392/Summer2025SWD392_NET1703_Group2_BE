@@ -14,6 +14,7 @@ namespace MetroTicketBE.Infrastructure.IRepository
         Task<bool> IsExistById(Guid stationId);
         Task<bool> IsExistByAddress(string stationAddress);
         Task<string?> GetNameById(Guid stationId);
+        Task<List<Station>> GetAllStationsAsync(bool? isAscending);
         Task<int> GetOrderStationById(Guid stationId, Guid metroLineId);
     }
 }
