@@ -248,18 +248,9 @@ namespace MetroTicketBE.Application.Service
                         Message = "Mã giảm giá không tồn tại"
                     };
                 }
-                var isExistPromotion = await _unitOfWork.PromotionRepository.IsExistByCode(updatePromotionDTO.Code);
-                if (isExistPromotion is true)
-                {
-                    return new ResponseDTO
-                    {
-                        IsSuccess = false,
-                        StatusCode = 404,
-                        Message = "Mã giảm giá đã tồn tại"
-                    };
-                }
 
-                if (updatePromotionDTO.StartDate != default || updatePromotionDTO.EndDate != default)
+                // Validate ngày bắt đầu và kết thúc nếu cả hai được cung cấp
+                if (updatePromotionDTO.StartDate.HasValue && updatePromotionDTO.EndDate.HasValue)
                 {
                     if (updatePromotionDTO.StartDate >= updatePromotionDTO.EndDate)
                     {
@@ -270,7 +261,7 @@ namespace MetroTicketBE.Application.Service
                             Message = "Ngày bắt đầu phải trước ngày kết thúc"
                         };
                     }
-                    // Ngày bắt đầu và kết thúc không thể là quá khứ  
+
                     if (updatePromotionDTO.StartDate < DateTime.UtcNow || updatePromotionDTO.EndDate < DateTime.UtcNow)
                     {
                         return new ResponseDTO
@@ -281,7 +272,9 @@ namespace MetroTicketBE.Application.Service
                         };
                     }
                 }
-                else if (updatePromotionDTO.StartDate != default)
+
+                // Validate StartDate nếu chỉ StartDate được gửi lên
+                if (updatePromotionDTO.StartDate.HasValue && updatePromotionDTO.EndDate is null)
                 {
                     if (updatePromotionDTO.StartDate > promotion.EndDate)
                     {
@@ -294,21 +287,25 @@ namespace MetroTicketBE.Application.Service
                     }
                 }
 
+                // Validate theo loại khuyến mãi
                 if (updatePromotionDTO.PromotionType == PromotionType.Percentage)
                 {
-                    if (updatePromotionDTO.Percentage is not null || updatePromotionDTO.Percentage < 0 || updatePromotionDTO.Percentage > 100)
+                    if (updatePromotionDTO.Percentage is not null)
                     {
-                        return new ResponseDTO
+                        if (updatePromotionDTO.Percentage < 0 || updatePromotionDTO.Percentage > 100)
                         {
-                            IsSuccess = false,
-                            StatusCode = 400,
-                            Message = "Tỷ lệ phần trăm phải nằm trong khoảng từ 0 đến 100"
-                        };
+                            return new ResponseDTO
+                            {
+                                IsSuccess = false,
+                                StatusCode = 400,
+                                Message = "Tỷ lệ phần trăm phải nằm trong khoảng từ 0 đến 100"
+                            };
+                        }
                     }
                 }
                 else if (updatePromotionDTO.PromotionType == PromotionType.FixedAmount)
                 {
-                    if (updatePromotionDTO.FixedAmount <= 0)
+                    if (updatePromotionDTO.FixedAmount is not null && updatePromotionDTO.FixedAmount <= 0)
                     {
                         return new ResponseDTO
                         {
@@ -319,24 +316,40 @@ namespace MetroTicketBE.Application.Service
                     }
                 }
 
-                if (updatePromotionDTO.Code != default)
+                // Validate mã giảm giá mới
+                if (!string.IsNullOrWhiteSpace(updatePromotionDTO.Code))
                 {
-                    promotion.Code = updatePromotionDTO.Code.Trim().ToUpper();
+                    var newCode = updatePromotionDTO.Code.Trim().ToUpper();
+                    if (newCode != promotion.Code)
+                    {
+                        var isExist = await _unitOfWork.PromotionRepository.IsExistByCode(newCode);
+                        if (isExist)
+                        {
+                            return new ResponseDTO
+                            {
+                                IsSuccess = false,
+                                StatusCode = 400,
+                                Message = "Mã giảm giá đã tồn tại"
+                            };
+                        }
+                        promotion.Code = newCode;
+                    }
                 }
 
-                if (updatePromotionDTO.Description != default)
+                // Update các trường khác nếu có
+                if (!string.IsNullOrWhiteSpace(updatePromotionDTO.Description))
                 {
-                    promotion.Description = updatePromotionDTO.Description;
+                    promotion.Description = updatePromotionDTO.Description.Trim();
                 }
 
-                if (updatePromotionDTO.StartDate != default && updatePromotionDTO.StartDate > DateTime.MinValue)
+                if (updatePromotionDTO.StartDate.HasValue && updatePromotionDTO.StartDate > DateTime.MinValue)
                 {
-                    promotion.StartDate = updatePromotionDTO.StartDate;
+                    promotion.StartDate = updatePromotionDTO.StartDate.Value;
                 }
 
-                if (updatePromotionDTO.EndDate != default && updatePromotionDTO.EndDate > DateTime.MinValue)
+                if (updatePromotionDTO.EndDate.HasValue && updatePromotionDTO.EndDate > DateTime.MinValue)
                 {
-                    promotion.EndDate = updatePromotionDTO.EndDate;
+                    promotion.EndDate = updatePromotionDTO.EndDate.Value;
                 }
 
                 if (updatePromotionDTO.PromotionType != default)
@@ -344,12 +357,12 @@ namespace MetroTicketBE.Application.Service
                     promotion.PromotionType = updatePromotionDTO.PromotionType;
                 }
 
-                if (updatePromotionDTO.Percentage != default)
+                if (updatePromotionDTO.Percentage is not null)
                 {
                     promotion.Percentage = updatePromotionDTO.Percentage;
                 }
 
-                if (updatePromotionDTO.FixedAmount != default)
+                if (updatePromotionDTO.FixedAmount is not null)
                 {
                     promotion.FixedAmount = updatePromotionDTO.FixedAmount;
                 }
@@ -375,6 +388,7 @@ namespace MetroTicketBE.Application.Service
                 };
             }
         }
+
     }
 
 
