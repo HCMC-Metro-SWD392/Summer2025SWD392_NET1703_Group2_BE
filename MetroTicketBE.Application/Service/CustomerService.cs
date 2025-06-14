@@ -233,7 +233,7 @@ public class CustomerService: ICustomerService
         if (dto.PhoneNumber != null) customer.User.PhoneNumber = dto.PhoneNumber;
         if (dto.Sex != null) customer.User.Sex = dto.Sex;
         if (dto.Email != null) customer.User.Email = dto.Email;
-        if (dto.DateOfBirth.HasValue) customer.User.DateOfBirth = dto.DateOfBirth.Value;
+        if (dto.DateOfBirth.HasValue) customer.User.DateOfBirth = DateTime.SpecifyKind(dto.DateOfBirth.Value, DateTimeKind.Local);
         if (dto.IdentityId != null) customer.User.IdentityId = dto.IdentityId;
         if (dto.CustomerType.HasValue) customer.CustomerType = dto.CustomerType.Value;
     }
