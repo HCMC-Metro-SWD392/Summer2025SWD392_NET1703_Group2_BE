@@ -15,7 +15,7 @@ namespace MetroTicketBE.Application.Service
         private readonly IMapper _mapper;
         
         private const int TravelTimeBetweenStationsInSeconds = 180;
-        private const int DwellTimeAtStationInSeconds = 45;
+        private const int DwellTimeAtStationInSeconds = 30;
         private readonly (TimeSpan Start, TimeSpan End) _peakHour1 = (new TimeSpan(7, 0, 0), new TimeSpan(9, 0, 0));
         private readonly (TimeSpan Start, TimeSpan End) _peakHour2 = (new TimeSpan(17, 0, 0), new TimeSpan(19, 0, 0));
         private const int PeakHourHeadwayInSeconds = 300;
@@ -38,6 +38,11 @@ namespace MetroTicketBE.Application.Service
                         Message = "ID tuyến metro không hợp lệ.",
                         IsSuccess = false
                     };
+                }
+                var existedSchedules = await _unitOfWork.TrainScheduleRepository.GetByMetroLineIdSortedAsync(metroLineId);
+                if (existedSchedules is not null && existedSchedules.Any())
+                {
+                    _unitOfWork.TrainScheduleRepository.RemoveRange(existedSchedules);
                 }
                 var allSchedules = new List<TrainSchedule>();
                 var orderedStations =
@@ -97,7 +102,9 @@ namespace MetroTicketBE.Application.Service
             int singleTripDurationInSeconds = (orderedStations.Count - 1) * (TravelTimeBetweenStationsInSeconds + DwellTimeAtStationInSeconds);
             TimeSpan tripDuration = TimeSpan.FromSeconds(singleTripDurationInSeconds);
 
-            var currentTime = metroLine.StartTime;
+            var initialTime = currentStartTime ?? metroLine.StartTime;
+            
+            var currentTime = initialTime;
             // FIX 1: Điều kiện dừng mới: thời gian khởi hành cộng với thời gian chuyến đi phải nhỏ hơn hoặc bằng thời gian kết thúc
             var lastPossibleDepartureTime = metroLine.EndTime - tripDuration;
 
