@@ -105,7 +105,7 @@ namespace MetroTicketBE.Application.Service
                 }
                 var isStudent = customer.CustomerType == CustomerType.Student;
                 bool isExpired = customer.StudentExpiration.HasValue && customer.StudentExpiration.Value < DateTime.UtcNow;
-                if (!isStudent || isExpired && subscriptionTicket is not null && subscriptionTicket.TicketType.Name is "student" )
+                if (!isStudent && isExpired && subscriptionTicket is not null && subscriptionTicket.TicketType.Name is "student" )
                 {
                     return new ResponseDTO
                     {
