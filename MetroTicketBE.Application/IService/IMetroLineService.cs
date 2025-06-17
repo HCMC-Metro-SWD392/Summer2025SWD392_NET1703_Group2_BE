@@ -13,5 +13,6 @@ namespace MetroTicketBE.Application.IService
         Task<ResponseDTO> CreateMetroLine(CreateMetroLineDTO createMetroLineDTO);
         Task<ResponseDTO> GetAllMetroLines();
         Task<ResponseDTO> GetMetroLineById(Guid metroLineId);
+        Task<ResponseDTO> UpdateMetroLine(Guid metroLineId, UpdateMetroLineDTO updateMetroLineDTO);
     }
 }

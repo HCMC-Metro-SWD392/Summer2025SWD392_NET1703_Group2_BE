@@ -29,7 +29,6 @@ namespace MetroTicketBE.Infrastructure.Repository
         public async Task<MetroLine?> GetByIdAsync(Guid id)
         {
             return await _context.MetroLines
-                .AsNoTracking()
                 .Include(mt => mt.StartStation)
                 .Include(mt => mt.EndStation)
                 .Include(mt => mt.MetroLineStations)
@@ -43,10 +42,15 @@ namespace MetroTicketBE.Infrastructure.Repository
                 .AnyAsync(metroLine => metroLine.Id == id);
         }
 
-        public async Task<bool> IsExistByMetroLineNumber(int metroLineNumber)
+        public async Task<bool> IsExistByMetroLineNumber(int metroLineNumber, Guid? currentMetroLineId)
         {
-            return await _context.MetroLines
-                .AnyAsync(metroLine => metroLine.MetroLineNumber == metroLineNumber);
+            var query = _context.MetroLines.Where(m => m.MetroLineNumber == metroLineNumber);
+            if (currentMetroLineId.HasValue)
+            {
+                query = query.Where(m => m.Id != currentMetroLineId.Value);
+            }
+
+            return await query.AnyAsync();
         }
 
         public async Task<bool> IsSameMetroLine(Guid stationOneId, Guid stationTwoId)
