@@ -9,7 +9,7 @@ public class CustomerResponseDTO
     public String? FullName { get; set; } = null!;
     public String? Address { get; set; } = null;
     public String? Sex { get; set; } = null;
-    public DateTime? DateOfBirth { get; set; }
+    public DateOnly? DateOfBirth { get; set; }
     public String? UserName { get; set; } = null;
     public String? Email { get; set; } = null;
     public String? PhoneNumber { get; set; } = null;

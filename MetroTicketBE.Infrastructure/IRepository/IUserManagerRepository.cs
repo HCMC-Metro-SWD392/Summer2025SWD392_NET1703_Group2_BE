@@ -9,6 +9,8 @@ namespace MetroTicketBE.Infrastructure.IRepository
         Task<ApplicationUser> GetByPhoneNumberAsync(string phoneNumber);
         Task<IdentityResult> CreateAsync(ApplicationUser user, string password);
         Task<IdentityResult> AddtoRoleAsync(ApplicationUser user, string role);
+        Task<ApplicationUser> GetByIdAsync(string id);
+        Task<IdentityResult> UpdateAsync(ApplicationUser user);
         Task<bool> IsEmailExist(string email);
         Task<bool> IsPhoneNumberExist(string phoneNumber);
     }

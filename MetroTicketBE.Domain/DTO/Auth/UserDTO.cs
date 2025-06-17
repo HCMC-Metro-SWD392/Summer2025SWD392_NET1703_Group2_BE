@@ -9,6 +9,6 @@ public class UserDTO
     public string? Address { get; set; }
     public string? IdentityId { get; set; }
     public string Sex { get; set; } = string.Empty;
-    public DateTime? DateOfBirth { get; set; }
+    public DateOnly? DateOfBirth { get; set; }
     public string UserName { get; set; } = string.Empty;
 }

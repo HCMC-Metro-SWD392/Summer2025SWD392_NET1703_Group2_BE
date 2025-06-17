@@ -30,6 +30,17 @@ namespace MetroTicketBE.Infrastructure.Repository
             return await _userManager.FindByEmailAsync(email)
                    ?? throw new KeyNotFoundException($"Không tìm thấy email: {email}");
         }
+        
+        public async Task<ApplicationUser> GetByIdAsync(string id)
+        {
+            return await _userManager.FindByIdAsync(id)
+                   ?? throw new KeyNotFoundException($"Không tìm thấy người dùng với ID: {id}");
+        }
+
+        public async Task<IdentityResult> UpdateAsync(ApplicationUser user)
+        {
+            return await _userManager.UpdateAsync(user);
+        }
 
         public async Task<bool> IsEmailExist(string email)
         {
