@@ -14,10 +14,10 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Cấu hình Kestrel
-        builder.WebHost.ConfigureKestrel(options =>
-        {
-            options.ListenAnyIP(5000); // Lắng nghe trên cổng 5000 cho tất cả IP 
-        });
+        //builder.WebHost.ConfigureKestrel(options =>
+        //{
+        //    options.ListenAnyIP(5000); // Lắng nghe trên cổng 5000 cho tất cả IP 
+        //});
 
         builder.Configuration
         .SetBasePath(Directory.GetCurrentDirectory())
@@ -30,7 +30,9 @@ public class Program
         builder.Services.AddHttpClient();
 
         builder.Services.AddDbContext<ApplicationDBContext>(options =>
-            options.UseNpgsql(builder.Configuration.GetConnectionString(StaticConnectionString.POSTGRE_DefaultConnection)));
+            options.UseNpgsql(builder.Configuration.GetConnectionString(StaticConnectionString.POSTGRE_DefaultConnection))
+            .EnableSensitiveDataLogging()
+            .LogTo(Console.WriteLine, LogLevel.Information));
 
         // Set time token
         builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>

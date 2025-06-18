@@ -20,9 +20,7 @@ public class PaymentTransaction
 
     public Customer Customer { get; set; } = null!;
 
-    public Ticket Ticket_ { get; set; } = null!;
-
     public Promotion Promotion { get; set; } = null!;
 
-    public ICollection<PaymentMethod> PaymentMethods { get; set; } = new List<PaymentMethod>();
+    public PaymentMethod PaymentMethod { get; set; } = null!;
 }

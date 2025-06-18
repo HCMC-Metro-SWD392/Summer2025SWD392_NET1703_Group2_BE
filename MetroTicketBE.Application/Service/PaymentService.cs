@@ -199,7 +199,7 @@ namespace MetroTicketBE.Application.Service
             {
                 return new ResponseDTO
                 {
-                    Message = $"Đã xảy ra lỗi khi tạo liên kết thanh toán: {ex.Message}",
+                    Message = $"Đã xảy ra lỗi khi tạo liên kết thanh toán: {ex.StackTrace}",
                     IsSuccess = false,
                     StatusCode = 500
                 };
