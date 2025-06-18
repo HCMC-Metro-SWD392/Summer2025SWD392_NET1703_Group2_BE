@@ -88,5 +88,20 @@ namespace MetroTicketBE.Infrastructure.Repository
                     .OrderByDescending(s => s.CreatedAt)
                 .ToListAsync();
         }
+
+        public async Task<List<Station>> SearchStationsByName(string? name)
+        {
+            
+            if (name is null)
+            {
+                return await _context.Stations
+                    .ToListAsync();
+            }
+        
+            return await _context.Stations
+                .Where(s => s.Name.ToLower().Contains(name.ToLower()))
+                .ToListAsync();
+        }
+        
     }
 }

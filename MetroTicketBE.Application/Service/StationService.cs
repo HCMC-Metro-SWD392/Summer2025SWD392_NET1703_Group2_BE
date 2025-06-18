@@ -1,4 +1,5 @@
-﻿using MetroTicketBE.Application.IService;
+﻿using AutoMapper;
+using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.Station;
 using MetroTicketBE.Domain.Entities;
@@ -9,10 +10,12 @@ namespace MetroTicketBE.Application.Service
     public class StationService : IStationService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public StationService(IUnitOfWork unitOfWork)
+        public StationService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         public async Task<ResponseDTO> CreateStation(CreateStationDTO createStationDTO)
@@ -210,6 +213,27 @@ namespace MetroTicketBE.Application.Service
                     Message = "Lỗi khi lấy thông tin trạm Metro: " + ex.Message
                 };
             }
+        }
+
+        public async Task<ResponseDTO> SearchStationsByName(string? name)
+        {
+            var stations = await _unitOfWork.StationRepository.SearchStationsByName(name);
+            if (stations.Count == 0)
+            {
+                return new ResponseDTO
+                {
+                    IsSuccess = false,
+                    StatusCode = 404,
+                    Message = "Không tìm thấy trạm Metro nào với tên đã cho"
+                };
+            }
+            return new ResponseDTO
+            {
+                IsSuccess = true,
+                StatusCode = 200,
+                Message = "Tìm kiếm trạm Metro thành công",
+                Result = _mapper.Map<List<GetStationDTO>>(stations)
+            };
         }
     }
 }

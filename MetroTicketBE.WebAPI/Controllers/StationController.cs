@@ -49,5 +49,13 @@ namespace MetroTicketBE.WebAPI.Controllers
             var response = await _stationService.GetStationById(stationId);
             return StatusCode(response.StatusCode, response);
         }
+
+        [HttpGet]
+        [Route("search-stations-by-name")]
+        public async Task<ActionResult<ResponseDTO>> SearchStationsByName([FromQuery] string? name)
+        {
+            var response = await _stationService.SearchStationsByName(name);
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }

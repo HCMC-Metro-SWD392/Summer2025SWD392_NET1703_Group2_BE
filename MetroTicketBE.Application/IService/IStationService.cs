@@ -14,5 +14,6 @@ namespace MetroTicketBE.Application.IService
         Task<ResponseDTO> UpdateStation(Guid stationId, UpdateStationDTO updateStationDTO);
         Task<ResponseDTO> GetAllStations(bool? isAscending);
         Task<ResponseDTO> GetStationById(Guid stationId);
+        Task<ResponseDTO> SearchStationsByName(string? name);
     }
 }
