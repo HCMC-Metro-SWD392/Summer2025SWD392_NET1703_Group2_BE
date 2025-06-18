@@ -40,5 +40,14 @@ namespace MetroTicketBE.WebAPI.Controllers
             var response = await _metroLineService.GetMetroLineById(metroLineId);
             return StatusCode(response.StatusCode, response);
         }
+
+        [HttpPut]
+        [Route("update-metro-line/{metroLineId}")]
+        public async Task<ActionResult<ResponseDTO>> UpdateMetroLine(Guid metroLineId,
+            [FromBody] UpdateMetroLineDTO updateMetroLineDTO)
+        {
+            var response = await _metroLineService.UpdateMetroLine(metroLineId, updateMetroLineDTO);
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }

@@ -146,12 +146,17 @@ namespace MetroTicketBE.Application.Service
             }
             
         }
-        public async Task<ResponseDTO> GetAllStations(bool? isAscending)
+        public async Task<ResponseDTO> GetAllStations(bool? isAscending,int pageNumber,
+            int pageSize)
         {
             try
             {
                 var stations = await _unitOfWork.StationRepository.GetAllStationsAsync(isAscending);
-
+                if (pageNumber > 0 || pageSize > 0)
+                {
+                    stations = stations.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+                }
+                
                 return new ResponseDTO
                 {
                     IsSuccess = true,
