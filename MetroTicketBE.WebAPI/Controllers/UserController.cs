@@ -1,6 +1,7 @@
 ﻿using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.Customer;
+using MetroTicketBE.Domain.Enum;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MetroTicketBE.WebAPI.Controllers;
@@ -38,6 +39,18 @@ public class UserController: ControllerBase
             return NotFound(response);
         }
         
+        return Ok(response);
+    }
+    [HttpPost("create-staff")]
+    public async Task<ActionResult<ResponseDTO>> CreateStaffAsync([FromBody] RegisterCustomerDTO dto, [FromQuery] UserRole role)
+    {
+        ResponseDTO response = await _userService.CreateStaffAsync(dto, role);
+        
+        if (!response.IsSuccess)
+        {
+            return BadRequest(response);
+        }
+
         return Ok(response);
     }
 }

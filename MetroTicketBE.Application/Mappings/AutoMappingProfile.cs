@@ -4,6 +4,8 @@ using MetroTicketBE.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MetroTicket.Domain.Entities;
+using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.MetroLine;
 using MetroTicketBE.Domain.DTO.MetroLineStation;
 using MetroTicketBE.Domain.DTO.Station;
@@ -31,7 +33,7 @@ namespace MetroTicketBE.Application.Mappings
                 src.TicketRoute != null ? src.TicketRoute.EndStation.Name :
                 src.SubscriptionTicket != null ? src.SubscriptionTicket.EndStation.Name : null)).ReverseMap();
 
-
+            CreateMap<ApplicationUser, UserDTO>();
             CreateMap<Promotion, GetPromotionDTO>();
             CreateMap<TrainSchedule, GetTrainScheduleDTO>()
                 .ForMember(dest => dest.MetroLineName, opt => opt.MapFrom(src => src.MetroLine.MetroName))

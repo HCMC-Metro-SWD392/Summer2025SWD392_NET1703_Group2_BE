@@ -9,8 +9,8 @@ namespace MetroTicketBE.Domain.Enum
     // Vai trò người dùng
     public enum UserRole
     {
-        Admin = 0, // Quản trị viên
-        Staff = 1, // Nhân viên
-        Manager = 2 // Quản lý
+        Admin , // Quản trị viên
+        Staff , // Nhân viên
+        Manager // Quản lý
     }
 }
