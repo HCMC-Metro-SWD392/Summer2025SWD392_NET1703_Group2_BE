@@ -23,7 +23,7 @@ namespace MetroTicketBE.Domain.DTO.Auth
         public required string ConfirmPassword { get; set; }
 
         [Required(ErrorMessage = "Vui lòng nhập họ tên")]
-        [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "Họ tên chỉ được chứa chữ cái và khoảng trắng")]
+        [RegularExpression(@"^[\p{L}\s]+$", ErrorMessage = "Họ tên chỉ được chứa chữ cái và khoảng trắng")]
         [StringLength(100, ErrorMessage = "Họ tên không được vượt quá 100 ký tự")]
         public required string FullName { get; set; }
 
