@@ -182,7 +182,7 @@ namespace MetroTicketBE.Application.Service
                 {
                     CustomerId = customer.Id,
                     OrderCode = Convert.ToString(orderCode),
-                    ItemDataJson = item,
+                    DataJson = item,
                     TotalPrice = subscription.Price,
                     PaymentMethodId = _unitOfWork.PaymentMethodRepository.GetByNameAsync("PAYOS").Result.Id,
                     Status = PaymentStatus.Paid
@@ -193,7 +193,6 @@ namespace MetroTicketBE.Application.Service
                 {
                     CustomerId = customer.Id,
                     SubscriptionTicketId = subscriptionId,
-                    TransactionId = transaction.Id,
                     Price = subscription.Price,
                     TicketSerial = string.Concat(Enumerable.Range(0, 10).Select(_ => random.Next(0, 10).ToString())),
                     StartDate = DateTime.UtcNow,
@@ -549,7 +548,8 @@ namespace MetroTicketBE.Application.Service
                 {
                     Message = "Trạm không đúng với phạm vi cho phép bắt đầu của vé (nằm ngoài vùng cho phép check-in).",
                     IsSuccess = false,
-                    StatusCode = 400
+                    StatusCode = 400,
+                    Result = ticket.Id
                 };
             }
 
@@ -583,7 +583,8 @@ namespace MetroTicketBE.Application.Service
                 {
                     Message = "Trạm không đúng với phạm vi cho phép kết thúc của vé lượt (nằm ngoài vùng cho phép check-uot).",
                     IsSuccess = false,
-                    StatusCode = 400
+                    StatusCode = 400,
+                    Result = ticket.Id
                 };
             }
         }
