@@ -20,9 +20,9 @@ namespace MetroTicketBE.Application.Mappings
         {
             CreateMap<GetTicketRouteDTO, TicketRoute>().ReverseMap();
             CreateMap<MetroLine, GetMetroLineDTO>();
-            CreateMap<Station, GetStationDTO>();
+            CreateMap<Station, GetStationDTO>().ForMember(dest => dest.MetroLines, opt => opt.MapFrom(src => src.MetroLineStations.Select(mls => mls.MetroLine)));
             CreateMap<MetroLineStation, GetMetroLineStationDTO>();
-
+            CreateMap<MetroLine, MetroLineDTO>();
             CreateMap<Ticket, GetTicketDTO>()
             .ForMember(dest => dest.FromStation, opt => opt.MapFrom(src =>
                 src.TicketRoute != null ? src.TicketRoute.StartStation.Name :

@@ -100,6 +100,7 @@ namespace MetroTicketBE.Infrastructure.Repository
         
             return await _context.Stations
                 .Where(s => s.Name.ToLower().Contains(name.ToLower()))
+                .Include(s => s.MetroLineStations).ThenInclude(mls => mls.MetroLine)
                 .ToListAsync();
         }
         
