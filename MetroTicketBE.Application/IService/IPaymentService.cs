@@ -6,7 +6,9 @@ namespace MetroTicketBE.Application.IService
 {
     public interface IPaymentService
     {
-        Task<ResponseDTO> CreateLinkPaymentTicketRoutePayOS(ClaimsPrincipal user, CreateLinkPaymentRoutePayOSDTO createLinkDTO);
+        Task<ResponseDTO> CreateLinkPaymentTicketPayOS(ClaimsPrincipal user, CreateLinkPaymentPayOSDTO createLinkDTO);
         Task<ResponseDTO> UpdatePaymentTickerStatusPayOS(ClaimsPrincipal user, string orderCode);
+        Task<ResponseDTO> CreateLinkPaymentOverStationTicketRoutePayOS(ClaimsPrincipal user, CreateLinkPaymentOverStationDTO createLinkPaymentOverStationDTO);
+        Task<ResponseDTO> UpdatePaymentOverStationTicketRoutePayOS(ClaimsPrincipal user, string orderCode);
     }
 }

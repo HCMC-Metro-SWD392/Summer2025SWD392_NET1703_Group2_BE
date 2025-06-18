@@ -4,7 +4,7 @@ using MetroTicketBE.Domain.Enum;
 
 namespace MetroTicketBE.Domain.DTO.Payment
 {
-    public class CreateLinkPaymentRoutePayOSDTO
+    public class CreateLinkPaymentPayOSDTO
     {
         public Guid? TicketRouteId { get; set; }
         public Guid? SubscriptionTicketId { get; set; }

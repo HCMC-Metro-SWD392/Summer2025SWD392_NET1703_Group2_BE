@@ -41,15 +41,9 @@ namespace MetroTicketBE.Infrastructure.Context
             base.OnModelCreating(modelBuilder);
             //Seeding
             ApplicationDBContextSeed.SeedEmailTemplate(modelBuilder);
-        
 
-            //Transaction
 
-            modelBuilder.Entity<PaymentTransaction>()
-                .HasMany(t => t.Tickets)
-                .WithOne(ticket => ticket.Transaction)
-                .HasForeignKey(ticket => ticket.TransactionId)
-                .OnDelete(DeleteBehavior.Restrict);
+            //PaymentTransaction
 
             modelBuilder.Entity<PaymentTransaction>()
                 .HasOne(t => t.Promotion)
@@ -61,6 +55,12 @@ namespace MetroTicketBE.Infrastructure.Context
                 .HasOne(t => t.Customer)
                 .WithMany(c => c.Transactions)
                 .HasForeignKey(t => t.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<PaymentTransaction>()
+                .HasOne(ts => ts.Ticket_)
+                .WithMany(t => t.Transaction)
+                .HasForeignKey(t => t.TicketId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // modelBuilder.Entity<PaymentTransaction>()
@@ -82,11 +82,11 @@ namespace MetroTicketBE.Infrastructure.Context
                 .HasForeignKey(t => t.TicketRouteId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Ticket>()
-                .HasOne(t => t.Transaction)
-                .WithMany(tr => tr.Tickets)
-                .HasForeignKey(t => t.TransactionId)
-                .OnDelete(DeleteBehavior.Restrict);
+            //modelBuilder.Entity<Ticket>()
+            //    .HasMany(t => t.Transaction)
+            //    .WithOne(tr => tr.Ticket_)
+            //    .HasForeignKey(t => t.TicketId)
+            //    .OnDelete(DeleteBehavior.Restrict);
 
             //TicketRoute
             modelBuilder.Entity<TicketRoute>()
