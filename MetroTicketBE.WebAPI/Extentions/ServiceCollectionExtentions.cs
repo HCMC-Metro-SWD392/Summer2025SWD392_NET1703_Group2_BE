@@ -54,7 +54,12 @@ namespace MetroTicketBE.WebAPI.Extentions
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IFareRuleRepository, FareRuleRepository>();
             services.AddScoped<ISubscriptionTicketTypeRepository, SubscriptionTicketTypeRepository>();
-            
+
+            // Registering IFormRequestService with its implementation FormRequestService
+            services.AddScoped<IFormRequestService, FormRequestService>();
+            // Registering IS3Service with its implementation S3Service
+            services.AddScoped<IS3Service, S3Service>();
+
             // Register the Identity services with default configuration
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDBContext>()
