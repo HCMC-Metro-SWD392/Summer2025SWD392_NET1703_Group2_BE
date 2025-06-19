@@ -349,7 +349,7 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                if (ticket.TicketRtStatus == TicketStatus.Active)
+                else if (ticket.TicketRtStatus == TicketStatus.Active || ticket.TicketRtStatus == TicketStatus.ActiveOverStation)
                 {
                     return new ResponseDTO
                     {
@@ -358,31 +358,60 @@ namespace MetroTicketBE.Application.Service
                         StatusCode = 400
                     };
                 }
-
-                var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
-
-                var _graph = new StationGraph(allMetroLines);
-
-                var stationPath = new List<Guid>();
-
-                if (ticket.TicketRoute is not null)
+                else if (ticket.TicketRtStatus == TicketStatus.Inactive)
                 {
-                    stationPath = _graph.FindShortestPath(ticket.TicketRoute.StartStation.Id, ticket.TicketRoute.EndStationId);
-                    return await CheckInTicketRouteAndSubProcess(ticket, stationId, stationPath);
-                }
-                else if (ticket.SubscriptionTicket is not null)
-                {
-                    stationPath = _graph.FindShortestPath(ticket.SubscriptionTicket.StartStationId, ticket.SubscriptionTicket.EndStationId);
-                    return await CheckInTicketRouteAndSubProcess(ticket, stationId, stationPath);
+                    var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
+
+                    var _graph = new StationGraph(allMetroLines);
+
+                    var stationPath = new List<Guid>();
+
+                    if (ticket.TicketRoute is not null)
+                    {
+                        stationPath = _graph.FindShortestPath(ticket.TicketRoute.StartStation.Id, ticket.TicketRoute.EndStationId);
+                        return await CheckInTicketRouteAndSubProcess(ticket, stationId, stationPath);
+                    }
+                    else if (ticket.SubscriptionTicket is not null)
+                    {
+                        stationPath = _graph.FindShortestPath(ticket.SubscriptionTicket.StartStationId, ticket.SubscriptionTicket.EndStationId);
+                        return await CheckInTicketRouteAndSubProcess(ticket, stationId, stationPath);
+                    }
+                    else
+                    {
+                        return new ResponseDTO
+                        {
+                            Message = "Vé lỗi định dạng không thể xác định vé lượt hay vé kỳ",
+                            IsSuccess = false,
+                            StatusCode = 404
+                        };
+                    }
                 }
                 else
                 {
-                    return new ResponseDTO
+                    var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
+
+                    var _graph = new StationGraph(allMetroLines);
+
+                    var stationPath = new List<Guid>();
+                    var stationOverPath = new List<Guid>();
+                    var totalPath = new List<Guid>();
+
+                    if (ticket.TicketRoute is null)
                     {
-                        Message = "Vé lỗi định dạng không thể xác định vé lượt hay vé kỳ",
-                        IsSuccess = false,
-                        StatusCode = 404
-                    };
+                        return new ResponseDTO
+                        {
+                            Message = "Vé không có hỗ trợ vượt trạm",
+                            IsSuccess = false,
+                            StatusCode = 404
+                        };
+                    }
+
+                    stationOverPath = _graph.FindShortestPath(ticket.TicketRoute.StartStation.Id, ticket.TicketRoute.EndStationId);
+                    stationPath = _graph.FindShortestPath(ticket.SubscriptionTicket.StartStationId, ticket.SubscriptionTicket.EndStationId);
+
+                    totalPath = stationOverPath.Concat(stationPath).ToList();
+
+                    return await CheckInOverStationSubProcess(ticket, stationId, totalPath);
                 }
             }
             catch (Exception ex)
@@ -392,6 +421,32 @@ namespace MetroTicketBE.Application.Service
                     Message = "Đã xảy ra lỗi khi xử lý vé lượt: " + ex.Message,
                     IsSuccess = false,
                     StatusCode = 500
+                };
+            }
+        }
+
+        private async Task<ResponseDTO> CheckInOverStationSubProcess(Ticket ticket, Guid stationId, List<Guid> stationPath)
+        {
+            if (stationPath.Contains(stationId))
+            {
+                ticket.TicketRtStatus = TicketStatus.ActiveOverStation;
+                _unitOfWork.TicketRepository.Update(ticket);
+                await _unitOfWork.SaveAsync();
+                return new ResponseDTO
+                {
+                    Message = "Vé đã được check-in thành công.",
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
+            }
+            else
+            {
+                return new ResponseDTO
+                {
+                    Message = "Trạm không đúng với phạm vi cho phép bắt đầu của vé (nằm ngoài vùng cho phép check-in).",
+                    IsSuccess = false,
+                    StatusCode = 400,
+                    Result = ticket.Id
                 };
             }
         }
@@ -444,7 +499,7 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                if (ticket.TicketRtStatus == TicketStatus.Inactive)
+                else if (ticket.TicketRtStatus == TicketStatus.Inactive || ticket.TicketRtStatus == TicketStatus.InActiveOverStation)
                 {
                     return new ResponseDTO
                     {
@@ -453,31 +508,61 @@ namespace MetroTicketBE.Application.Service
                         StatusCode = 400
                     };
                 }
-
-                var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
-
-                var _graph = new StationGraph(allMetroLines);
-
-                var stationPath = new List<Guid>();
-
-                if (ticket.TicketRoute is not null)
+                else if (ticket.TicketRtStatus == TicketStatus.Active)
                 {
-                    stationPath = _graph.FindShortestPath(ticket.TicketRoute.StartStation.Id, ticket.TicketRoute.EndStationId);
-                    return await CheckOutTicketRouteProcess(ticket, stationId, stationPath);
-                }
-                else if (ticket.SubscriptionTicket is not null)
-                {
-                    stationPath = _graph.FindShortestPath(ticket.SubscriptionTicket.StartStationId, ticket.SubscriptionTicket.EndStationId);
-                    return await CheckOutProcessSubscriptionTicket(ticket, stationId, stationPath);
+
+                    var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
+
+                    var _graph = new StationGraph(allMetroLines);
+
+                    var stationPath = new List<Guid>();
+
+                    if (ticket.TicketRoute is not null)
+                    {
+                        stationPath = _graph.FindShortestPath(ticket.TicketRoute.StartStation.Id, ticket.TicketRoute.EndStationId);
+                        return await CheckOutTicketRouteProcess(ticket, stationId, stationPath);
+                    }
+                    else if (ticket.SubscriptionTicket is not null)
+                    {
+                        stationPath = _graph.FindShortestPath(ticket.SubscriptionTicket.StartStationId, ticket.SubscriptionTicket.EndStationId);
+                        return await CheckOutProcessSubscriptionTicket(ticket, stationId, stationPath);
+                    }
+                    else
+                    {
+                        return new ResponseDTO
+                        {
+                            Message = "Vé lỗi định dạng không thể xác định vé lượt hay vé kỳ",
+                            IsSuccess = false,
+                            StatusCode = 404
+                        };
+                    }
                 }
                 else
                 {
-                    return new ResponseDTO
+                    var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
+
+                    var _graph = new StationGraph(allMetroLines);
+
+                    var stationPath = new List<Guid>();
+                    var stationOverPath = new List<Guid>();
+                    var totalPath = new List<Guid>();
+
+                    if (ticket.TicketRoute is null)
                     {
-                        Message = "Vé lỗi định dạng không thể xác định vé lượt hay vé kỳ",
-                        IsSuccess = false,
-                        StatusCode = 404
-                    };
+                        return new ResponseDTO
+                        {
+                            Message = "Vé không có hỗ trợ vượt trạm",
+                            IsSuccess = false,
+                            StatusCode = 404
+                        };
+                    }
+
+                    stationOverPath = _graph.FindShortestPath(ticket.TicketRoute.StartStation.Id, ticket.TicketRoute.EndStationId);
+                    stationPath = _graph.FindShortestPath(ticket.SubscriptionTicket.StartStationId, ticket.SubscriptionTicket.EndStationId);
+
+                    totalPath = stationOverPath.Concat(stationPath).ToList();
+
+                    return await CheckOutOverStationSubProcess(ticket, stationId, totalPath);
                 }
             }
             catch (Exception ex)
@@ -491,6 +576,31 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
+        private async Task<ResponseDTO> CheckOutOverStationSubProcess(Ticket ticket, Guid stationId, List<Guid> stationPath)
+        {
+            if (stationPath.Contains(stationId))
+            {
+                ticket.TicketRtStatus = TicketStatus.Inactive;
+                ticket.TicketRoute = null;
+                _unitOfWork.TicketRepository.Update(ticket);
+                await _unitOfWork.SaveAsync();
+                return new ResponseDTO
+                {
+                    Message = "Vé đã được check-out thành công.",
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
+            }
+            else
+            {
+                return new ResponseDTO
+                {
+                    Message = "Trạm không đúng với phạm vi cho phép kết thúc của vé (nằm ngoài vùng cho phép check-out).",
+                    IsSuccess = false,
+                    StatusCode = 400
+                };
+            }
+        }
         private async Task<ResponseDTO> CheckOutProcessSubscriptionTicket(Ticket ticket, Guid stationId, List<Guid> stationPath)
         {
 
@@ -627,7 +737,7 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                if (ticket.TicketRoute is not null)
+                if (ticket.TicketRoute is not null && ticket.SubscriptionTicket is null)
                 {
                     ticket.QrCode = _tokenService.GenerateQRCodeAsync();
                     _unitOfWork.TicketRepository.Update(ticket);

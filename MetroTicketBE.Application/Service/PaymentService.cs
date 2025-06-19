@@ -368,55 +368,92 @@ namespace MetroTicketBE.Application.Service
                 var stationPathWithStartStation = new List<Guid>();
                 var stationPathWithEndStation = new List<Guid>();
 
-                double distance = 0;
+                double? distance = 0;
+                int totalPrice = 0;
                 TicketRoute? ticketRoute = null;
 
-                stationPathWithStartStation = _graph.FindShortestPath(ticket.TicketRoute.StartStationId, createLinkPaymentOverStationDTO.StationId);
-                stationPathWithEndStation = _graph.FindShortestPath(ticket.TicketRoute.EndStationId, createLinkPaymentOverStationDTO.StationId);
+                if (ticket.TicketRoute is not null)
+                {
+                    stationPathWithStartStation = _graph.FindShortestPath(ticket.TicketRoute.StartStationId, createLinkPaymentOverStationDTO.StationId);
+                    stationPathWithEndStation = _graph.FindShortestPath(ticket.TicketRoute.EndStationId, createLinkPaymentOverStationDTO.StationId);
 
-                if (stationPathWithStartStation.Count == 0 || stationPathWithEndStation.Count == 0)
-                {
-                    return new ResponseDTO
+                    if (stationPathWithStartStation.Count == 0 || stationPathWithEndStation.Count == 0)
                     {
-                        Message = "Không tìm thấy đường đi từ ga xuất phát hoặc ga kết thúc đến ga cần mua thêm",
-                        IsSuccess = false,
-                        StatusCode = 404
-                    };
-                }
-                else
-                {
-                    if (stationPathWithStartStation.Count >= stationPathWithEndStation.Count)
-                    {
-                        distance = _graph.GetPathDistance(stationPathWithEndStation);
-                        ticketRoute = await _unitOfWork.TicketRouteRepository.GetTicketRouteByStartAndEndStation(ticket.TicketRoute.StartStationId, createLinkPaymentOverStationDTO.StationId);
+                        return new ResponseDTO
+                        {
+                            Message = "Không tìm thấy đường đi từ ga xuất phát hoặc ga kết thúc đến ga cần mua thêm",
+                            IsSuccess = false,
+                            StatusCode = 404
+                        };
                     }
                     else
                     {
-                        distance = _graph.GetPathDistance(stationPathWithStartStation);
-                        ticketRoute = await _unitOfWork.TicketRouteRepository.GetTicketRouteByStartAndEndStation(createLinkPaymentOverStationDTO.StationId, ticket.TicketRoute.StartStationId);
+                        if (stationPathWithStartStation.Count < stationPathWithEndStation.Count)
+                        {
+                            ticketRoute = await _unitOfWork.TicketRouteRepository.GetTicketRouteByStartAndEndStation(createLinkPaymentOverStationDTO.StationId, ticket.TicketRoute.EndStationId);
+                            distance = _graph.GetPathDistance(stationPathWithEndStation);
+                        }
+                        else
+                        {
+                            ticketRoute = await _unitOfWork.TicketRouteRepository.GetTicketRouteByStartAndEndStation(ticket.TicketRoute.StartStationId, createLinkPaymentOverStationDTO.StationId);
+                            distance = _graph.GetPathDistance(stationPathWithStartStation);
+                        }
+                    }
+                    int ticketPrice = await _unitOfWork.FareRuleRepository.CalculatePriceFromDistance(distance);
+                    totalPrice = ticketPrice - ticket.Price;
+                }
+                else
+                {
+                    stationPathWithStartStation = _graph.FindShortestPath(ticket.SubscriptionTicket.StartStationId, createLinkPaymentOverStationDTO.StationId);
+                    stationPathWithEndStation = _graph.FindShortestPath(ticket.SubscriptionTicket.EndStationId, createLinkPaymentOverStationDTO.StationId);
 
+                    if (stationPathWithStartStation.Count == 0 || stationPathWithEndStation.Count == 0)
+                    {
+                        return new ResponseDTO
+                        {
+                            Message = "Không tìm thấy đường đi từ ga xuất phát hoặc ga kết thúc đến ga cần mua thêm",
+                            IsSuccess = false,
+                            StatusCode = 404
+                        };
+                    }
+                    else
+                    {
+                        if (stationPathWithStartStation.Count >= stationPathWithEndStation.Count)
+                        {
+                            ticketRoute = await _unitOfWork.TicketRouteRepository.GetTicketRouteByStartAndEndStation(ticket.SubscriptionTicket.EndStationId, createLinkPaymentOverStationDTO.StationId);
+                            distance = _graph.GetPathDistance(stationPathWithEndStation);
+                        }
+                        else
+                        {
+                            ticketRoute = await _unitOfWork.TicketRouteRepository.GetTicketRouteByStartAndEndStation(createLinkPaymentOverStationDTO.StationId, ticket.SubscriptionTicket.StartStationId);
+                            distance = _graph.GetPathDistance(stationPathWithStartStation);
+                        }
+
+                        totalPrice = await _unitOfWork.FareRuleRepository.CalculatePriceFromDistance(distance);
                     }
                 }
 
-                if (ticketRoute is null)
+                if (totalPrice == 0)
                 {
+                    ticket.TicketRouteId = ticketRoute.Id;
+                    ticket.Price = totalPrice + ticket.Price;
+
+                    _unitOfWork.TicketRepository.Update(ticket);
+
                     return new ResponseDTO
                     {
-                        Message = "Không tìm thấy vé tuyến cần mua thêm",
-                        IsSuccess = false,
-                        StatusCode = 404
+                        Message = "Cập nhật vé thành công, không cần thanh toán thêm",
+                        IsSuccess = true,
+                        StatusCode = 201
                     };
                 }
-
-                // Tính giá vé dựa trên khoảng cách
-                int ticketPrice = await _unitOfWork.FareRuleRepository.CalculatePriceFromDistance(distance);
 
                 // Tạo mã đơn hàng duy nhất dựa trên thời gian hiện tại (orderCode)
                 var orderCode = Math.Abs(int.Parse(DateTimeOffset.Now.ToString("fffffff")) + customer.Id.GetHashCode());
 
                 var items = new List<ItemData>
                 {
-                    new ItemData("Mua thêm trạm", 1, ticketPrice)
+                    new ItemData("Mua thêm trạm", 1, totalPrice)
                 };
 
 
@@ -430,7 +467,7 @@ namespace MetroTicketBE.Application.Service
                 PaymentData paymentLinkRequest = new PaymentData
                 (
                     orderCode: orderCode,
-                    amount: ticketPrice,
+                    amount: totalPrice,
                     description: "METRO HCMC",
                     items: items,
                     returnUrl: StaticURL.Frontend_Url_Return_Payment,
@@ -466,7 +503,7 @@ namespace MetroTicketBE.Application.Service
                     OrderCode = Convert.ToString(orderCode),
                     TicketId = ticket.Id,
                     DataJson = JsonSerializer.Serialize(data),
-                    TotalPrice = ticketPrice,
+                    TotalPrice = totalPrice,
                     PaymentMethodId = paymentMethod.Id,
                     Status = PaymentStatus.Unpaid
 
@@ -572,7 +609,8 @@ namespace MetroTicketBE.Application.Service
                 {
                     var items = JsonSerializer.Deserialize<DataWrapperDTO>(paymentTransaction.DataJson ?? "");
 
-                    if (items is null || items.ItemData is null || !items.ItemData.Any())
+
+                    if (items is null || items.Items is null || !items.Items.Any())
                     {
                         return new ResponseDTO
                         {
@@ -582,7 +620,7 @@ namespace MetroTicketBE.Application.Service
                         };
                     }
 
-                    var item = items.ItemData.FirstOrDefault();
+                    var item = items.Items.FirstOrDefault();
 
                     var ticketRoute = await _unitOfWork.TicketRouteRepository.GetByIdAsync(items.TicketRouteId);
                     if (ticketRoute is null)
@@ -595,7 +633,7 @@ namespace MetroTicketBE.Application.Service
                         };
                     }
 
-                    int ticketPrice = await _unitOfWork.FareRuleRepository.CalculatePriceFromDistance(ticketRoute.Distance);
+                    int ticketPrice = item.price;
 
                     var ticket = await _unitOfWork.TicketRepository.GetByIdAsync(items.TicketId);
                     if (ticket is null)
@@ -607,9 +645,16 @@ namespace MetroTicketBE.Application.Service
                             StatusCode = 404
                         };
                     }
-
-                    ticket.TicketRouteId = ticketRoute.Id;
-                    ticket.Price = ticketPrice + ticket.Price;
+                    if (ticket.TicketRoute is not null)
+                    {
+                        ticket.TicketRouteId = ticketRoute.Id;
+                        ticket.Price = ticketPrice + ticket.Price;
+                    }
+                    else
+                    {
+                        ticket.TicketRouteId = ticketRoute.Id;
+                        ticket.TicketRtStatus = TicketStatus.InActiveOverStation;
+                    }
 
                     _unitOfWork.TicketRepository.Update(ticket);
                     // Cập nhật vé tuyến
