@@ -8,7 +8,7 @@ namespace MetroTicket.Domain.Entities
         public string? FullName { get; set; }
         public string? Address { get; set; }
         public string? Sex { get; set; }
-        public DateTime? DateOfBirth { get; set; }
+        public DateOnly? DateOfBirth { get; set; }
         public string? IdentityId { get; set; }
 
         public ICollection<Log> Logs { get; set; } = new List<Log>();

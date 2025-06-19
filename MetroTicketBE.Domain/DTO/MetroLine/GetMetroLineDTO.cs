@@ -8,6 +8,7 @@ public class GetMetroLineDTO
     public Guid Id { get; set; }
     public int MetroLineNumber { get; set; }
     public string? MetroName { get; set; }
+    public DateTime CreatedAt { get; set; }
     public GetStationDTO? StartStation { get; set; }
     public GetStationDTO? EndStation { get; set; }
     public List<GetMetroLineStationDTO> MetroLineStations { get; set; } = new List<GetMetroLineStationDTO>();

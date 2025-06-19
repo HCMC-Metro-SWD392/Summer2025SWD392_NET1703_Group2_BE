@@ -38,10 +38,12 @@ public class SubscriptionRepository: Repository<SubscriptionTicket>, ISubscripti
             .AnyAsync(st => st.TicketName == ticketName);
     }
 
-    public Task<SubscriptionTicket?> GetByStartAndEndStationAsync(Guid startStationId, Guid endStationId)
+    public Task<SubscriptionTicket?> GetByStartAndEndStationAsync(Guid startStationId, Guid endStationId, Guid TicketTypeId)
     {
         return _context.SubscriptionTickets
-            .FirstOrDefaultAsync(st => st.StartStationId == startStationId && st.EndStationId == endStationId);
+            .FirstOrDefaultAsync(st => st.StartStationId == startStationId && 
+                                       st.EndStationId == endStationId && 
+                                       st.TicketTypeId == TicketTypeId);
     }
     public async Task<SubscriptionTicket?> GetByIdAsync(Guid? id)
     {

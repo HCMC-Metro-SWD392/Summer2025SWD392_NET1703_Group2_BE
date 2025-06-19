@@ -15,7 +15,7 @@ namespace MetroTicketBE.Application.Service
         private readonly IMapper _mapper;
         
         private const int TravelTimeBetweenStationsInSeconds = 180;
-        private const int DwellTimeAtStationInSeconds = 45;
+        private const int DwellTimeAtStationInSeconds = 30;
         private readonly (TimeSpan Start, TimeSpan End) _peakHour1 = (new TimeSpan(7, 0, 0), new TimeSpan(9, 0, 0));
         private readonly (TimeSpan Start, TimeSpan End) _peakHour2 = (new TimeSpan(17, 0, 0), new TimeSpan(19, 0, 0));
         private const int PeakHourHeadwayInSeconds = 300;
@@ -28,72 +28,115 @@ namespace MetroTicketBE.Application.Service
 
         public async Task<ResponseDTO> GenerateScheduleForMetroLine(Guid metroLineId)
         {
-            var allSchedules = new List<TrainSchedule>();
-            var orderedStations = await _unitOfWork.MetroLineStationRepository.GetStationByMetroLineIdAsync(metroLineId);
-            
-            var forwardSchedules = GenerateDirectionSchedules(metroLineId, orderedStations, TrainScheduleType.Forward);
-            allSchedules.AddRange(forwardSchedules);
-
-            var backwardStations = new List<Station>(orderedStations);
-            backwardStations.Reverse();
-            var backwardSchedules = GenerateDirectionSchedules(metroLineId, backwardStations, TrainScheduleType.Backward);
-            allSchedules.AddRange(backwardSchedules);
-            await _unitOfWork.TrainScheduleRepository.AddRangeAsync(allSchedules);
-            await _unitOfWork.SaveAsync();
-
-            return new ResponseDTO()
+            try
             {
-                StatusCode = 200,
-                Message = "Lịch trình cho tuyến metro đã được tạo thành công.",
-                IsSuccess = true,
-                Result = null,
-            };
+                if (metroLineId == Guid.Empty)
+                {
+                    return new ResponseDTO()
+                    {
+                        StatusCode = 400,
+                        Message = "ID tuyến metro không hợp lệ.",
+                        IsSuccess = false
+                    };
+                }
+                var existedSchedules = await _unitOfWork.TrainScheduleRepository.GetByMetroLineIdSortedAsync(metroLineId);
+                if (existedSchedules is not null && existedSchedules.Any())
+                {
+                    _unitOfWork.TrainScheduleRepository.RemoveRange(existedSchedules);
+                }
+                var allSchedules = new List<TrainSchedule>();
+                var orderedStations =
+                    await _unitOfWork.MetroLineStationRepository.GetStationByMetroLineIdAsync(metroLineId);
+                var metroLine = await _unitOfWork.MetroLineRepository.GetByIdAsync(metroLineId);
 
+                var forwardSchedules =
+                    await GenerateDirectionSchedules(metroLineId, orderedStations, TrainScheduleType.Forward);
+                allSchedules.AddRange(forwardSchedules);
+
+                int singleTripDurationInSeconds = (orderedStations.Count - 1) *
+                                                  (TravelTimeBetweenStationsInSeconds + DwellTimeAtStationInSeconds);
+                int turnAroundTimeInSeconds = 300; // Giả sử thời gian quay đầu là 5 phút
+
+                TimeSpan backwardStartTime = metroLine.StartTime
+                                             + TimeSpan.FromSeconds(singleTripDurationInSeconds +
+                                                                    turnAroundTimeInSeconds);
+                var backwardStations = new List<Station>(orderedStations);
+                backwardStations.Reverse();
+                var backwardSchedules =
+                    await GenerateDirectionSchedules(metroLineId, backwardStations, TrainScheduleType.Backward, backwardStartTime);
+                allSchedules.AddRange(backwardSchedules);
+                await _unitOfWork.TrainScheduleRepository.AddRangeAsync(allSchedules);
+                await _unitOfWork.SaveAsync();
+
+                return new ResponseDTO()
+                {
+                    StatusCode = 200,
+                    Message = "Lịch trình cho tuyến metro đã được tạo thành công.",
+                    IsSuccess = true,
+                    Result = null,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO()
+                {
+                    StatusCode = 500,
+                    Message = "Đã xảy ra lỗi khi tạo lịch trình cho tuyến metro: " + ex.Message,
+                    IsSuccess = false
+                };
+            }
         }
 
-        private List<TrainSchedule> GenerateDirectionSchedules(Guid metroLineId, List<Station> orderedStations,
-            TrainScheduleType direction)
+        private async Task<List<TrainSchedule>> GenerateDirectionSchedules(Guid metroLineId, List<Station> orderedStations,
+            TrainScheduleType direction, TimeSpan? currentStartTime = null)
         {
             var directionSchedules = new List<TrainSchedule>();
-            var metroLine = _unitOfWork.MetroLineRepository.GetByIdAsync(metroLineId).Result;
+            // Sử dụng await thay vì .Result để tránh deadlock
+            var metroLine = await _unitOfWork.MetroLineRepository.GetByIdAsync(metroLineId);
             if (metroLine is null)
             {
                 throw new ArgumentException("Tuyến metro không tồn tại.");
             }
+    
+            // FIX 1: Tính toán tổng thời gian của một chuyến đi
+            int singleTripDurationInSeconds = (orderedStations.Count - 1) * (TravelTimeBetweenStationsInSeconds + DwellTimeAtStationInSeconds);
+            TimeSpan tripDuration = TimeSpan.FromSeconds(singleTripDurationInSeconds);
 
-            var currentTime = metroLine.StartTime;
-            var endTime = metroLine.EndTime;
-            while (currentTime < endTime)
+            var initialTime = currentStartTime ?? metroLine.StartTime;
+            
+            var currentTime = initialTime;
+            // FIX 1: Điều kiện dừng mới: thời gian khởi hành cộng với thời gian chuyến đi phải nhỏ hơn hoặc bằng thời gian kết thúc
+            var lastPossibleDepartureTime = metroLine.EndTime - tripDuration;
+
+            while (currentTime <= lastPossibleDepartureTime)
             {
                 var tripTime = currentTime;
                 for (int i = 0; i < orderedStations.Count; i++)
                 {
-                    var currentStation = orderedStations[i];
                     if (i > 0)
                     {
-                        tripTime = tripTime.Add(
-                            TimeSpan.FromSeconds(TravelTimeBetweenStationsInSeconds + DwellTimeAtStationInSeconds));
+                        tripTime = tripTime.Add(TimeSpan.FromSeconds(TravelTimeBetweenStationsInSeconds + DwellTimeAtStationInSeconds));
                     }
 
-                    var schedule = new TrainSchedule()
+                    directionSchedules.Add(new TrainSchedule()
                     {
                         MetroLineId = metroLineId,
-                        StationId = currentStation.Id,
+                        StationId = orderedStations[i].Id,
                         StartTime = tripTime,
                         Direction = direction,
                         Status = TrainScheduleStatus.Normal
-                    };
-                    directionSchedules.Add(schedule);
+                    });
                 }
-                bool isPeakHour = (currentTime >= _peakHour1.Start && currentTime <= _peakHour1.End) ||
-                                (currentTime >= _peakHour2.Start && currentTime <= _peakHour2.End);
-                int headWayInSeconds = isPeakHour ? PeakHourHeadwayInSeconds : OffPeakHourHeadwayInSeconds;
-                currentTime = currentTime.Add(TimeSpan.FromSeconds(headWayInSeconds));
+
+                bool isPeakHour = (currentTime >= _peakHour1.Start && currentTime < _peakHour1.End) ||
+                                  (currentTime >= _peakHour2.Start && currentTime < _peakHour2.End);
+                int headwayInSeconds = isPeakHour ? PeakHourHeadwayInSeconds : OffPeakHourHeadwayInSeconds;
+                currentTime = currentTime.Add(TimeSpan.FromSeconds(headwayInSeconds));
             }
             return directionSchedules;
         }
 
-        public async Task<ResponseDTO> GetTrainSchedulesByStationId(Guid stationId)
+        public async Task<ResponseDTO> GetTrainSchedulesByStationId(Guid stationId,  TrainScheduleType? direction)
         {
             if (stationId == Guid.Empty)
             {
@@ -104,7 +147,7 @@ namespace MetroTicketBE.Application.Service
                     IsSuccess = false
                 };
             }
-            var schedules = await _unitOfWork.TrainScheduleRepository.GetByStationIdSortedAsync(stationId);
+            var schedules = await _unitOfWork.TrainScheduleRepository.GetByStationIdSortedAsync(stationId, direction);
             return new ResponseDTO()
             {
                 StatusCode = 200,

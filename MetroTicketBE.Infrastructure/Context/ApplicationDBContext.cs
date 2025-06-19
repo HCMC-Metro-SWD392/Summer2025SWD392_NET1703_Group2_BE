@@ -158,6 +158,9 @@ namespace MetroTicketBE.Infrastructure.Context
                 .WithMany(m => m.Customers)
                 .HasForeignKey(c => c.MembershipId)
                 .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<ApplicationUser>()
+                .Property(u => u.DateOfBirth)
+                .HasColumnType("date");
 
             //StaffSchedule
             modelBuilder.Entity<StaffSchedule>()

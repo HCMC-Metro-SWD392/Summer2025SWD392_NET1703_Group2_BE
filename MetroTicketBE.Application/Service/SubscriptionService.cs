@@ -101,11 +101,10 @@ public SubscriptionService(IUnitOfWork unitOfWork, IMapper mapper, ITicketRouteS
 
     public async Task<ResponseDTO> CreateSubscriptionTicketAsync(CreateSubscriptionDTO createSubscriptionDTO)
     {
-        var existSubscription = await _unitOfWork.SubscriptionRepository.GetByStartAndEndStationAsync(createSubscriptionDTO.StartStationId, createSubscriptionDTO.EndStationId);
-        var existByTicketType = await _unitOfWork.SubscriptionRepository.GetByTicketTypeIdAsync(createSubscriptionDTO.TicketTypeId);
+        var existSubscription = await _unitOfWork.SubscriptionRepository.GetByStartAndEndStationAsync(createSubscriptionDTO.StartStationId, createSubscriptionDTO.EndStationId, createSubscriptionDTO.TicketTypeId);
         var ticketType = await _unitOfWork.SubscriptionTicketTypeRepository.GetAsync(t => t.Id == createSubscriptionDTO.TicketTypeId);
 
-        if (existSubscription is not null && existByTicketType is not null)
+        if (existSubscription is not null)
         {
             return new ResponseDTO()
             {
@@ -150,7 +149,7 @@ public SubscriptionService(IUnitOfWork unitOfWork, IMapper mapper, ITicketRouteS
         var price = await _fareRuleRepository.CalculatePriceFromDistance(distance) * ticketType.FareCoefficient;
         var saveSubscriptionTicket = new SubscriptionTicket()
         {
-            TicketName = $"Vé {ticketType.DisplayName} từ {startStation} đến {endStation}",
+            TicketName = $"{ticketType.DisplayName} từ {startStation} đến {endStation}",
             StartStationId = createSubscriptionDTO.StartStationId,
             EndStationId = createSubscriptionDTO.EndStationId,
             Expiration = ticketType.Expiration,
@@ -259,11 +258,11 @@ public SubscriptionService(IUnitOfWork unitOfWork, IMapper mapper, ITicketRouteS
         }
     }
     
-    public async Task<ResponseDTO> GetSubscriptionByStationAsync(Guid startStationId, Guid endStationId)
+    public async Task<ResponseDTO> GetSubscriptionByStationAsync(Guid startStationId, Guid endStationId, Guid ticketTypeId)
     {
         try
         {
-            var subscription = await _unitOfWork.SubscriptionRepository.GetByStartAndEndStationAsync(startStationId, endStationId);
+            var subscription = await _unitOfWork.SubscriptionRepository.GetByStartAndEndStationAsync(startStationId, endStationId,ticketTypeId );
             if (subscription == null)
             {
                 return new ResponseDTO()

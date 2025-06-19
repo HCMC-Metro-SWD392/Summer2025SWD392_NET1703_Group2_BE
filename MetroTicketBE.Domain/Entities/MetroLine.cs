@@ -9,6 +9,8 @@ namespace MetroTicketBE.Domain.Entities
         public string? MetroName { get; set; }
         public Guid StartStationId { get; set; }
         public Guid EndStationId { get; set; }
+        
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public TimeSpan StartTime { get; set; }
         public TimeSpan EndTime { get; set; }

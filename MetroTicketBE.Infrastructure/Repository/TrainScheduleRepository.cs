@@ -26,13 +26,30 @@ namespace MetroTicketBE.Infrastructure.Repository
                 .Include(ts => ts.Station)
                 .FirstOrDefaultAsync(ts => ts.Id == id);
         }
-        public async Task<List<TrainSchedule>> GetByStationIdSortedAsync(Guid stationId)
+        public async Task<List<TrainSchedule>> GetByStationIdSortedAsync(Guid stationId, TrainScheduleType? direction)
         {
-            return await _context.Set<TrainSchedule>()
-                .Where(s => s.StationId == stationId)
+            var query = _context.Set<TrainSchedule>()
+                .Where(s => s.StationId == stationId);
+
+            if (direction is not null)
+            {
+                query = query.Where(s => s.Direction == direction.Value);
+            }
+
+            return await query
                 .OrderBy(s => s.StartTime)
                 .ToListAsync();
         }
+        
+        public async Task<List<TrainSchedule>> GetByMetroLineIdSortedAsync(Guid metroLineId)
+        {
+            var query = _context.Set<TrainSchedule>()
+                .Where(s => s.MetroLineId == metroLineId);
+            return await query
+                .OrderBy(s => s.StartTime)
+                .ToListAsync();
+        }
+        
         public async Task<bool> IsExistTrainSchedule(Guid? metroLineId, Guid? stationId, TimeSpan? startTime, TrainScheduleType? direction)
         {
             return await _context.TrainSchedules

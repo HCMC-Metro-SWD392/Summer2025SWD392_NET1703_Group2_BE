@@ -75,5 +75,34 @@ namespace MetroTicketBE.Infrastructure.Repository
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<List<Station>> GetAllStationsAsync(bool? isAscending)
+        {
+            if (isAscending.HasValue && isAscending.Value == true)
+            {
+                return await _context.Stations
+                    .OrderBy(s => s.CreatedAt)
+                    .ToListAsync();
+            }
+
+            return await _context.Stations
+                    .OrderByDescending(s => s.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<List<Station>> SearchStationsByName(string? name)
+        {
+            
+            if (name is null)
+            {
+                return await _context.Stations
+                    .ToListAsync();
+            }
+        
+            return await _context.Stations
+                .Where(s => s.Name.ToLower().Contains(name.ToLower()))
+                .Include(s => s.MetroLineStations).ThenInclude(mls => mls.MetroLine)
+                .ToListAsync();
+        }
+        
     }
 }
