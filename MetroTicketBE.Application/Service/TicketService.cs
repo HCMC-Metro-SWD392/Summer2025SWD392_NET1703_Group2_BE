@@ -8,7 +8,7 @@ using MetroTicketBE.Infrastructure.IRepository;
 using System.Security.Claims;
 using MetroTicketBE.Domain.Enum;
 using MetroTicketBE.WebAPI.Extentions;
-using System.Net.Sockets;
+using Microsoft.AspNetCore.SignalR;
 
 namespace MetroTicketBE.Application.Service
 {
@@ -17,14 +17,15 @@ namespace MetroTicketBE.Application.Service
         private readonly IUnitOfWork _unitOfWork;
         private readonly Random random;
         private readonly ITokenService _tokenService;
-
         private readonly IMapper _mapper;
-        public TicketService(IUnitOfWork unitOfWork, IMapper mapper, ITokenService tokenService)
+        private readonly IHubContext<NotificationHub> _hubContext;
+        public TicketService(IUnitOfWork unitOfWork, IMapper mapper, ITokenService tokenService, IHubContext<NotificationHub> hubContext)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             random = new Random();
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
+            _hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
         }
 
         public async Task<ResponseDTO> GetAllTicketRoutes(
@@ -593,11 +594,18 @@ namespace MetroTicketBE.Application.Service
             }
             else
             {
+                var user = await _unitOfWork.UserManagerRepository.GetUserByCustomerId(ticket.CustomerId);
+                await _hubContext.Clients.User(user.Id).SendAsync("NotifyOverStation", new
+                {
+                    TicketId = ticket.Id,
+                    StationId = stationId,
+                    Message = "Bạn đã vượt trạm! Vui lòng thanh toán thêm."
+                });
                 return new ResponseDTO
                 {
                     Message = "Trạm không đúng với phạm vi cho phép kết thúc của vé (nằm ngoài vùng cho phép check-out).",
                     IsSuccess = false,
-                    StatusCode = 400
+                    StatusCode = 400,
                 };
             }
         }

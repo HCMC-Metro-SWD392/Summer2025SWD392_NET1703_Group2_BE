@@ -57,5 +57,12 @@ namespace MetroTicketBE.Infrastructure.Repository
         {
             return await _userManager.Users.AnyAsync(u => u.PhoneNumber == phoneNumber);
         }
+
+        public async Task<ApplicationUser> GetUserByCustomerId(Guid customerId)
+        {
+            return await _userManager.Users
+                .FirstOrDefaultAsync(u => u.Id == customerId.ToString())
+                ?? throw new KeyNotFoundException($"Không tìm thấy người dùng với ID khách hàng: {customerId}.");
+        }
     }
 }

@@ -27,8 +27,8 @@ namespace MetroTicketBE.Infrastructure.Repository
         public ITicketRepository TicketRepository { get; private set; }
         public ISubscriptionRepository SubscriptionRepository { get; private set; }
         public ITrainScheduleRepository TrainScheduleRepository { get; private set; }
-        
         public ISubscriptionTicketTypeRepository SubscriptionTicketTypeRepository { get; private set; }
+        public IFormRequestRepository FormRequestRepository { get; private set; }
 
         public UnitOfWork(ApplicationDBContext context, UserManager<ApplicationUser> userManager)
         {
@@ -49,6 +49,7 @@ namespace MetroTicketBE.Infrastructure.Repository
             TicketRepository = new TicketRepository(_context);
             TrainScheduleRepository = new TrainScheduleRepository(_context);
             SubscriptionTicketTypeRepository = new SubscriptionTicketTypeRepository(_context);
+            FormRequestRepository = new FormRequestRepository(_context);
         }
         public async Task<int> SaveAsync()
         {
