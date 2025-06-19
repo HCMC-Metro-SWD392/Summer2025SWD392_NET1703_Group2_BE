@@ -11,5 +11,7 @@ namespace MetroTicketBE.Domain.Enums
         Inactive = 0,     // Chưa sử dụng  
         Active = 1,       // Đang sử dụng  
         Used = 2,         // Đã sử dụng  
+        InActiveOverStation = 3, // Chưa sử dụng vượt trạm
+        ActiveOverStation = 4, // Đang sử dụng vượt trạm
     }
 }
