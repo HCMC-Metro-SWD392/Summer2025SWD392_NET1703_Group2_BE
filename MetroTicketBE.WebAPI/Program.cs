@@ -1,8 +1,11 @@
 ﻿using MetroTicketBE.Application.Mappings;
 using MetroTicketBE.Domain.Constants;
+using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Infrastructure.Context;
+using MetroTicketBE.Infrastructure.SignalR;
 using MetroTicketBE.WebAPI.Extentions;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace MetroTicketBE.WebAPI;
@@ -22,7 +25,7 @@ public class Program
         builder.Configuration
         .SetBasePath(Directory.GetCurrentDirectory())
         .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-        
+
         // Add services to the container.
 
         builder.Services.AddControllers();
@@ -36,7 +39,7 @@ public class Program
 
         // Set time token
         builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
-            options.TokenLifespan = TimeSpan.FromMinutes(60));        
+            options.TokenLifespan = TimeSpan.FromMinutes(60));
 
         // Register AutoMapper 
         builder.Services.AddAutoMapper(typeof(AutoMappingProfile));
@@ -57,6 +60,12 @@ public class Program
         builder.AddAppAuthentication();
 
         builder.Services.AddAuthorization();
+
+        // Register SignalR
+        builder.AddSignalR();
+
+        // Register custom UserIdProvider for SignalR
+        builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 
         // Register SwaggerGen and config for Authorize
         // Base on Extensions.WebApplicationBuilderExtensions
@@ -102,6 +111,8 @@ public class Program
         app.UseAuthorization();
 
         app.MapControllers();
+
+        app.MapHub<NotificationHub>("/notificationHub");    
 
         app.Run();
 
