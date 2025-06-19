@@ -43,7 +43,7 @@ namespace MetroTicketBE.WebAPI.Controllers
             }
             var objectKey = $"form-request-picture/{userId}/{Guid.NewGuid()}_{preSignedUploadDTO.FileName}";
             var response = s3Service.GenerateUploadUrl(objectKey, preSignedUploadDTO.ContentType);
-            return Ok(response);
+            return StatusCode(response.StatusCode, response);
         }
     }
 }
