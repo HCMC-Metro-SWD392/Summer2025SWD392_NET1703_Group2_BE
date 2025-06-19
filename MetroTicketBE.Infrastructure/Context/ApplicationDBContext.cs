@@ -17,6 +17,7 @@ namespace MetroTicketBE.Infrastructure.Context
         public DbSet<Promotion> Promotions { get; set; }
         public DbSet<EmailTemplate> EmailTemplates { get; set; }
         public DbSet<FormRequest> FormRequests { get; set; }
+        public DbSet<FormAttachment> FormAttachments { get; set; }
         public DbSet<PayOSMethod> PayOSMethods { get; set; }
         public DbSet<Process> Processes { get; set; }
         public DbSet<Station> Stations { get; set; }
@@ -231,10 +232,10 @@ namespace MetroTicketBE.Infrastructure.Context
                         });
 
 
-            //FormRequest
-            modelBuilder.Entity<FormRequest>()
-                .HasMany(f => f.FormAttachments)
-                .WithOne(fa => fa.FormRequest)
+            //FormAttachment
+            modelBuilder.Entity<FormAttachment>()
+                .HasOne(fa => fa.FormRequest)
+                .WithMany(fr => fr.FormAttachments)
                 .HasForeignKey(fa => fa.FormRequestId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
