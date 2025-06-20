@@ -606,7 +606,7 @@ namespace MetroTicketBE.Application.Service
             else
             {
                 var user = await _unitOfWork.UserManagerRepository.GetUserByCustomerId(ticket.CustomerId);
-                await _hubContext.Clients.All.SendAsync("NotifyOverStation", new
+                await _hubContext.Clients.User(user.Id).SendAsync("NotifyOverStation", new
                 {
                     TicketId = ticket.Id,
                     StationId = stationId,
@@ -637,6 +637,13 @@ namespace MetroTicketBE.Application.Service
             }
             else
             {
+                var user = await _unitOfWork.UserManagerRepository.GetUserByCustomerId(ticket.CustomerId);
+                await _hubContext.Clients.User(user.Id).SendAsync("NotifyOverStation", new
+                {
+                    TicketId = ticket.Id,
+                    StationId = stationId,
+                    Message = "Bạn đã vượt trạm! Vui lòng thanh toán thêm."
+                });
                 return new ResponseDTO
                 {
                     Message = "Trạm không đúng với phạm vi cho phép kết thúc của vé (nằm ngoài vùng cho phép check-out).",
@@ -673,6 +680,13 @@ namespace MetroTicketBE.Application.Service
             }
             else
             {
+                var user = await _unitOfWork.UserManagerRepository.GetUserByCustomerId(ticket.CustomerId);
+                await _hubContext.Clients.User(user.Id).SendAsync("NotifyOverStation", new
+                {
+                    TicketId = ticket.Id,
+                    StationId = stationId,
+                    Message = "Bạn đã vượt trạm! Vui lòng thanh toán thêm."
+                });
                 return new ResponseDTO
                 {
                     Message = "Trạm không đúng với phạm vi cho phép bắt đầu của vé (nằm ngoài vùng cho phép check-in).",
@@ -708,6 +722,13 @@ namespace MetroTicketBE.Application.Service
             }
             else
             {
+                var user = await _unitOfWork.UserManagerRepository.GetUserByCustomerId(ticket.CustomerId);
+                await _hubContext.Clients.User(user.Id).SendAsync("NotifyOverStation", new
+                {
+                    TicketId = ticket.Id,
+                    StationId = stationId,
+                    Message = "Bạn đã vượt trạm! Vui lòng thanh toán thêm."
+                });
                 return new ResponseDTO
                 {
                     Message = "Trạm không đúng với phạm vi cho phép kết thúc của vé lượt (nằm ngoài vùng cho phép check-uot).",
