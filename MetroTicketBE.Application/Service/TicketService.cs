@@ -615,7 +615,7 @@ namespace MetroTicketBE.Application.Service
                         StatusCode = 404
                     };
                 }
-                await _hubContext.Clients.User(customer.UserId).SendAsync("NotifyOverStation", new
+                await _hubContext.Clients.All.SendAsync("NotifyOverStation", new
                 {
                     TicketId = ticket.Id,
                     StationId = stationId,
@@ -656,7 +656,7 @@ namespace MetroTicketBE.Application.Service
                         StatusCode = 404
                     };
                 }
-                await _hubContext.Clients.User(customer.UserId).SendAsync("NotifyOverStation", new
+                await _hubContext.Clients.All.SendAsync("NotifyOverStation", new
                 {
                     TicketId = ticket.Id,
                     StationId = stationId,
@@ -708,7 +708,7 @@ namespace MetroTicketBE.Application.Service
                         StatusCode = 404
                     };
                 }
-                await _hubContext.Clients.User(customer.UserId).SendAsync("NotifyOverStation", new
+                await _hubContext.Clients.All.SendAsync("NotifyOverStation", new
                 {
                     TicketId = ticket.Id,
                     StationId = stationId,
@@ -759,7 +759,7 @@ namespace MetroTicketBE.Application.Service
                         StatusCode = 404
                     };
                 }
-                await _hubContext.Clients.User(customer.UserId).SendAsync("NotifyOverStation", new
+                await _hubContext.Clients.All.SendAsync("NotifyOverStation", new
                 {
                     TicketId = ticket.Id,
                     StationId = stationId,
@@ -767,7 +767,7 @@ namespace MetroTicketBE.Application.Service
                 });
                 return new ResponseDTO
                 {
-                    Message = "Trạm không đúng với phạm vi cho phép kết thúc của vé lượt (nằm ngoài vùng cho phép check-uot).",
+                    Message = "Trạm không đúng với phạm vi cho phép kết thúc của vé lượt (nằm ngoài vùng cho phép check-out).",
                     IsSuccess = false,
                     StatusCode = 400,
                     Result = ticket.Id
