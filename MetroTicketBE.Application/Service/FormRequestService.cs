@@ -155,7 +155,7 @@ namespace MetroTicketBE.Application.Service
                 foreach (var attachment in formRequest.FormAttachments)
                 {
                     var presignedUrl = _s3Service.GenerateDownloadUrl(attachment.Url);
-                    urls.Add(attachment.Url);
+                    urls.Add(presignedUrl);
                 }
 
                 if (!urls.Any())

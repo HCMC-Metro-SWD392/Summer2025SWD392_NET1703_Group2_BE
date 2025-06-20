@@ -16,7 +16,7 @@ namespace MetroTicketBE.Application.Service
             _bucketName = configuration["AWS_S3:BucketName"] ?? throw new ArgumentNullException("AWS_S3:BucketName is not configured.");
         }
 
-        public ResponseDTO GenerateDownloadUrl(string objectKey)
+        public string GenerateDownloadUrl(string objectKey)
         {
             var s3Client = new AmazonS3Client(RegionEndpoint.APSoutheast1);
 
@@ -29,17 +29,7 @@ namespace MetroTicketBE.Application.Service
             };
 
             var url = s3Client.GetPreSignedURL(request);
-
-            return new ResponseDTO
-            {
-                StatusCode = 200,
-                Message = "Tạo đường dẫn kết nối s3 thành công",
-                Result = new
-                {
-                    Url = url,
-                    ObjectKey = objectKey
-                }
-            };
+            return url;
         }
 
         public ResponseDTO GenerateUploadUrl(string objectKey, string contentType)
@@ -56,16 +46,12 @@ namespace MetroTicketBE.Application.Service
             };
 
             var url = s3Client.GetPreSignedURL(request);
-
             return new ResponseDTO
             {
-                StatusCode = 200,
-                Message = "Tạo đường dẫn kết nối s3 thành công",
-                Result = new
-                {
-                    Url = url,
-                    ObjectKey = objectKey
-                }
+                IsSuccess = true,
+                Message = "Tạo liên kết gửi file với s3 thành công",
+                Result = url,
+                StatusCode = 200
             };
         }
     }
