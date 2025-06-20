@@ -83,5 +83,13 @@ namespace MetroTicketBE.WebAPI.Controllers
             var response = await _authService.Logout(User);
             return StatusCode(response.StatusCode, response);
         }
+
+        [HttpPut]
+        [Route("set-staff-role/{email}")]
+        public async Task<ActionResult<ResponseDTO>> SetStaffRole([FromRoute] string email)
+        {
+            var response = await _authService.SetStaffRole(email);
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }
