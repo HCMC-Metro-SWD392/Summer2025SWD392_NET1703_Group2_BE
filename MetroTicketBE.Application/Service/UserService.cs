@@ -4,6 +4,7 @@ using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.Customer;
+using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Domain.Enum;
 using MetroTicketBE.Infrastructure.IRepository;
 using MetroTicketBE.Infrastructure.Repository;
@@ -138,8 +139,7 @@ public class UserService: IUserService
     {
         try
         {
-
-
+            
             var isEmailExist = await _unitOfWork.UserManagerRepository.IsEmailExist(dto.Email);
 
             if (isEmailExist is true)
@@ -216,7 +216,13 @@ public class UserService: IUserService
                     IsSuccess = false,
                     StatusCode = 400
                 };
-            } 
+            }
+
+            var staff = new Staff()
+            {
+                UserId = newUser.Id,
+            };
+            await _unitOfWork.StaffRepository.AddAsync(staff);
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
             await _userManager.ConfirmEmailAsync(newUser, token);
             await _unitOfWork.SaveAsync();

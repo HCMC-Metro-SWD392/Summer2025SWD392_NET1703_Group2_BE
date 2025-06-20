@@ -32,6 +32,16 @@ public class StaffScheduleService: IStaffScheduleService
                     StatusCode = 400,
                 };
             }
+            if (dto.WorkingDate < DateOnly.FromDateTime(DateTime.Now))
+            {
+                return new ResponseDTO()
+                {
+                    IsSuccess = false,
+                    Message = "Ngày làm việc không hợp lệ. Ngày làm việc phải là ngày hiện tại hoặc tương lai.",
+                    Result = null,
+                    StatusCode = 400,
+                };
+            }
 
             var schedule = new StaffSchedule()
             {
