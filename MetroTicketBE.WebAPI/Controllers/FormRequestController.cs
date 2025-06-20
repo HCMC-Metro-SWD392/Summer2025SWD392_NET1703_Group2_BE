@@ -25,7 +25,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [Route("create-form-request")]
         public async Task<ActionResult<ResponseDTO>> CreateFormRequest([FromForm] CreateFormRequestDTO createFormRequestDTO)
         {
-            var response = await _formRequestService.SendFormRequest(User, createFormRequestDTO);
+            var response = await _formRequestService.CreateFormRequest(User, createFormRequestDTO);
             return StatusCode(response.StatusCode, response);
         }
 
@@ -49,7 +49,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         }
 
         [HttpGet]
-        [Route("download-file-url-form-request")]
+        [Route("get-form-request-by-user")]
         [Authorize]
         public async Task<ActionResult<ResponseDTO>> GetFormRequest()
         {

@@ -236,7 +236,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> SendFormRequest(ClaimsPrincipal user, CreateFormRequestDTO createFormRequestDTO)
+        public async Task<ResponseDTO> CreateFormRequest(ClaimsPrincipal user, CreateFormRequestDTO createFormRequestDTO)
         {
             try
             {
@@ -247,6 +247,17 @@ namespace MetroTicketBE.Application.Service
                     {
                         IsSuccess = false,
                         Message = "Không tìm thấy người dùng",
+                        StatusCode = 400
+                    };
+                }
+
+                var isPendingFormRequest = await _unitOfWork.FormRequestRepository.IsPendingFormRequest(senderId);
+                if (isPendingFormRequest)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        Message = "Bạn đã có một yêu cầu đang chờ duyệt. Chờ đợi là hạnh phúc",
                         StatusCode = 400
                     };
                 }
