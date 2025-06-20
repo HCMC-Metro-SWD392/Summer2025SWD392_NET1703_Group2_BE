@@ -10,5 +10,6 @@ namespace MetroTicketBE.Application.IService
         Task<ResponseDTO> SendVerifyEmail(string email);
         Task<ResponseDTO> VerifyEmail(string userId, string token);
         Task<ResponseDTO> Logout(ClaimsPrincipal user);
+        Task<ResponseDTO> SetStaffRole(string email);
     }
 }

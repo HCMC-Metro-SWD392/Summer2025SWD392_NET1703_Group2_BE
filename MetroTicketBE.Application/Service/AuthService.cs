@@ -363,6 +363,56 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
+        public async Task<ResponseDTO> SetStaffRole(string email)
+        {
+            try
+            {
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Người dùng không tồn tại",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+
+                var isRoleExist = await _roleManager.RoleExistsAsync(StaticUserRole.Staff);
+                if (isRoleExist is false)
+                {
+                    await _roleManager.CreateAsync(new IdentityRole(StaticUserRole.Staff));
+                }
+                var addToRoleResult = await _userManager.AddToRoleAsync(user, StaticUserRole.Staff);
+                if (addToRoleResult.Succeeded is false)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Thêm vai trò nhân viên không thành công",
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
+                return new ResponseDTO
+                {
+                    Message = "Thêm vai trò nhân viên thành công",
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    Message = $"Đã xảy ra lỗi: {ex.Message}",
+                    Result = null,
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
+
         public async Task<ResponseDTO> VerifyEmail(string email, string token)
         {
             try
