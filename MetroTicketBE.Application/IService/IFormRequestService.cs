@@ -10,5 +10,7 @@ namespace MetroTicketBE.Application.IService
         Task<ResponseDTO> SendFormRequest(ClaimsPrincipal user, CreateFormRequestDTO createFormRequestDTO);
         Task<ResponseDTO> GetFormRequest(ClaimsPrincipal user);
         Task<ResponseDTO> GetAll(string sortBy, FormStatus formStatus, bool? isAcsending, int pageNumber, int pageSize);
+        Task<ResponseDTO> GetAllFormAttachment(Guid formRequestId);
+        Task<ResponseDTO> ChangeFormRequestStatus(ClaimsPrincipal user, Guid formRequestId, ChangeFormStatusDTO changeFormStatusDTO);
     }
 }

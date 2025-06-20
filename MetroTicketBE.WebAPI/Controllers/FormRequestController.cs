@@ -70,5 +70,21 @@ namespace MetroTicketBE.WebAPI.Controllers
             var response = await _formRequestService.GetAll(sortBy, formStatus, isAcsending, pageNumber, pageSize);
             return StatusCode(response.StatusCode, response);
         }
+
+        [HttpGet]
+        [Route("get-all-form-attachments")]
+        public async Task<ActionResult<ResponseDTO>> GetAllFormAttachments([FromQuery] Guid formRequestId)
+        {
+            var response = await _formRequestService.GetAllFormAttachment(formRequestId);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpPut]
+        [Route("change-form-request-status/{formRequestId:Guid}")]
+        public async Task<ActionResult<ResponseDTO>> ChangeFormRequestStatus([FromRoute] Guid formRequestId, [FromBody] ChangeFormStatusDTO changeFormStatusDTO)
+        {
+            var response = await _formRequestService.ChangeFormRequestStatus(User, formRequestId, changeFormStatusDTO);
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }
