@@ -6,5 +6,6 @@ namespace MetroTicketBE.Infrastructure.IRepository
     {
         Task<Ticket?> GetTicketBySerialAsync(string serial);
         Task<Ticket?> GetByIdAsync(Guid ticketId);
+        Task<Ticket?> GetByQrCodeAsync(string qrCode);
     }
 }
