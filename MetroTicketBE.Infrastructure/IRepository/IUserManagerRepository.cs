@@ -13,6 +13,5 @@ namespace MetroTicketBE.Infrastructure.IRepository
         Task<IdentityResult> UpdateAsync(ApplicationUser user);
         Task<bool> IsEmailExist(string email);
         Task<bool> IsPhoneNumberExist(string phoneNumber);
-        Task<ApplicationUser> GetUserByCustomerId(Guid customerId);
     }
 }
