@@ -615,7 +615,7 @@ namespace MetroTicketBE.Application.Service
                         StatusCode = 404
                     };
                 }
-                await _hubContext.Clients.All.SendAsync("NotifyOverStation", new
+                await _hubContext.Clients.User(customer.UserId).SendAsync("NotifyOverStation", new
                 {
                     TicketId = ticket.Id,
                     StationId = stationId,
