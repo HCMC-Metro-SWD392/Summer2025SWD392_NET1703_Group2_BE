@@ -1,12 +1,17 @@
-﻿using MetroTicketBE.Application.Mappings;
+using System.Text;
+using MetroTicketBE.Application.Hub;
+using MetroTicketBE.Application.Mappings;
+using MetroTicketBE.Application.Service;
 using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Infrastructure.Context;
 using MetroTicketBE.Infrastructure.SignalR;
 using MetroTicketBE.WebAPI.Extentions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace MetroTicketBE.WebAPI;
 
@@ -31,7 +36,7 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddHttpClient();
-
+        
         builder.Services.AddDbContext<ApplicationDBContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString(StaticConnectionString.POSTGRE_DefaultConnection))
             .EnableSensitiveDataLogging()
@@ -109,7 +114,8 @@ public class Program
 
         app.UseAuthentication();
         app.UseAuthorization();
-
+        app.MapHub<ChatRoomHub>("/chatroomhub");
+        app.MapHub<LobbyHub>("/lobbyhub");
         app.MapControllers();
 
         app.MapHub<NotificationHub>("/notificationHub");    
