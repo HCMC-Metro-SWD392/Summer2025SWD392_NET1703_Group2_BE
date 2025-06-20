@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace MetroTicketBE.Application.Hub;
 
-[Authorize]
 public class ChatRoomHub: Microsoft.AspNetCore.SignalR.Hub
 {
     private string GetCurrentUserId() => Context.User.FindFirstValue(ClaimTypes.NameIdentifier);
