@@ -423,7 +423,7 @@ namespace MetroTicketBE.Application.Service
                         }
                     }
                     int ticketPrice = await _unitOfWork.FareRuleRepository.CalculatePriceFromDistance(distance);
-                    totalPrice = ticketPrice - ticket.Price;
+                    totalPrice = Math.Abs(ticketPrice - ticket.Price);
                 }
                 else
                 {
@@ -479,10 +479,9 @@ namespace MetroTicketBE.Application.Service
                 if (totalPrice == 0)
                 {
                     ticket.TicketRouteId = ticketRoute.Id;
-                    ticket.Price = totalPrice + ticket.Price;
 
                     _unitOfWork.TicketRepository.Update(ticket);
-
+                    await _unitOfWork.SaveAsync();
                     return new ResponseDTO
                     {
                         Message = "Cập nhật vé thành công, không cần thanh toán thêm",
