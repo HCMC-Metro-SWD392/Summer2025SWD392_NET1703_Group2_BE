@@ -2,6 +2,7 @@
 using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.Payment;
+using MetroTicketBE.Domain.DTO.TicketRoute;
 using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Domain.Enum;
 using MetroTicketBE.Domain.Enums;
@@ -22,13 +23,14 @@ namespace MetroTicketBE.Application.Service
         private readonly PayOS _payos;
         private readonly IUnitOfWork _unitOfWork;
         private readonly Random random;
+        private readonly ITicketRouteService _ticketRouteService;
 
         public PaymentService
         (
             IConfiguration configuration,
             StationGraph stationGraph,
-            IUnitOfWork unitOfWork
-
+            IUnitOfWork unitOfWork,
+            ITicketRouteService ticketRouteService
         )
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -39,6 +41,7 @@ namespace MetroTicketBE.Application.Service
                 );
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             random = new Random();
+            _ticketRouteService = ticketRouteService ?? throw new ArgumentNullException(nameof(ticketRouteService));
         }
 
 
@@ -390,11 +393,31 @@ namespace MetroTicketBE.Application.Service
                     {
                         if (stationPathWithStartStation.Count < stationPathWithEndStation.Count)
                         {
+                            var TicketRouteRight = await _unitOfWork.TicketRouteRepository.GetTicketRouteByStartAndEndStation(createLinkPaymentOverStationDTO.StationId, ticket.TicketRoute.EndStationId);
+                            if (TicketRouteRight is null)
+                            {
+                                CreateTicketRouteDTO create = new CreateTicketRouteDTO
+                                {
+                                    StartStationId = createLinkPaymentOverStationDTO.StationId,
+                                    EndStationId = ticket.TicketRoute.EndStationId
+                                };
+                                await _ticketRouteService.CraeteTicketRoute(create);
+                            }
                             ticketRoute = await _unitOfWork.TicketRouteRepository.GetTicketRouteByStartAndEndStation(createLinkPaymentOverStationDTO.StationId, ticket.TicketRoute.EndStationId);
                             distance = _graph.GetPathDistance(stationPathWithEndStation);
                         }
                         else
                         {
+                            var TicketRouteLeft = await _unitOfWork.TicketRouteRepository.GetTicketRouteByStartAndEndStation(ticket.TicketRoute.EndStationId, createLinkPaymentOverStationDTO.StationId);
+                            if (TicketRouteLeft is null)
+                            {
+                                CreateTicketRouteDTO create = new CreateTicketRouteDTO
+                                {
+                                    StartStationId = ticket.TicketRoute.EndStationId,
+                                    EndStationId = createLinkPaymentOverStationDTO.StationId
+                                };
+                                await _ticketRouteService.CraeteTicketRoute(create);
+                            }
                             ticketRoute = await _unitOfWork.TicketRouteRepository.GetTicketRouteByStartAndEndStation(ticket.TicketRoute.StartStationId, createLinkPaymentOverStationDTO.StationId);
                             distance = _graph.GetPathDistance(stationPathWithStartStation);
                         }
@@ -420,11 +443,31 @@ namespace MetroTicketBE.Application.Service
                     {
                         if (stationPathWithStartStation.Count >= stationPathWithEndStation.Count)
                         {
+                            var TicketRouteLeft = await _unitOfWork.TicketRouteRepository.GetTicketRouteByStartAndEndStation(ticket.SubscriptionTicket.EndStationId, createLinkPaymentOverStationDTO.StationId);
+                            if (TicketRouteLeft is null)
+                            {
+                                CreateTicketRouteDTO create = new CreateTicketRouteDTO
+                                {
+                                    StartStationId = ticket.SubscriptionTicket.EndStationId,
+                                    EndStationId = createLinkPaymentOverStationDTO.StationId
+                                };
+                                await _ticketRouteService.CraeteTicketRoute(create);
+                            }
                             ticketRoute = await _unitOfWork.TicketRouteRepository.GetTicketRouteByStartAndEndStation(ticket.SubscriptionTicket.EndStationId, createLinkPaymentOverStationDTO.StationId);
                             distance = _graph.GetPathDistance(stationPathWithEndStation);
                         }
                         else
                         {
+                            var TicketRouteLeft = await _unitOfWork.TicketRouteRepository.GetTicketRouteByStartAndEndStation(createLinkPaymentOverStationDTO.StationId, ticket.SubscriptionTicket.StartStationId);
+                            if (TicketRouteLeft is null)
+                            {
+                                CreateTicketRouteDTO create = new CreateTicketRouteDTO
+                                {
+                                    StartStationId = createLinkPaymentOverStationDTO.StationId,
+                                    EndStationId = ticket.SubscriptionTicket.StartStationId
+                                };
+                                await _ticketRouteService.CraeteTicketRoute(create);
+                            }
                             ticketRoute = await _unitOfWork.TicketRouteRepository.GetTicketRouteByStartAndEndStation(createLinkPaymentOverStationDTO.StationId, ticket.SubscriptionTicket.StartStationId);
                             distance = _graph.GetPathDistance(stationPathWithStartStation);
                         }
