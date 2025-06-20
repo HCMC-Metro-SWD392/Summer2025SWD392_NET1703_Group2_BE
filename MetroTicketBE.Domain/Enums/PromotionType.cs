@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace MetroTicketBE.Domain.Enums
 {
-    public enum TicketRoutStatus
+    public enum PromotionType
     {
-        Active = 0,       // Đang hoạt động
-        Inactive = 1,     // Không hoạt động
-        Deleted = 2,      // Đã xóa
+        Percentage, // Giảm giá dựa trên tỷ lệ phần trăm
+        FixedAmount, // Giảm giá theo số tiền cố định
     }
 }

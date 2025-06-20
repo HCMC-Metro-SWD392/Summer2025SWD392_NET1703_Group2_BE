@@ -22,30 +22,45 @@ namespace MetroTicketBE.Infrastructure.Repository
                 .Include(mt => mt.EndStation)
                 .Include(mt => mt.MetroLineStations)
                 .ThenInclude(mts => mts.Station)
+                .OrderBy(mts => mts.CreatedAt)
                 .ToListAsync();
         }
 
         public async Task<MetroLine?> GetByIdAsync(Guid id)
         {
             return await _context.MetroLines
-                .AsNoTracking()
                 .Include(mt => mt.StartStation)
                 .Include(mt => mt.EndStation)
                 .Include(mt => mt.MetroLineStations)
                 .ThenInclude(mts => mts.Station)
                 .FirstOrDefaultAsync(metroLine => metroLine.Id == id);
         }
-        
+
         public async Task<bool> IsExistById(Guid id)
         {
             return await _context.MetroLines
                 .AnyAsync(metroLine => metroLine.Id == id);
         }
 
-        public async Task<bool> IsExistByMetroLineNumber(int metroLineNumber)
+        public async Task<bool> IsExistByMetroLineNumber(int metroLineNumber, Guid? currentMetroLineId)
         {
-            return await _context.MetroLines
-                .AnyAsync(metroLine => metroLine.MetroLineNumber == metroLineNumber);
+            var query = _context.MetroLines.Where(m => m.MetroLineNumber == metroLineNumber);
+            if (currentMetroLineId.HasValue)
+            {
+                query = query.Where(m => m.Id != currentMetroLineId.Value);
+            }
+
+            return await query.AnyAsync();
+        }
+
+        public async Task<bool> IsSameMetroLine(Guid stationOneId, Guid stationTwoId)
+        {
+            return await _context.MetroLineStations
+                .Where(mls1 => mls1.StationId == stationOneId)
+                .Join(_context.MetroLineStations.Where(mls2 => mls2.StationId == stationTwoId),
+                    mls1 => mls1.MetroLineId,
+                    mls2 => mls2.MetroLineId,
+                    (mls1, mls2) => mls1).AnyAsync();
         }
     }
 }

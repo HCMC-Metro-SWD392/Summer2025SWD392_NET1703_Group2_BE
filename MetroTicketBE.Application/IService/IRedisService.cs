@@ -1,4 +1,5 @@
-﻿using System;
+﻿using StackExchange.Redis;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,5 +11,6 @@ namespace MetroTicketBE.Application.IService
     {
         Task<bool> StoreKeyAsync(string key, string value, TimeSpan? expiry = null);
         Task<bool> DeleteStringAysnc(string key);
+        Task<string?> RetrieveString(string key);
     }
 }

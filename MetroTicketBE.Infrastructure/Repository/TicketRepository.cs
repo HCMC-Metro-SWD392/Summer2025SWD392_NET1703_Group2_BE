@@ -1,11 +1,7 @@
 ﻿using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Infrastructure.Context;
 using MetroTicketBE.Infrastructure.IRepository;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace MetroTicketBE.Infrastructure.Repository
 {
@@ -15,6 +11,34 @@ namespace MetroTicketBE.Infrastructure.Repository
         public TicketRepository(ApplicationDBContext context) : base(context)
         {
             _context = context;
+        }
+
+        public Task<Ticket?> GetByIdAsync(Guid ticketId)
+        {
+            return _context.Tickets
+                .Include(t => t.TicketRoute)
+                .ThenInclude(tr => tr.StartStation)
+                .Include(t => t.TicketRoute)
+                .ThenInclude(tr => tr.EndStation)
+                .Include(t => t.SubscriptionTicket)
+                .ThenInclude(st => st.StartStation)
+                .Include(t => t.SubscriptionTicket)
+                .ThenInclude(st => st.EndStation)
+                .FirstOrDefaultAsync(t => t.Id == ticketId);
+        }
+
+        public Task<Ticket?> GetTicketBySerialAsync(string serial)
+        {
+            return _context.Tickets
+                .Include(t => t.TicketRoute)
+                .ThenInclude(tr => tr.StartStation)
+                .Include(t => t.TicketRoute)
+                .ThenInclude(tr => tr.EndStation)
+                .Include(t => t.SubscriptionTicket)
+                .ThenInclude(st => st.StartStation)
+                .Include(t => t.SubscriptionTicket)
+                .ThenInclude(st => st.EndStation)
+                .FirstOrDefaultAsync(t => t.TicketSerial == serial);
         }
     }
 }

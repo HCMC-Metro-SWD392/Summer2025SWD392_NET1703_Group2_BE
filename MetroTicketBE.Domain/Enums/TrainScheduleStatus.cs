@@ -1,11 +1,11 @@
 ﻿
 namespace MetroTicketBE.Domain.Enum
 {
-    // Trạng thái lịch trình tàu
+    // Trạng thái lịch trình tàu  
     public enum TrainScheduleStatus
     {
-        Running = 0,     // Đang chạy
-        Completed = 1,   // Hoàn tất
-        Cancelled = 2    // Bị hủy
+        Normal = 0,     // Bình thường
+        Cancelled = 1,   // Bị hủy  
+        OutOfService = 2, // Tàu quay về bến không đón khách 
     }
 }

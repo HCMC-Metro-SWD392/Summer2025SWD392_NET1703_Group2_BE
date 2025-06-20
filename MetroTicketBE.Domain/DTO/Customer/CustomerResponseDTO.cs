@@ -9,14 +9,14 @@ public class CustomerResponseDTO
     public String? FullName { get; set; } = null!;
     public String? Address { get; set; } = null;
     public String? Sex { get; set; } = null;
-    public DateTime? DateOfBirth { get; set; }
+    public DateOnly? DateOfBirth { get; set; }
     public String? UserName { get; set; } = null;
     public String? Email { get; set; } = null;
     public String? PhoneNumber { get; set; } = null;
     public MembershipDTO? Membership { get; set; }
     public String? IdentityId { get; set; } = null;
     public long? Points { get; set; } = 0;
-    public TimeSpan? StudentExpiration { get; set; }
+    public DateTime? StudentExpiration { get; set; }
 }
 public class MembershipDTO
 {

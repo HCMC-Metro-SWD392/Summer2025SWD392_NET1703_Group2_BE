@@ -36,9 +36,32 @@ namespace MetroTicketBE.Application.Service
 
                 double distance = await CalculateDistanceOfTwoStation(createTicketRouteDTO.StartStationId, createTicketRouteDTO.EndStationId);
 
+                var startStation = await _unitOfWork.StationRepository.GetNameById(createTicketRouteDTO.StartStationId);
+                if (string.IsNullOrEmpty(startStation))
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Trạm bắt đầu không hợp lệ.",
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
+                var endStation = await _unitOfWork.StationRepository.GetNameById(createTicketRouteDTO.EndStationId);
+
+                if (string.IsNullOrEmpty(endStation))
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Trạm kết thúc không hợp lệ.",
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
                 TicketRoute saveTicketRoute = new TicketRoute
                 {
-                    TicketName = $"Vé lượt từ {createTicketRouteDTO.StartStationId} đến {createTicketRouteDTO.EndStationId}",
+                    TicketName = $"Vé lượt từ {startStation} đến {endStation}",
                     StartStationId = createTicketRouteDTO.StartStationId,
                     EndStationId = createTicketRouteDTO.EndStationId,
                     Distance = distance,
@@ -63,7 +86,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> GetTicketRouteByFromToAsync(Guid StartStation, Guid EndStation)
+        public async Task<ResponseDTO> GetTicketRouteByFromTo(Guid StartStation, Guid EndStation)
         {
             try
             {
@@ -103,7 +126,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        private async Task<double> CalculateDistanceOfTwoStation(Guid startStationId, Guid endStationId)
+        public async Task<double> CalculateDistanceOfTwoStation(Guid startStationId, Guid endStationId)
         {
             try
             {
@@ -113,13 +136,19 @@ namespace MetroTicketBE.Application.Service
 
                 var stationPath = _graph.FindShortestPath(startStationId, endStationId);
 
+                // Log đường đi để kiểm tra
+                //var stationNames = stationPath.Select(id =>
+                //    allMetroLines.SelectMany(l => l.MetroLineStations)
+                //        .FirstOrDefault(s => s.StationId == id)?.Station.Name ?? id.ToString()).ToList();
+                //Console.WriteLine("Đường đi: " + string.Join(" -> ", stationNames));
+
                 // Nếu không tìm thấy đường đi, ném ra ngoại lệ
                 if (stationPath == null || !stationPath.Any())
                 {
                     throw new Exception("Không tìm được đường đi giữa hai trạm.");
                 }
 
-                double distance = _unitOfWork.StationRepository.CalculateTotalDistance(stationPath, allMetroLines);
+                double distance = _graph.GetPathDistance(stationPath);
 
                 // Kiểm tra khoảng cách tính được có hợp lệ hay không
                 if (distance <= 0)
@@ -134,7 +163,5 @@ namespace MetroTicketBE.Application.Service
                 throw new Exception("Đã xảy ra lỗi tính khoảng cách: ", ex);
             }
         }
-
     }
-
 }

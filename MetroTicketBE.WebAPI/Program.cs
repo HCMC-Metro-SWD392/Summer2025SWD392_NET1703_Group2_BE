@@ -3,7 +3,9 @@ using MetroTicketBE.Application.Hub;
 using MetroTicketBE.Application.Mappings;
 using MetroTicketBE.Application.Service;
 using MetroTicketBE.Domain.Constants;
+using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Infrastructure.Context;
+using MetroTicketBE.Infrastructure.SignalR;
 using MetroTicketBE.WebAPI.Extentions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -19,19 +21,30 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        // Cấu hình Kestrel
+        builder.WebHost.ConfigureKestrel(options =>
+        {
+            options.ListenAnyIP(5000); // Lắng nghe trên cổng 5000 cho tất cả IP 
+        });
+
+        builder.Configuration
+        .SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
         // Add services to the container.
 
         builder.Services.AddControllers();
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddHttpClient();
         
-        builder.Services.AddSignalR();
         builder.Services.AddDbContext<ApplicationDBContext>(options =>
-            options.UseNpgsql(builder.Configuration.GetConnectionString(StaticConnectionString.POSTGRE_DefaultConnection)));
+            options.UseNpgsql(builder.Configuration.GetConnectionString(StaticConnectionString.POSTGRE_DefaultConnection))
+            .EnableSensitiveDataLogging()
+            .LogTo(Console.WriteLine, LogLevel.Information));
 
         // Set time token
         builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
-            options.TokenLifespan = TimeSpan.FromMinutes(60));        
+            options.TokenLifespan = TimeSpan.FromMinutes(60));
 
         // Register AutoMapper 
         builder.Services.AddAutoMapper(typeof(AutoMappingProfile));
@@ -52,6 +65,13 @@ public class Program
         builder.AddAppAuthentication();
 
         builder.Services.AddAuthorization();
+
+        // Register SignalR
+        builder.AddSignalR();
+
+        // Register custom UserIdProvider for SignalR
+        builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+
         // Register SwaggerGen and config for Authorize
         // Base on Extensions.WebApplicationBuilderExtensions
         builder.AddSwaggerGen();
@@ -61,7 +81,7 @@ public class Program
             {
                 options.AddPolicy("AllowFrontend", policyBuilder =>
                 {
-                    policyBuilder.WithOrigins("http://localhost:5173")
+                    policyBuilder.WithOrigins("http://localhost:5173", "http://54.251.226.229", "https://metrohcmc.xyz")
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials();
@@ -76,7 +96,7 @@ public class Program
         });
 
         var app = builder.Build();
-        ApplyMigration();
+        //ApplyMigration();
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
@@ -98,19 +118,21 @@ public class Program
         app.MapHub<LobbyHub>("/lobbyhub");
         app.MapControllers();
 
+        app.MapHub<NotificationHub>("/notificationHub");    
+
         app.Run();
 
-        void ApplyMigration()
-        {
-            using (var scope = app.Services.CreateScope())
-            {
-                var context = scope.ServiceProvider.GetRequiredService<ApplicationDBContext>();
+        //void ApplyMigration()
+        //{
+        //    using (var scope = app.Services.CreateScope())
+        //    {
+        //        var context = scope.ServiceProvider.GetRequiredService<ApplicationDBContext>();
 
-                if (context.Database.GetPendingMigrations().Any())
-                {
-                    context.Database.Migrate();
-                }
-            }
-        }
+        //        if (context.Database.GetPendingMigrations().Any())
+        //        {
+        //            context.Database.Migrate();
+        //        }
+        //    }
+        //}
     }
 }

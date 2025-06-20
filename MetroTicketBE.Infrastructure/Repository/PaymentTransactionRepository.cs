@@ -17,10 +17,18 @@ namespace MetroTicketBE.Infrastructure.Repository
         {
             return await _context.PaymentTransactions
                 .Include(pt => pt.Customer)
-                .Include(pt => pt.Tickets)
+                .Include(pt => pt.Ticket)
                 .Include(pt => pt.Promotion)
                 .FirstOrDefaultAsync(pt => pt.Id == id);
         }
 
+        public async Task<PaymentTransaction?> GetByOrderCode(string orderCode)
+        {
+            return await _context.PaymentTransactions
+                .Include(pt => pt.Customer)
+                .Include(pt => pt.Ticket)
+                .Include(pt => pt.Promotion)
+                .FirstOrDefaultAsync(pt => pt.OrderCode == orderCode);
+        }
     }
 }

@@ -4,6 +4,7 @@ using MetroTicketBE.Infrastructure.IRepository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -15,11 +16,13 @@ namespace MetroTicketBE.Application.Service
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration _configuration;
         private readonly IRedisService _redisService;
+        private readonly Random random;
         public TokenService(UserManager<ApplicationUser> userManager, IConfiguration configuration, IRedisService redisService)
         {
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _redisService = redisService ?? throw new ArgumentNullException(nameof(redisService));
+            random = new Random();
         }
 
         public async Task<bool> DeleteRefreshToken(string userId)
@@ -86,6 +89,12 @@ namespace MetroTicketBE.Application.Service
             return refreshToken;
         }
 
+        public string GenerateQRCodeAsync()
+        {
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes($"{DateTime.UtcNow.Millisecond}_{string.Concat(Enumerable.Range(0, 10).Select(_ => random.Next(0, 10).ToString()))}" +
+                $"_{DateTime.UtcNow.Ticks}"));
+        }
+
         public async Task<bool> StoreRefreshToken(string userId, string refreshToken, bool rememberMe)
         {
             string redisKey = $"userId:{userId}-refreshToken";
@@ -103,5 +112,29 @@ namespace MetroTicketBE.Application.Service
                 ? TimeSpan.FromDays(int.Parse(rememberMeDays ?? "7")) // Nếu RememberMe là true, token sẽ hết hạn mặc định là 7 ngày
                 : TimeSpan.FromHours(int.Parse(shortHours ?? "3")); // Nếu RememberMe là false, token sẽ hết hạn mặc định là 3 giờ
         }
+
+        public async Task<string> GetQRCodeAndRefreshAsync(Guid ticketId)
+        {
+            string redisKey = $"ticketId:{ticketId}-QRCode";
+            var qrCode = await _redisService.RetrieveString(redisKey);
+
+            if (qrCode is not null)
+            {
+                return qrCode;
+            }
+
+            qrCode = GenerateQRCodeAsync();
+
+            var expiration = TimeSpan.FromMinutes(1); // Thời gian hết hạn của QR code là 1 phút
+            await _redisService.StoreKeyAsync(redisKey, qrCode, expiration);
+            await _redisService.StoreKeyAsync($"qrCode:{qrCode}-ticketId", ticketId.ToString(), expiration);
+            return qrCode;
+        }
+
+        public async Task<string?> GetValueByKeyAsync(string key)
+        {
+            return await _redisService.RetrieveString(key);
+        } 
     }
+
 }

@@ -36,9 +36,9 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpGet]
         [Route("get-all-stations")]
-        public async Task<ActionResult<ResponseDTO>> GetAllStations()
+        public async Task<ActionResult<ResponseDTO>> GetAllStations(bool? isAscending, int pageNumber, int pageSize)
         {
-            var response = await _stationService.GetAllStations();
+            var response = await _stationService.GetAllStations(isAscending, pageNumber, pageSize);
             return StatusCode(response.StatusCode, response);
         }
         
@@ -47,6 +47,14 @@ namespace MetroTicketBE.WebAPI.Controllers
         public async Task<ActionResult<ResponseDTO>> GetStationById(Guid stationId)
         {
             var response = await _stationService.GetStationById(stationId);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpGet]
+        [Route("search-stations-by-name")]
+        public async Task<ActionResult<ResponseDTO>> SearchStationsByName([FromQuery] string? name)
+        {
+            var response = await _stationService.SearchStationsByName(name);
             return StatusCode(response.StatusCode, response);
         }
     }

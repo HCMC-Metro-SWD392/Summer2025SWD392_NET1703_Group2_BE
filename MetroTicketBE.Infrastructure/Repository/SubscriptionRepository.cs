@@ -28,6 +28,7 @@ public class SubscriptionRepository: Repository<SubscriptionTicket>, ISubscripti
     public async Task<SubscriptionTicket?> GetByNameAsync(string ticketName)
     {
         return await _context.SubscriptionTickets
+            .Include(st => st.TicketType)
             .FirstOrDefaultAsync(st => st.TicketName == ticketName);
     }
 
@@ -37,10 +38,23 @@ public class SubscriptionRepository: Repository<SubscriptionTicket>, ISubscripti
             .AnyAsync(st => st.TicketName == ticketName);
     }
 
+    public Task<SubscriptionTicket?> GetByStartAndEndStationAsync(Guid startStationId, Guid endStationId, Guid TicketTypeId)
+    {
+        return _context.SubscriptionTickets
+            .FirstOrDefaultAsync(st => st.StartStationId == startStationId && 
+                                       st.EndStationId == endStationId && 
+                                       st.TicketTypeId == TicketTypeId);
+    }
     public async Task<SubscriptionTicket?> GetByIdAsync(Guid? id)
     {
         if (id == null) return null;
         return await _context.SubscriptionTickets
+            .Include(st => st.TicketType)
             .FirstOrDefaultAsync(st => st.Id == id);
+    }
+
+    public Task<SubscriptionTicket?> GetByTicketTypeIdAsync(Guid ticketTypeId)
+    {
+        return _context.SubscriptionTickets.FirstOrDefaultAsync(st => st.TicketTypeId == ticketTypeId);
     }
 }

@@ -25,7 +25,7 @@ namespace MetroTicketBE.WebAPI.Extentions
             // Registering IRedisService with its implementation RedisService
             services.AddScoped<IRedisService, RedisService>();
             // Registering IEmailService with its implementation EmailSerivce
-            services.AddScoped<IEmailService, EmailSerivce>();
+            services.AddScoped<IEmailService, EmailService>();
             // Registering ICustomerService with its implementation CustomerService
             services.AddScoped<ICustomerService, CustomerService>();
             // Registering ICustomerService with its implementation CustomerService
@@ -43,6 +43,23 @@ namespace MetroTicketBE.WebAPI.Extentions
             services.AddScoped<StationGraph>();
             // Registering IPaymentService with its implementation PaymentService
             services.AddScoped<IPaymentService, PaymentService>();
+            // Registering IPromotionService with its implementation PromotionService
+            services.AddScoped<IPromotionService, PromotionService>();
+            // Registering ITicketService with its implementation TicketService
+            services.AddScoped<ITicketService, TicketService>();
+            // Registering ITrainScheduleService with its implementation TrainScheduleService
+            services.AddScoped<ITrainScheduleService, TrainScheduleService>();
+            // Registering ISubscriptionTicketTypeService with its implementation SubscriptionTicketTypeService
+            services.AddScoped<ISubscriptionTicketTypeService, SubscriptionTicketTypeService>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IFareRuleRepository, FareRuleRepository>();
+            services.AddScoped<ISubscriptionTicketTypeRepository, SubscriptionTicketTypeRepository>();
+
+            // Registering IFormRequestService with its implementation FormRequestService
+            services.AddScoped<IFormRequestService, FormRequestService>();
+            // Registering IS3Service with its implementation S3Service
+            services.AddScoped<IS3Service, S3Service>();
+
             // Register the Identity services with default configuration
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDBContext>()

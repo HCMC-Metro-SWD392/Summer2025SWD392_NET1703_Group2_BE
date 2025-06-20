@@ -1,6 +1,8 @@
 ﻿using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.TicketRoute;
+using MetroTicketBE.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,7 +27,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [HttpGet("get-ticket-route-by-from-to/{startStationId:guid}/{endStationId:guid}")]
         public async Task<ActionResult<ResponseDTO>> GetTicketRouteByFromTo([FromRoute] Guid startStationId, Guid endStationId)
         {
-            var response = await _ticketRouteService.GetTicketRouteByFromToAsync(startStationId, endStationId);
+            var response = await _ticketRouteService.GetTicketRouteByFromTo(startStationId, endStationId);
             return StatusCode(response.StatusCode, response);
         }
     }

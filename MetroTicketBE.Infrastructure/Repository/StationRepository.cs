@@ -56,9 +56,55 @@ namespace MetroTicketBE.Infrastructure.Repository
                 .AnyAsync(s => s.Address == address);
         }
 
-        public async void Update(Station station)
+        public Task<string?> GetNameById(Guid stationId)
         {
-            _context.Stations.Update(station);
+            return _context.Stations
+                .Where(s => s.Id == stationId)
+                .Select(s => s.Name)
+                .FirstOrDefaultAsync();
         }
+
+        public async Task<int> GetOrderStationById(Guid stationId, Guid metroLineId)
+        {
+            return await _context.Stations
+                .Where(s => s.Id == stationId)
+                .Select(s => s.MetroLineStations
+                .Where(mls => mls.MetroLineId == metroLineId)
+                    .Select(mls => mls.StationOrder)
+                    .FirstOrDefault())
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<List<Station>> GetAllStationsAsync(bool? isAscending)
+        {
+            if (isAscending.HasValue && isAscending.Value == true)
+            {
+                return await _context.Stations
+                    .OrderBy(s => s.CreatedAt)
+                    .Include(s => s.MetroLineStations).ThenInclude(mls => mls.MetroLine)
+                    .ToListAsync();
+            }
+
+            return await _context.Stations
+                    .OrderByDescending(s => s.CreatedAt)
+                    .Include(s => s.MetroLineStations).ThenInclude(mls => mls.MetroLine)
+                .ToListAsync();
+        }
+
+        public async Task<List<Station>> SearchStationsByName(string? name)
+        {
+            
+            if (name is null)
+            {
+                return await _context.Stations
+                    .ToListAsync();
+            }
+        
+            return await _context.Stations
+                .Where(s => s.Name.ToLower().Contains(name.ToLower()))
+                .Include(s => s.MetroLineStations).ThenInclude(mls => mls.MetroLine)
+                .ToListAsync();
+        }
+        
     }
 }

@@ -28,19 +28,7 @@ public class CustomerController: ControllerBase
         
         return Ok(response);
     }
-    
-    [HttpPut("{customerId:guid}")]
-    public async Task<ActionResult<ResponseDTO>> UpdateCustomerAsync(Guid customerId, [FromBody] UpdateCustomerDTO updateCustomerDTO)
-    {
-        ResponseDTO response = await _customerService.UpdateCustomerAsync(customerId, updateCustomerDTO);
-        
-        if (!response.IsSuccess)
-        {
-            return NotFound(response);
-        }
-        
-        return Ok(response);
-    }
+
     
     [HttpGet("user/{userId}")]
     public async Task<ActionResult<ResponseDTO>> GetCustomerByUserIdAsync(string userId)

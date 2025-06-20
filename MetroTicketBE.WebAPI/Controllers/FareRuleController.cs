@@ -26,9 +26,15 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpGet]
         [Route("fare-rules/all")]
-        public async Task<ActionResult<ResponseDTO>> GetAll()
+        public async Task<ActionResult<ResponseDTO>> GetAll
+            (
+            [FromQuery] string? sortBy,
+            [FromQuery] bool? isAcsending,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10
+            )
         {
-            var response = await _fareRuleService.GetAll();
+            var response = await _fareRuleService.GetAll(User, sortBy, isAcsending, pageNumber, pageSize);
             return StatusCode(response.StatusCode, response);
         }
 

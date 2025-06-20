@@ -1,4 +1,6 @@
 ﻿using System.Text;
+using Amazon.OpsWorks.Model;
+using MetroTicketBE.Domain.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -78,6 +80,17 @@ public static class WebApplicationBuilderExtensions
                     new List<string>()
                 }
             });
+        });
+
+        return builder;
+    }
+
+    public static WebApplicationBuilder AddSignalR(this WebApplicationBuilder builder)
+    {
+        // Enable SignalR with detailed errors for development purposes
+        builder.Services.AddSignalR(options =>
+        {
+            options.EnableDetailedErrors = true;
         });
 
         return builder;

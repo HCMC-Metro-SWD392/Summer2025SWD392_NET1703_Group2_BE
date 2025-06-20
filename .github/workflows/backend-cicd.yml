@@ -1,0 +1,80 @@
+name: Backend CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  PROJECT_NAME: Summer2025SWD392_NET1703_Group2_BE
+  DOTNET_VERSION: 8.0.x
+  EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+  EC2_HOST: ${{ secrets.EC2_HOST_PUBLIC }}
+  EC2_USER: ${{ secrets.EC2_USER }}
+
+jobs:
+  build:
+    name: Build ASP.NET Core
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build project
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Publish project
+        run: dotnet publish -c Release -o ./publish
+
+      - name: Create zip artifact
+        run: zip -r publish.zip ./publish
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-publish
+          path: publish.zip
+
+  deploy:
+    name: Deploy to EC2
+    needs: build
+    runs-on: ubuntu-latest
+    environment: Ticket_Metro
+
+    steps:
+      - name: Download published artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-publish
+          
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "Created ~/.ssh directory"
+          echo "${{ env.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          echo "Wrote SSH key to id_ed25519"
+          chmod 600 ~/.ssh/id_ed25519
+          echo "Set permissions for id_ed25519"
+          ssh-keyscan -H "${{ env.EC2_HOST }}" >> ~/.ssh/known_hosts || { echo "ssh-keyscan failed"; exit 1; }
+          echo "Added EC2 host to known_hosts"
+
+      - name: Upload to EC2
+        run: |
+          scp publish.zip ${{ env.EC2_USER }}@${{ env.EC2_HOST }}:/home/${{ env.EC2_USER }}/
+          ssh ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "
+            rm -rf ~/deploy_temp &&
+            mkdir -p ~/deploy_temp &&
+            unzip -o publish.zip -d ~/deploy_temp &&
+            sudo systemctl stop kestrel-${{ env.PROJECT_NAME }}.service &&
+            sudo cp -r ~/deploy_temp/* /var/www/${{ env.PROJECT_NAME }}/ &&
+            sudo systemctl start kestrel-${{ env.PROJECT_NAME }}.service
+          "

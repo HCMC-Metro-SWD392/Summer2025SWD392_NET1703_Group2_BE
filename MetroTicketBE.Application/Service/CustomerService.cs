@@ -1,4 +1,5 @@
-﻿using MetroTicketBE.Application.IService;
+﻿using MetroTicket.Domain.Entities;
+using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.Customer;
 using MetroTicketBE.Domain.Entities;
@@ -165,77 +166,6 @@ public class CustomerService: ICustomerService
                 StatusCode = 500
             });
         }
-    }
-    
-    public async Task<ResponseDTO> UpdateCustomerAsync(Guid customerId, UpdateCustomerDTO updateCustomerDTO)
-    {
-        try
-        {
-            if (customerId == Guid.Empty)
-            {
-                return new ResponseDTO()
-                {
-                    Message = "Mã khách hàng không hợp lệ",
-                    Result = null,
-                    IsSuccess = false,
-                    StatusCode = 400
-                };
-            }
-
-            Customer? customer = await _unitOfWork.CustomerRepository.GetByIdAsync(customerId);
-
-            if (customer is null)
-            {
-                return new ResponseDTO()
-                {
-                    Message = "Khách hàng không tồn tại",
-                    Result = null,
-                    IsSuccess = false,
-                    StatusCode = 404
-                };
-            }
-
-            // customer.User.FullName = updateCustomerDTO.FullName;
-            // customer.User.Address = updateCustomerDTO.Address;
-            // customer.User.PhoneNumber = updateCustomerDTO.PhoneNumber;
-            // customer.User.Email = updateCustomerDTO.Email;
-            // customer.User.DateOfBirth = updateCustomerDTO.DateOfBirth;
-            // customer.User.IdentityId = updateCustomerDTO.IdentityId;
-            // customer.CustomerType = updateCustomerDTO.CustomerType ?? customer.CustomerType;
-            
-            PatchWith(customer, updateCustomerDTO);
-            
-            _unitOfWork.CustomerRepository.Update(customer);
-            await _unitOfWork.SaveAsync();
-
-            return new ResponseDTO()
-            {
-                Message = "Cập nhật thông tin khách hàng thành công",
-                Result = MapToCustomerResponseDTO(customer),
-            };
-        }
-        catch (Exception exception)
-        {
-            return new ResponseDTO()
-            {
-                Message = $"Đã xảy ra lỗi: {exception.Message}",
-                Result = null,
-                IsSuccess = false,
-                StatusCode = 500
-            };
-        }
-    }
-
-    private static void PatchWith(Customer customer, UpdateCustomerDTO dto)
-    {
-        if (dto.FullName != null) customer.User.FullName = dto.FullName;
-        if (dto.Address != null) customer.User.Address = dto.Address;
-        if (dto.PhoneNumber != null) customer.User.PhoneNumber = dto.PhoneNumber;
-        if (dto.Sex != null) customer.User.Sex = dto.Sex;
-        if (dto.Email != null) customer.User.Email = dto.Email;
-        if (dto.DateOfBirth.HasValue) customer.User.DateOfBirth = dto.DateOfBirth.Value;
-        if (dto.IdentityId != null) customer.User.IdentityId = dto.IdentityId;
-        if (dto.CustomerType.HasValue) customer.CustomerType = dto.CustomerType.Value;
     }
 
     private CustomerResponseDTO MapToCustomerResponseDTO(Customer customer)
