@@ -605,8 +605,17 @@ namespace MetroTicketBE.Application.Service
             }
             else
             {
-                var user = await _unitOfWork.UserManagerRepository.GetUserByCustomerId(ticket.CustomerId);
-                await _hubContext.Clients.User(user.Id).SendAsync("NotifyOverStation", new
+                var customer = await _unitOfWork.CustomerRepository.GetByIdAsync(ticket.CustomerId);
+                if (customer is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Không tìm thấy khách hàng.",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+                await _hubContext.Clients.User(customer.UserId).SendAsync("NotifyOverStation", new
                 {
                     TicketId = ticket.Id,
                     StationId = stationId,
@@ -637,8 +646,17 @@ namespace MetroTicketBE.Application.Service
             }
             else
             {
-                var user = await _unitOfWork.UserManagerRepository.GetUserByCustomerId(ticket.CustomerId);
-                await _hubContext.Clients.User(user.Id).SendAsync("NotifyOverStation", new
+                var customer = await _unitOfWork.CustomerRepository.GetByIdAsync(ticket.CustomerId);
+                if (customer is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Không tìm thấy khách hàng.",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+                await _hubContext.Clients.User(customer.UserId).SendAsync("NotifyOverStation", new
                 {
                     TicketId = ticket.Id,
                     StationId = stationId,
@@ -680,8 +698,17 @@ namespace MetroTicketBE.Application.Service
             }
             else
             {
-                var user = await _unitOfWork.UserManagerRepository.GetUserByCustomerId(ticket.CustomerId);
-                await _hubContext.Clients.User(user.Id).SendAsync("NotifyOverStation", new
+                var customer = await _unitOfWork.CustomerRepository.GetByIdAsync(ticket.CustomerId);
+                if (customer is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Không tìm thấy khách hàng.",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+                await _hubContext.Clients.User(customer.UserId).SendAsync("NotifyOverStation", new
                 {
                     TicketId = ticket.Id,
                     StationId = stationId,
@@ -722,8 +749,17 @@ namespace MetroTicketBE.Application.Service
             }
             else
             {
-                var user = await _unitOfWork.UserManagerRepository.GetUserByCustomerId(ticket.CustomerId);
-                await _hubContext.Clients.User(user.Id).SendAsync("NotifyOverStation", new
+                var customer = await _unitOfWork.CustomerRepository.GetByIdAsync(ticket.CustomerId);
+                if (customer is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Không tìm thấy khách hàng.",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+                await _hubContext.Clients.User(customer.UserId).SendAsync("NotifyOverStation", new
                 {
                     TicketId = ticket.Id,
                     StationId = stationId,
