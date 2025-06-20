@@ -307,18 +307,24 @@ namespace MetroTicketBE.Application.Service
         {
             try
             {
-                var ticketId = await _tokenService.GetValueByKeyAsync($"qrCode:{qrCode}-ticketId");
-                if (ticketId is null)
+                var ticket = await _unitOfWork.TicketRepository.GetByQrCodeAsync(qrCode);
+                if (ticket is null)
                 {
-                    return new ResponseDTO
+                    var ticketId = await _tokenService.GetValueByKeyAsync($"qrCode:{qrCode}-ticketId");
+                    if (ticketId is null)
                     {
-                        Message = "QR code không hợp lệ hoặc đã hết hạn.",
-                        IsSuccess = false,
-                        StatusCode = 400
-                    };
+                        return new ResponseDTO
+                        {
+                            Message = "QR code không hợp lệ hoặc đã hết hạn.",
+                            IsSuccess = false,
+                            StatusCode = 404
+                        };
+                    }
+                    else
+                    {
+                        ticket = await _unitOfWork.TicketRepository.GetByIdAsync(Guid.Parse(ticketId));
+                    }
                 }
-
-                var ticket = await _unitOfWork.TicketRepository.GetByIdAsync(Guid.Parse(ticketId));
 
                 if (ticket is null)
                 {
@@ -456,19 +462,24 @@ namespace MetroTicketBE.Application.Service
         {
             try
             {
-                var ticketId = await _tokenService.GetValueByKeyAsync($"qrCode:{qrCode}-ticketId");
-
-                if (ticketId is null)
+                var ticket = await _unitOfWork.TicketRepository.GetByQrCodeAsync(qrCode);
+                if (ticket is null)
                 {
-                    return new ResponseDTO
+                    var ticketId = await _tokenService.GetValueByKeyAsync($"qrCode:{qrCode}-ticketId");
+                    if (ticketId is null)
                     {
-                        Message = "QR code không hợp lệ hoặc đã hết hạn.",
-                        IsSuccess = false,
-                        StatusCode = 400
-                    };
+                        return new ResponseDTO
+                        {
+                            Message = "QR code không hợp lệ hoặc đã hết hạn.",
+                            IsSuccess = false,
+                            StatusCode = 404
+                        };
+                    }
+                    else
+                    {
+                        ticket = await _unitOfWork.TicketRepository.GetByIdAsync(Guid.Parse(ticketId));
+                    }
                 }
-
-                var ticket = await _unitOfWork.TicketRepository.GetByIdAsync(Guid.Parse(ticketId));
 
                 if (ticket is null)
                 {
