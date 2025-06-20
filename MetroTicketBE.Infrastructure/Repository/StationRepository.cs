@@ -81,6 +81,7 @@ namespace MetroTicketBE.Infrastructure.Repository
             {
                 return await _context.Stations
                     .OrderBy(s => s.CreatedAt)
+                    .Include(s => s.MetroLineStations).ThenInclude(mls => mls.MetroLine)
                     .ToListAsync();
             }
 
