@@ -408,12 +408,12 @@ namespace MetroTicketBE.Application.Service
                         }
                         else
                         {
-                            var TicketRouteLeft = await _unitOfWork.TicketRouteRepository.GetTicketRouteByStartAndEndStation(ticket.TicketRoute.EndStationId, createLinkPaymentOverStationDTO.StationId);
+                            var TicketRouteLeft = await _unitOfWork.TicketRouteRepository.GetTicketRouteByStartAndEndStation(ticket.TicketRoute.StartStationId, createLinkPaymentOverStationDTO.StationId);
                             if (TicketRouteLeft is null)
                             {
                                 CreateTicketRouteDTO create = new CreateTicketRouteDTO
                                 {
-                                    StartStationId = ticket.TicketRoute.EndStationId,
+                                    StartStationId = ticket.TicketRoute.StartStationId,
                                     EndStationId = createLinkPaymentOverStationDTO.StationId
                                 };
                                 await _ticketRouteService.CraeteTicketRoute(create);
