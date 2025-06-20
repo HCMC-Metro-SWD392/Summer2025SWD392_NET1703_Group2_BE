@@ -1,4 +1,5 @@
 ﻿using MetroTicketBE.Domain.Entities;
+using MetroTicketBE.Domain.Enum;
 using MetroTicketBE.Infrastructure.Context;
 using MetroTicketBE.Infrastructure.IRepository;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,12 @@ namespace MetroTicketBE.Infrastructure.Repository
                 .Include(fr => fr.FormAttachments)
                 .FirstOrDefaultAsync(fr => fr.Id == Id)
                 ?? throw new KeyNotFoundException($"FormRequest with ID {Id} not found.");
+        }
+
+        public async Task<bool> IsPendingFormRequest(string userId)
+        {
+            return await _context.FormRequests
+                .AnyAsync(fr => fr.SenderId == userId && fr.Status == FormStatus.Pending);
         }
     }
 }
