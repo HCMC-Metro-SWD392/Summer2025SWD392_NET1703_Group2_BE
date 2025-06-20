@@ -606,7 +606,7 @@ namespace MetroTicketBE.Application.Service
             else
             {
                 var user = await _unitOfWork.UserManagerRepository.GetUserByCustomerId(ticket.CustomerId);
-                await _hubContext.Clients.User(user.Id).SendAsync("NotifyOverStation", new
+                await _hubContext.Clients.All.SendAsync("NotifyOverStation", new
                 {
                     TicketId = ticket.Id,
                     StationId = stationId,
