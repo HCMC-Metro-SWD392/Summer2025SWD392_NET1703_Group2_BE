@@ -1,6 +1,8 @@
 ﻿using MetroTicketBE.Application.IService;
+using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.FormRequest;
+using MetroTicketBE.Domain.Enum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -43,6 +45,29 @@ namespace MetroTicketBE.WebAPI.Controllers
             }
             var objectKey = $"form-request-picture/{userId}/{Guid.NewGuid()}_{preSignedUploadDTO.FileName}";
             var response = s3Service.GenerateUploadUrl(objectKey, preSignedUploadDTO.ContentType);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpGet]
+        [Route("download-file-url-form-request")]
+        [Authorize]
+        public async Task<ActionResult<ResponseDTO>> GetFormRequest()
+        {
+            var response = await _formRequestService.GetFormRequest(User);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpGet]
+        [Route("get-all-form-requests")]
+        //[Authorize(Roles = StaticUserRole.StaffManagerAdmin)]
+        public async Task<ActionResult<ResponseDTO>> GetAllFormRequests(
+           [FromQuery] string sortBy = "createdAt",
+           [FromQuery] FormStatus formStatus = FormStatus.Pending,
+           [FromQuery] bool? isAcsending = true,
+           [FromQuery] int pageNumber = 1,
+           [FromQuery] int pageSize = 10)
+        {
+            var response = await _formRequestService.GetAll(sortBy, formStatus, isAcsending, pageNumber, pageSize);
             return StatusCode(response.StatusCode, response);
         }
     }

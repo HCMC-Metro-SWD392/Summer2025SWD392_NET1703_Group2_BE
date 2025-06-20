@@ -11,6 +11,7 @@ using MetroTicketBE.Domain.DTO.Ticket;
 using MetroTicketBE.Domain.DTO.Promotion;
 using MetroTicketBE.Domain.DTO.SubscriptionTicket;
 using MetroTicketBE.Domain.DTO.TrainSchedule;
+using MetroTicketBE.Domain.DTO.FormRequest;
 
 namespace MetroTicketBE.Application.Mappings
 {
@@ -37,6 +38,7 @@ namespace MetroTicketBE.Application.Mappings
                 .ForMember(dest => dest.MetroLineName, opt => opt.MapFrom(src => src.MetroLine.MetroName))
                 .ForMember(dest => dest.StationName, opt => opt.MapFrom(src => src.Station.Name)).ReverseMap();
             CreateMap<SubscriptionTicket, GetSubscriptionTicketDTO>();
+            CreateMap<GetFormRequestDTO, FormRequest>().ReverseMap();
         }
     }
 }
