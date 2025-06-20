@@ -1,18 +1,30 @@
-﻿using MetroTicket.Domain.Entities;
+﻿using AutoMapper;
+using MetroTicket.Domain.Entities;
 using MetroTicketBE.Application.IService;
+using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.Customer;
+using MetroTicketBE.Domain.Enum;
 using MetroTicketBE.Infrastructure.IRepository;
 using MetroTicketBE.Infrastructure.Repository;
+using Microsoft.AspNetCore.Identity;
 
 namespace MetroTicketBE.Application.Service;
 
 public class UserService: IUserService
 {
     private readonly IUnitOfWork _unitOfWork;
-    public UserService(IUnitOfWork unitOfWork)
+    private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly UserManager<ApplicationUser> _userManager;
+
+    private readonly IMapper _mapper;
+
+    public UserService(IUnitOfWork unitOfWork, RoleManager<IdentityRole> roleManager, IMapper mapper, UserManager<ApplicationUser> userManager)
     {
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
+        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
     }
 
     public async Task<ResponseDTO> GetUserByIdAsync(string id)
@@ -121,7 +133,114 @@ public class UserService: IUserService
             };
         }
     }
-    
+
+    public async Task<ResponseDTO> CreateStaffAsync(RegisterCustomerDTO dto, UserRole role)
+    {
+        try
+        {
+
+
+            var isEmailExist = await _unitOfWork.UserManagerRepository.IsEmailExist(dto.Email);
+
+            if (isEmailExist is true)
+            {
+                return new ResponseDTO
+                {
+                    Message = "Email đã tồn tại",
+                    Result = dto,
+                    IsSuccess = false,
+                    StatusCode = 409
+                };
+            }
+
+            //Check if phone number already exists
+            var isPhoneNumberExist = dto.PhoneNumber is not null &&
+                                     await _unitOfWork.UserManagerRepository.IsPhoneNumberExist(dto.PhoneNumber);
+
+            if (isPhoneNumberExist is true)
+            {
+                return new ResponseDTO
+                {
+                    Message = "Số điện thoại đã tồn tại",
+                    Result = dto,
+                    IsSuccess = false,
+                    StatusCode = 409
+                };
+            }
+
+            //Create new instance of user
+            ApplicationUser newUser = new ApplicationUser
+            {
+                PhoneNumber = dto.PhoneNumber,
+                Email = dto.Email,
+                FullName = dto.FullName,
+                UserName = dto.Email
+            };
+            var createUserResult = await _unitOfWork.UserManagerRepository.CreateAsync(newUser, dto.Password);
+
+            if (createUserResult.Succeeded is false)
+            {
+                return new ResponseDTO
+                {
+                    Message = "Đăng ký không thành công",
+                    Result = createUserResult,
+                    IsSuccess = false,
+                    StatusCode = 400
+                };
+            }
+
+            var userRole = StaticUserRole.Staff;
+            switch (role)
+            {
+                case UserRole.Manager:
+                    userRole = StaticUserRole.Manager;
+                    break;
+                case UserRole.Admin:
+                    userRole = StaticUserRole.Admin;
+                    break;
+            }
+
+            var isRoleExist = await _roleManager.RoleExistsAsync(userRole);
+            if (isRoleExist is false)
+            {
+                await _roleManager.CreateAsync(new IdentityRole(userRole));
+            }
+
+            var addToRoleResult = await _unitOfWork.UserManagerRepository.AddtoRoleAsync(newUser, userRole);
+            if (addToRoleResult.Succeeded is false)
+            {
+                return new ResponseDTO
+                {
+                    Message = "Thêm vai trò không thành công",
+                    Result = addToRoleResult,
+                    IsSuccess = false,
+                    StatusCode = 400
+                };
+            } 
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
+            await _userManager.ConfirmEmailAsync(newUser, token);
+            await _unitOfWork.SaveAsync();
+            return new ResponseDTO()
+            {
+                Message = "Đăng ký thành công",
+                Result = _mapper.Map<UserDTO>(newUser),
+                IsSuccess = true,
+                StatusCode = 201
+            };
+
+        }
+        catch (Exception ex)
+        {
+            return new ResponseDTO()
+            {
+                Message = $"Đã xảy ra lỗi: {ex.Message}",
+                Result = null,
+                IsSuccess = false,
+                StatusCode = 500
+            };
+        }
+
+    }
     private static void PatchWith(ApplicationUser user, UpdateUserDTO dto)
     {
         if (dto.FullName != null) user.FullName = dto.FullName;
