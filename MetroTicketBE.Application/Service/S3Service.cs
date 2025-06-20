@@ -48,10 +48,13 @@ namespace MetroTicketBE.Application.Service
             var url = s3Client.GetPreSignedURL(request);
             return new ResponseDTO
             {
-                IsSuccess = true,
-                Message = "Tạo liên kết gửi file với s3 thành công",
-                Result = url,
-                StatusCode = 200
+                StatusCode = 200,
+                Message = "Tạo đường dẫn kết nối s3 thành công",
+                Result = new
+                {
+                    Url = url,
+                    ObjectKey = objectKey
+                }
             };
         }
     }
