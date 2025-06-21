@@ -63,9 +63,21 @@ namespace MetroTicketBE.Application.Service
                         StatusCode = 404
                     };
                 }
-
                 var tickets = (await _unitOfWork.TicketRepository.GetAllAsync(includeProperties: "TicketRoute,TicketRoute.StartStation,TicketRoute.EndStation,SubscriptionTicket,SubscriptionTicket.StartStation,SubscriptionTicket.EndStation"))
-                    .Where(t => t.CustomerId == customer.Id && t.TicketRtStatus == ticketType);
+                        .Where(t => t.CustomerId == customer.Id);
+
+                if (ticketType == TicketStatus.Inactive)
+                {
+                    tickets = tickets.Where(t => t.TicketRtStatus == TicketStatus.InActiveOverStation || t.TicketRtStatus == ticketType);
+                }
+                else if (ticketType == TicketStatus.Active)
+                {
+                    tickets = tickets.Where(t => t.TicketRtStatus == TicketStatus.ActiveOverStation || t.TicketRtStatus == ticketType);
+                }
+                else
+                {
+                    tickets = tickets.Where(t => t.TicketRtStatus == ticketType);
+                }
 
                 if (!string.IsNullOrEmpty(filterOn) && !string.IsNullOrEmpty(filterQuery))
                 {
