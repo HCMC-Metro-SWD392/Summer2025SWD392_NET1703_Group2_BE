@@ -71,7 +71,6 @@ namespace MetroTicketBE.Application.Service
                 };
             }
         }
-
         public async Task<ResponseDTO> GetAll(string sortBy, FormStatus formStatus, bool? isAcsending, int pageNumber, int pageSize)
         {
             try
@@ -302,5 +301,7 @@ namespace MetroTicketBE.Application.Service
                 };
             }
         }
+
+
     }
 }
