@@ -6,18 +6,9 @@ namespace MetroTicketBE.Infrastructure.SignalR
 {
     public class CustomUserIdProvider : IUserIdProvider
     {
-        private readonly ILogger<CustomUserIdProvider> _logger;
-
-        public CustomUserIdProvider(ILogger<CustomUserIdProvider> logger)
+        public virtual string GetUserId(HubConnectionContext connection)
         {
-            _logger = logger;
-        }
-
-        public string? GetUserId(HubConnectionContext connection)
-        {
-            var userId = connection.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            _logger.LogInformation("[SignalR] Connected UserId: {UserId}", userId);
-            return userId;
+            return connection.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
         }
     }
 }
