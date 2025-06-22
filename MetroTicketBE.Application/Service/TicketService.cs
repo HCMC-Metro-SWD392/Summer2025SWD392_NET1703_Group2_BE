@@ -791,14 +791,14 @@ namespace MetroTicketBE.Application.Service
                     {
                         await SendNotifyOverStation(ticket, stationId, $"Bạn đã vượt trạm! Vui lòng thanh toán thêm {totalPrice}VND", userId);
                     }
-                    return new ResponseDTO
-                    {
-                        Message = "Trạm không đúng với phạm vi cho phép bắt đầu của vé (nằm ngoài vùng cho phép check-in).",
-                        IsSuccess = false,
-                        StatusCode = 400,
-                        Result = ticket.Id
-                    };
                 }
+                return new ResponseDTO
+                {
+                    Message = "Trạm không đúng với phạm vi cho phép bắt đầu của vé (nằm ngoài vùng cho phép check-in).",
+                    IsSuccess = false,
+                    StatusCode = 400,
+                    Result = ticket.Id
+                };
             }
         }
 
