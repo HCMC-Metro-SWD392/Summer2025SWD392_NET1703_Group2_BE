@@ -29,6 +29,23 @@ public static class WebApplicationBuilderExtensions
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
             };
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    var accessToken = context.Request.Query["access_token"];
+                    var path = context.HttpContext.Request.Path;
+
+                    // Nếu có access_token và request đang đi đến hub của bạn
+                    if (!string.IsNullOrEmpty(accessToken) &&
+                        (path.StartsWithSegments("/lobbyhub") || path.StartsWithSegments("/chatroomhub")))
+                    {
+                        // Gán token này cho context để middleware có thể xác thực
+                        context.Token = accessToken;
+                    }
+                    return Task.CompletedTask;
+                }
+            };
         });
 
         return builder;

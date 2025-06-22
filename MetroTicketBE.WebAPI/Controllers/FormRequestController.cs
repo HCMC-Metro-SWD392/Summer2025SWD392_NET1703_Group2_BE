@@ -1,6 +1,8 @@
 ﻿using MetroTicketBE.Application.IService;
+using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.FormRequest;
+using MetroTicketBE.Domain.Enum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -23,7 +25,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [Route("create-form-request")]
         public async Task<ActionResult<ResponseDTO>> CreateFormRequest([FromForm] CreateFormRequestDTO createFormRequestDTO)
         {
-            var response = await _formRequestService.SendFormRequest(User, createFormRequestDTO);
+            var response = await _formRequestService.CreateFormRequest(User, createFormRequestDTO);
             return StatusCode(response.StatusCode, response);
         }
 
@@ -43,6 +45,45 @@ namespace MetroTicketBE.WebAPI.Controllers
             }
             var objectKey = $"form-request-picture/{userId}/{Guid.NewGuid()}_{preSignedUploadDTO.FileName}";
             var response = s3Service.GenerateUploadUrl(objectKey, preSignedUploadDTO.ContentType);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpGet]
+        [Route("get-form-request-by-user")]
+        [Authorize]
+        public async Task<ActionResult<ResponseDTO>> GetFormRequest()
+        {
+            var response = await _formRequestService.GetFormRequest(User);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpGet]
+        [Route("get-all-form-requests")]
+        //[Authorize(Roles = StaticUserRole.StaffManagerAdmin)]
+        public async Task<ActionResult<ResponseDTO>> GetAllFormRequests(
+           [FromQuery] string sortBy = "createdAt",
+           [FromQuery] FormStatus formStatus = FormStatus.Pending,
+           [FromQuery] bool? isAcsending = true,
+           [FromQuery] int pageNumber = 1,
+           [FromQuery] int pageSize = 10)
+        {
+            var response = await _formRequestService.GetAll(sortBy, formStatus, isAcsending, pageNumber, pageSize);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpGet]
+        [Route("get-all-form-attachments")]
+        public async Task<ActionResult<ResponseDTO>> GetAllFormAttachments([FromQuery] Guid formRequestId)
+        {
+            var response = await _formRequestService.GetAllFormAttachment(formRequestId);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpPut]
+        [Route("change-form-request-status/{formRequestId:Guid}")]
+        public async Task<ActionResult<ResponseDTO>> ChangeFormRequestStatus([FromRoute] Guid formRequestId, [FromBody] ChangeFormStatusDTO changeFormStatusDTO)
+        {
+            var response = await _formRequestService.ChangeFormRequestStatus(User, formRequestId, changeFormStatusDTO);
             return StatusCode(response.StatusCode, response);
         }
     }

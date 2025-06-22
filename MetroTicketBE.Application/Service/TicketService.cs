@@ -63,9 +63,21 @@ namespace MetroTicketBE.Application.Service
                         StatusCode = 404
                     };
                 }
-
                 var tickets = (await _unitOfWork.TicketRepository.GetAllAsync(includeProperties: "TicketRoute,TicketRoute.StartStation,TicketRoute.EndStation,SubscriptionTicket,SubscriptionTicket.StartStation,SubscriptionTicket.EndStation"))
-                    .Where(t => t.CustomerId == customer.Id && t.TicketRtStatus == ticketType);
+                        .Where(t => t.CustomerId == customer.Id);
+
+                if (ticketType == TicketStatus.Inactive)
+                {
+                    tickets = tickets.Where(t => t.TicketRtStatus == TicketStatus.InActiveOverStation || t.TicketRtStatus == ticketType);
+                }
+                else if (ticketType == TicketStatus.Active)
+                {
+                    tickets = tickets.Where(t => t.TicketRtStatus == TicketStatus.ActiveOverStation || t.TicketRtStatus == ticketType);
+                }
+                else
+                {
+                    tickets = tickets.Where(t => t.TicketRtStatus == ticketType);
+                }
 
                 if (!string.IsNullOrEmpty(filterOn) && !string.IsNullOrEmpty(filterQuery))
                 {
@@ -307,18 +319,24 @@ namespace MetroTicketBE.Application.Service
         {
             try
             {
-                var ticketId = await _tokenService.GetValueByKeyAsync($"qrCode:{qrCode}-ticketId");
-                if (ticketId is null)
+                var ticket = await _unitOfWork.TicketRepository.GetByQrCodeAsync(qrCode);
+                if (ticket is null)
                 {
-                    return new ResponseDTO
+                    var ticketId = await _tokenService.GetValueByKeyAsync($"qrCode:{qrCode}-ticketId");
+                    if (ticketId is null)
                     {
-                        Message = "QR code không hợp lệ hoặc đã hết hạn.",
-                        IsSuccess = false,
-                        StatusCode = 400
-                    };
+                        return new ResponseDTO
+                        {
+                            Message = "QR code không hợp lệ hoặc đã hết hạn.",
+                            IsSuccess = false,
+                            StatusCode = 404
+                        };
+                    }
+                    else
+                    {
+                        ticket = await _unitOfWork.TicketRepository.GetByIdAsync(Guid.Parse(ticketId));
+                    }
                 }
-
-                var ticket = await _unitOfWork.TicketRepository.GetByIdAsync(Guid.Parse(ticketId));
 
                 if (ticket is null)
                 {
@@ -456,19 +474,24 @@ namespace MetroTicketBE.Application.Service
         {
             try
             {
-                var ticketId = await _tokenService.GetValueByKeyAsync($"qrCode:{qrCode}-ticketId");
-
-                if (ticketId is null)
+                var ticket = await _unitOfWork.TicketRepository.GetByQrCodeAsync(qrCode);
+                if (ticket is null)
                 {
-                    return new ResponseDTO
+                    var ticketId = await _tokenService.GetValueByKeyAsync($"qrCode:{qrCode}-ticketId");
+                    if (ticketId is null)
                     {
-                        Message = "QR code không hợp lệ hoặc đã hết hạn.",
-                        IsSuccess = false,
-                        StatusCode = 400
-                    };
+                        return new ResponseDTO
+                        {
+                            Message = "QR code không hợp lệ hoặc đã hết hạn.",
+                            IsSuccess = false,
+                            StatusCode = 404
+                        };
+                    }
+                    else
+                    {
+                        ticket = await _unitOfWork.TicketRepository.GetByIdAsync(Guid.Parse(ticketId));
+                    }
                 }
-
-                var ticket = await _unitOfWork.TicketRepository.GetByIdAsync(Guid.Parse(ticketId));
 
                 if (ticket is null)
                 {
@@ -594,8 +617,17 @@ namespace MetroTicketBE.Application.Service
             }
             else
             {
-                var user = await _unitOfWork.UserManagerRepository.GetUserByCustomerId(ticket.CustomerId);
-                await _hubContext.Clients.User(user.Id).SendAsync("NotifyOverStation", new
+                var customer = await _unitOfWork.CustomerRepository.GetByIdAsync(ticket.CustomerId);
+                if (customer is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Không tìm thấy khách hàng.",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+                await _hubContext.Clients.User(customer.UserId).SendAsync("NotifyOverStation", new
                 {
                     TicketId = ticket.Id,
                     StationId = stationId,
@@ -626,6 +658,22 @@ namespace MetroTicketBE.Application.Service
             }
             else
             {
+                var customer = await _unitOfWork.CustomerRepository.GetByIdAsync(ticket.CustomerId);
+                if (customer is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Không tìm thấy khách hàng.",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+                await _hubContext.Clients.All.SendAsync("NotifyOverStation", new
+                {
+                    TicketId = ticket.Id,
+                    StationId = stationId,
+                    Message = "Bạn đã vượt trạm! Vui lòng thanh toán thêm."
+                });
                 return new ResponseDTO
                 {
                     Message = "Trạm không đúng với phạm vi cho phép kết thúc của vé (nằm ngoài vùng cho phép check-out).",
@@ -662,6 +710,22 @@ namespace MetroTicketBE.Application.Service
             }
             else
             {
+                var customer = await _unitOfWork.CustomerRepository.GetByIdAsync(ticket.CustomerId);
+                if (customer is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Không tìm thấy khách hàng.",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+                await _hubContext.Clients.All.SendAsync("NotifyOverStation", new
+                {
+                    TicketId = ticket.Id,
+                    StationId = stationId,
+                    Message = "Bạn đã vượt trạm! Vui lòng thanh toán thêm."
+                });
                 return new ResponseDTO
                 {
                     Message = "Trạm không đúng với phạm vi cho phép bắt đầu của vé (nằm ngoài vùng cho phép check-in).",
@@ -697,9 +761,25 @@ namespace MetroTicketBE.Application.Service
             }
             else
             {
+                var customer = await _unitOfWork.CustomerRepository.GetByIdAsync(ticket.CustomerId);
+                if (customer is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Không tìm thấy khách hàng.",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+                await _hubContext.Clients.All.SendAsync("NotifyOverStation", new
+                {
+                    TicketId = ticket.Id,
+                    StationId = stationId,
+                    Message = "Bạn đã vượt trạm! Vui lòng thanh toán thêm."
+                });
                 return new ResponseDTO
                 {
-                    Message = "Trạm không đúng với phạm vi cho phép kết thúc của vé lượt (nằm ngoài vùng cho phép check-uot).",
+                    Message = "Trạm không đúng với phạm vi cho phép kết thúc của vé lượt (nằm ngoài vùng cho phép check-out).",
                     IsSuccess = false,
                     StatusCode = 400,
                     Result = ticket.Id
