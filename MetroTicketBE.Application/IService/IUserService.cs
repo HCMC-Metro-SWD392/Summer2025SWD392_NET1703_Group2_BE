@@ -8,5 +8,4 @@ public interface IUserService
 {
     Task<ResponseDTO> GetUserByIdAsync(string userId);
     Task<ResponseDTO> UpdateUserAsync(string userId, UpdateUserDTO userDTO);
-    Task<ResponseDTO> CreateStaffAsync(RegisterCustomerDTO dto, string role);
 }
