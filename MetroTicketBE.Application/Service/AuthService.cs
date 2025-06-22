@@ -7,6 +7,7 @@ using MetroTicketBE.Domain.Enums;
 using MetroTicketBE.Infrastructure.IRepository;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
+using AutoMapper;
 
 namespace MetroTicketBE.Application.Service
 {
@@ -17,6 +18,7 @@ namespace MetroTicketBE.Application.Service
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ITokenService _tokenService;
         private readonly IEmailService _emailService;
+        private readonly IMapper _mapper;
 
         public AuthService
         (
@@ -24,7 +26,8 @@ namespace MetroTicketBE.Application.Service
             RoleManager<IdentityRole> roleManager,
             UserManager<ApplicationUser> userManager,
             ITokenService tokenService,
-            IEmailService emailService
+            IEmailService emailService,
+            IMapper mapper
         )
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
@@ -32,6 +35,7 @@ namespace MetroTicketBE.Application.Service
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
             _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         public async Task<ResponseDTO> LoginUser(LoginDTO loginDTO)
@@ -71,7 +75,8 @@ namespace MetroTicketBE.Application.Service
                     await _userManager.AccessFailedAsync(user);
                     return new ResponseDTO
                     {
-                        Message = $"Mật khẩu không chính xác. Nếu nhập sai {5 - user.AccessFailedCount} lần nữa, tài khoản sẽ bị khóa 5 phút",
+                        Message =
+                            $"Mật khẩu không chính xác. Nếu nhập sai {5 - user.AccessFailedCount} lần nữa, tài khoản sẽ bị khóa 5 phút",
                         Result = null,
                         IsSuccess = false,
                         StatusCode = 401
@@ -211,7 +216,9 @@ namespace MetroTicketBE.Application.Service
                 }
 
                 //Check if phone number already exists
-                var isPhoneNumberExist = registerCustomerDTO.PhoneNumber is not null && await _unitOfWork.UserManagerRepository.IsPhoneNumberExist(registerCustomerDTO.PhoneNumber);
+                var isPhoneNumberExist = registerCustomerDTO.PhoneNumber is not null &&
+                                         await _unitOfWork.UserManagerRepository.IsPhoneNumberExist(registerCustomerDTO
+                                             .PhoneNumber);
 
                 if (isPhoneNumberExist is true)
                 {
@@ -234,7 +241,8 @@ namespace MetroTicketBE.Application.Service
                 };
 
                 // Create user in the database
-                var createUserResult = await _unitOfWork.UserManagerRepository.CreateAsync(newUser, registerCustomerDTO.Password);
+                var createUserResult =
+                    await _unitOfWork.UserManagerRepository.CreateAsync(newUser, registerCustomerDTO.Password);
 
                 if (createUserResult.Succeeded is false)
                 {
@@ -262,7 +270,8 @@ namespace MetroTicketBE.Application.Service
                 }
 
                 // Add user to role
-                var addToRoleResult = await _unitOfWork.UserManagerRepository.AddtoRoleAsync(newUser, StaticUserRole.Customer);
+                var addToRoleResult =
+                    await _unitOfWork.UserManagerRepository.AddtoRoleAsync(newUser, StaticUserRole.Customer);
 
                 if (addToRoleResult.Succeeded is false)
                 {
@@ -300,6 +309,7 @@ namespace MetroTicketBE.Application.Service
                         StatusCode = 500
                     };
                 }
+
                 await SendVerifyEmail(newUser.Email);
                 return new ResponseDTO
                 {
@@ -339,7 +349,8 @@ namespace MetroTicketBE.Application.Service
                 }
 
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                var confirmationLink = $"{StaticURL.Frontend_Url_Verify_Email}?email={email}&token={Uri.EscapeDataString(token)}";
+                var confirmationLink =
+                    $"{StaticURL.Frontend_Url_Verify_Email}?email={email}&token={Uri.EscapeDataString(token)}";
 
                 await _emailService.SendVerifyEmail(email, confirmationLink);
                 return new ResponseDTO
@@ -383,6 +394,7 @@ namespace MetroTicketBE.Application.Service
                 {
                     await _roleManager.CreateAsync(new IdentityRole(StaticUserRole.Staff));
                 }
+
                 var addToRoleResult = await _userManager.AddToRoleAsync(user, StaticUserRole.Staff);
                 if (addToRoleResult.Succeeded is false)
                 {
@@ -475,5 +487,102 @@ namespace MetroTicketBE.Application.Service
                 };
             }
         }
+
+        public async Task<ResponseDTO> CreateStaffAsync(RegisterCustomerDTO dto)
+        {
+            try
+            {
+
+                var isEmailExist = await _unitOfWork.UserManagerRepository.IsEmailExist(dto.Email);
+
+                if (isEmailExist is true)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Email đã tồn tại",
+                        Result = dto,
+                        IsSuccess = false,
+                        StatusCode = 409
+                    };
+                }
+
+                //Check if phone number already exists
+                var isPhoneNumberExist = dto.PhoneNumber is not null &&
+                                         await _unitOfWork.UserManagerRepository.IsPhoneNumberExist(dto.PhoneNumber);
+
+                if (isPhoneNumberExist is true)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Số điện thoại đã tồn tại",
+                        Result = dto,
+                        IsSuccess = false,
+                        StatusCode = 409
+                    };
+                }
+
+                //Create new instance of user
+                ApplicationUser newUser = new ApplicationUser
+                {
+                    PhoneNumber = dto.PhoneNumber,
+                    Email = dto.Email,
+                    FullName = dto.FullName,
+                    UserName = dto.Email
+                };
+                var createUserResult = await _unitOfWork.UserManagerRepository.CreateAsync(newUser, dto.Password);
+
+                if (createUserResult.Succeeded is false)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Đăng ký không thành công",
+                        Result = createUserResult,
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
+                var addToRoleResult =
+                    await _unitOfWork.UserManagerRepository.AddtoRoleAsync(newUser, StaticUserRole.Staff);
+                if (addToRoleResult.Succeeded is false)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Thêm vai trò không thành công",
+                        Result = addToRoleResult,
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
+                var staff = new Staff()
+                {
+                    UserId = newUser.Id,
+                };
+                await _unitOfWork.StaffRepository.AddAsync(staff);
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
+                await _userManager.ConfirmEmailAsync(newUser, token);
+                await _unitOfWork.SaveAsync();
+                return new ResponseDTO()
+                {
+                    Message = "Đăng ký thành công",
+                    Result = _mapper.Map<UserDTO>(newUser),
+                    IsSuccess = true,
+                    StatusCode = 201
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO()
+                {
+                    Message = $"Đã xảy ra lỗi: {ex.Message}",
+                    Result = null,
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
     }
 }
+

@@ -91,5 +91,17 @@ namespace MetroTicketBE.WebAPI.Controllers
             var response = await _authService.SetStaffRole(email);
             return StatusCode(response.StatusCode, response);
         }
+        [HttpPost("create-staff")]
+        public async Task<ActionResult<ResponseDTO>> CreateStaffAsync([FromBody] RegisterCustomerDTO dto)
+        {
+            ResponseDTO response = await _authService.CreateStaffAsync(dto);
+        
+            if (!response.IsSuccess)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
     }
 }
