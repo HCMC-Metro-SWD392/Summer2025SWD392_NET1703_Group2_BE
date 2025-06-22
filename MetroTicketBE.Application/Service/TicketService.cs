@@ -863,25 +863,20 @@ namespace MetroTicketBE.Application.Service
 
                     totalPrice = await _unitOfWork.FareRuleRepository.CalculatePriceFromDistance(distance);
                 }
-                if (totalPrice == 0)
-                {
-                    await SendNotifyOverStation(ticket, stationId, $"Bạn đã vượt trạm nhưng nằm trong vùng đổi vé miễn phí, vui lòng xác nhận để chuyển sang vé phù hợp.", userId);
-                }
-                else
-                {
-                    await SendNotifyOverStation(ticket, stationId, $"Bạn đã vượt trạm! Vui lòng thanh toán thêm {totalPrice}VND", userId);
-                }
+            }
+            if (totalPrice == 0)
+            {
+                await SendNotifyOverStation(ticket, stationId, $"Bạn đã vượt trạm nhưng nằm trong vùng đổi vé miễn phí, vui lòng xác nhận để chuyển sang vé phù hợp.", userId);
+            }
+            else
+            {
+                await SendNotifyOverStation(ticket, stationId, $"Bạn đã vượt trạm! Vui lòng thanh toán thêm {totalPrice}VND", userId);
             }
             return new ResponseDTO
             {
                 Message = "Tìm đường đi thành công",
                 IsSuccess = true,
-                StatusCode = 200,
-                Result = new
-                {
-                    TicketRoute = _mapper.Map<GetTicketRouteDTO>(ticketRoute),
-                    TotalPrice = totalPrice
-                }
+                StatusCode = 200
             };
         }
 
