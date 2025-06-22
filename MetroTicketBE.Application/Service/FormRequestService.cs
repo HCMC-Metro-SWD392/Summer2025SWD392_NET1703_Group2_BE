@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MetroTicketBE.Application.IService;
+using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.FormRequest;
 using MetroTicketBE.Domain.Entities;
@@ -13,12 +14,63 @@ namespace MetroTicketBE.Application.Service
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public FormRequestService(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly IS3Service _s3Service;
+        public FormRequestService(IUnitOfWork unitOfWork, IMapper mapper, IS3Service s3Service)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork), "UnitOfWork cannot be null.");
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper), "Mapper cannot be null.");
+            _s3Service = s3Service ?? throw new ArgumentNullException(nameof(s3Service), "S3Service cannot be null.");
         }
 
+        public async Task<ResponseDTO> ChangeFormRequestStatus(ClaimsPrincipal user, Guid formRequestId, ChangeFormStatusDTO changeFormStatusDTO)
+        {
+            try
+            {
+                var formRequest = await _unitOfWork.FormRequestRepository.GetByIdAsync(formRequestId);
+                if (formRequest is null)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        Message = "Không tìm thấy yêu cầu",
+                        StatusCode = 404
+                    };
+                }
+
+                var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (userId is null)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        Message = "Không tìm thấy người dùng hiện đang truy cập",
+                        StatusCode = 404
+                    };
+                }
+
+                formRequest.Status = changeFormStatusDTO.FormStatus;
+                formRequest.RejectionReason = changeFormStatusDTO.RejectionReason;
+                formRequest.ReviewerId = userId;
+                _unitOfWork.FormRequestRepository.Update(formRequest);
+                await _unitOfWork.SaveAsync();
+
+                return new ResponseDTO
+                {
+                    IsSuccess = true,
+                    Message = "Cập nhật trạng thái yêu cầu thành công",
+                    StatusCode = 200
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    IsSuccess = false,
+                    Message = "Đã xảy ra lỗi khi cập nhật trạng thái yêu cầu: " + ex.Message,
+                    StatusCode = 500
+                };
+            }
+        }
         public async Task<ResponseDTO> GetAll(string sortBy, FormStatus formStatus, bool? isAcsending, int pageNumber, int pageSize)
         {
             try
@@ -82,6 +134,58 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
+        public async Task<ResponseDTO> GetAllFormAttachment(Guid formRequestId)
+        {
+            try
+            {
+                var formRequest = await _unitOfWork.FormRequestRepository.GetByIdAsync(formRequestId);
+                if (formRequest is null)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        Message = "Không tìm thấy yêu cầu",
+                        StatusCode = 404
+                    };
+                }
+
+                var urls = new List<string>();
+
+                foreach (var attachment in formRequest.FormAttachments)
+                {
+                    var presignedUrl = _s3Service.GenerateDownloadUrl(attachment.Url);
+                    urls.Add(presignedUrl);
+                }
+
+                if (!urls.Any())
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        Message = "Không có tệp đính kèm nào",
+                        StatusCode = 404
+                    };
+                }
+
+                return new ResponseDTO
+                {
+                    IsSuccess = true,
+                    Message = "Lấy danh sách tệp đính kèm thành công",
+                    StatusCode = 200,
+                    Result = urls
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    IsSuccess = false,
+                    Message = "Đã xảy ra lỗi khi lấy danh sách tệp đính kèm: " + ex.Message,
+                    StatusCode = 500
+                };
+            }
+        }
+
         public async Task<ResponseDTO> GetFormRequest(ClaimsPrincipal user)
         {
             try
@@ -131,7 +235,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> SendFormRequest(ClaimsPrincipal user, CreateFormRequestDTO createFormRequestDTO)
+        public async Task<ResponseDTO> CreateFormRequest(ClaimsPrincipal user, CreateFormRequestDTO createFormRequestDTO)
         {
             try
             {
@@ -142,6 +246,17 @@ namespace MetroTicketBE.Application.Service
                     {
                         IsSuccess = false,
                         Message = "Không tìm thấy người dùng",
+                        StatusCode = 400
+                    };
+                }
+
+                var isPendingFormRequest = await _unitOfWork.FormRequestRepository.IsPendingFormRequest(senderId);
+                if (isPendingFormRequest)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        Message = "Bạn đã có một yêu cầu đang chờ duyệt. Chờ đợi là hạnh phúc",
                         StatusCode = 400
                     };
                 }

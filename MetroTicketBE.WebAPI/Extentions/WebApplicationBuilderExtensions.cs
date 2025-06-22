@@ -1,7 +1,9 @@
 ﻿using System.Text;
 using Amazon.OpsWorks.Model;
 using MetroTicketBE.Domain.Entities;
+using MetroTicketBE.Infrastructure.SignalR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -28,6 +30,23 @@ public static class WebApplicationBuilderExtensions
                 ValidateAudience = true,
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
+            };
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    var accessToken = context.Request.Query["access_token"];
+                    var path = context.HttpContext.Request.Path;
+
+                    // Nếu có access_token và request đang đi đến hub của bạn
+                    if (!string.IsNullOrEmpty(accessToken) &&
+                        (path.StartsWithSegments("/lobbyhub") || path.StartsWithSegments("/chatroomhub")))
+                    {
+                        // Gán token này cho context để middleware có thể xác thực
+                        context.Token = accessToken;
+                    }
+                    return Task.CompletedTask;
+                }
             };
         });
 
@@ -75,6 +94,8 @@ public static class WebApplicationBuilderExtensions
         {
             options.EnableDetailedErrors = true;
         });
+
+        builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 
         return builder;
     }

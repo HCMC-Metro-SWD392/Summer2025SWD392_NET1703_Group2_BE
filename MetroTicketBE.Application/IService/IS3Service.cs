@@ -10,6 +10,6 @@ namespace MetroTicketBE.Application.IService
     public interface IS3Service
     {
         ResponseDTO GenerateUploadUrl(string objectKey, string contentType);
-        ResponseDTO GenerateDownloadUrl(string objectKey);
+        string GenerateDownloadUrl(string objectKey);
     }
 }

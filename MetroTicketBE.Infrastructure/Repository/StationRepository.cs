@@ -81,11 +81,13 @@ namespace MetroTicketBE.Infrastructure.Repository
             {
                 return await _context.Stations
                     .OrderBy(s => s.CreatedAt)
+                    .Include(s => s.MetroLineStations).ThenInclude(mls => mls.MetroLine)
                     .ToListAsync();
             }
 
             return await _context.Stations
                     .OrderByDescending(s => s.CreatedAt)
+                    .Include(s => s.MetroLineStations).ThenInclude(mls => mls.MetroLine)
                 .ToListAsync();
         }
 

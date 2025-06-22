@@ -15,9 +15,6 @@ public class Station
     public ICollection<SubscriptionTicket> SubscriptionTicketsAsStartStation { get; set; } = new List<SubscriptionTicket>();
     public ICollection<SubscriptionTicket> SubscriptionTicketsAsEndStation { get; set; } = new List<SubscriptionTicket>();
 
-    public ICollection<Process> CheckInProcesses { get; set; } = new List<Process>();
-    public ICollection<Process> CheckOutProcesses { get; set; } = new List<Process>();
-
     public ICollection<MetroLine> StartStations { get; set; } = new List<MetroLine>();
     public ICollection<MetroLine> EndStations { get; set; } = new List<MetroLine>();
     

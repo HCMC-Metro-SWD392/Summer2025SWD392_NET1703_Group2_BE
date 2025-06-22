@@ -13,9 +13,9 @@ namespace MetroTicketBE.Infrastructure.Repository
             _context = context;
         }
 
-        public Task<Ticket?> GetByIdAsync(Guid ticketId)
+        public async Task<Ticket?> GetByIdAsync(Guid ticketId)
         {
-            return _context.Tickets
+            return await _context.Tickets
                 .Include(t => t.TicketRoute)
                 .ThenInclude(tr => tr.StartStation)
                 .Include(t => t.TicketRoute)
@@ -27,9 +27,23 @@ namespace MetroTicketBE.Infrastructure.Repository
                 .FirstOrDefaultAsync(t => t.Id == ticketId);
         }
 
-        public Task<Ticket?> GetTicketBySerialAsync(string serial)
+        public async Task<Ticket?> GetByQrCodeAsync(string qrCode)
         {
-            return _context.Tickets
+            return await _context.Tickets
+                       .Include(t => t.TicketRoute)
+                       .ThenInclude(tr => tr.StartStation)
+                       .Include(t => t.TicketRoute)
+                       .ThenInclude(tr => tr.EndStation)
+                       .Include(t => t.SubscriptionTicket)
+                       .ThenInclude(st => st.StartStation)
+                       .Include(t => t.SubscriptionTicket)
+                       .ThenInclude(st => st.EndStation)
+                       .FirstOrDefaultAsync(t => t.QrCode == qrCode);
+        }
+
+        public async Task<Ticket?> GetTicketBySerialAsync(string serial)
+        {
+            return await _context.Tickets
                 .Include(t => t.TicketRoute)
                 .ThenInclude(tr => tr.StartStation)
                 .Include(t => t.TicketRoute)

@@ -49,7 +49,7 @@ namespace MetroTicketBE.Application.Service
                     IsSuccess = true,
                     StatusCode = 200,
                     Message = "Tạo trạm Metro thành công",
-                    Result = station
+                    Result = _mapper.Map<GetStationDTO>(station)
                 };
             }
             catch (Exception ex)
@@ -132,7 +132,7 @@ namespace MetroTicketBE.Application.Service
                     IsSuccess = true,
                     StatusCode = 200,
                     Message = "Cập nhật trạm Metro thành công",
-                    Result = station
+                    Result = _mapper.Map<GetStationDTO>(station)
                 };
             }
             catch (Exception exception)
@@ -162,7 +162,7 @@ namespace MetroTicketBE.Application.Service
                     IsSuccess = true,
                     StatusCode = 200,
                     Message = "Lấy danh sách trạm Metro thành công",
-                    Result = stations
+                    Result = _mapper.Map<List<GetStationDTO>>(stations)
                 };
             }
             catch (Exception ex)

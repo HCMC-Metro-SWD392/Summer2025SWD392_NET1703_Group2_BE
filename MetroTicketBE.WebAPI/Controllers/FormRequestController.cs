@@ -25,7 +25,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [Route("create-form-request")]
         public async Task<ActionResult<ResponseDTO>> CreateFormRequest([FromForm] CreateFormRequestDTO createFormRequestDTO)
         {
-            var response = await _formRequestService.SendFormRequest(User, createFormRequestDTO);
+            var response = await _formRequestService.CreateFormRequest(User, createFormRequestDTO);
             return StatusCode(response.StatusCode, response);
         }
 
@@ -49,7 +49,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         }
 
         [HttpGet]
-        [Route("download-file-url-form-request")]
+        [Route("get-form-request-by-user")]
         [Authorize]
         public async Task<ActionResult<ResponseDTO>> GetFormRequest()
         {
@@ -68,6 +68,22 @@ namespace MetroTicketBE.WebAPI.Controllers
            [FromQuery] int pageSize = 10)
         {
             var response = await _formRequestService.GetAll(sortBy, formStatus, isAcsending, pageNumber, pageSize);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpGet]
+        [Route("get-all-form-attachments")]
+        public async Task<ActionResult<ResponseDTO>> GetAllFormAttachments([FromQuery] Guid formRequestId)
+        {
+            var response = await _formRequestService.GetAllFormAttachment(formRequestId);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpPut]
+        [Route("change-form-request-status/{formRequestId:Guid}")]
+        public async Task<ActionResult<ResponseDTO>> ChangeFormRequestStatus([FromRoute] Guid formRequestId, [FromBody] ChangeFormStatusDTO changeFormStatusDTO)
+        {
+            var response = await _formRequestService.ChangeFormRequestStatus(User, formRequestId, changeFormStatusDTO);
             return StatusCode(response.StatusCode, response);
         }
     }

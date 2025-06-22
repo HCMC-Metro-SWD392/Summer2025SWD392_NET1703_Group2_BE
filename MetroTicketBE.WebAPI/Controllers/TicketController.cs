@@ -1,5 +1,6 @@
 ﻿using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.DTO.Auth;
+using MetroTicketBE.Domain.DTO.Ticket;
 using MetroTicketBE.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -69,18 +70,18 @@ namespace MetroTicketBE.WebAPI.Controllers
         }
 
         [HttpPut]
-        [Route("check-in-ticket-process/{stationId:guid}")]
-        public async Task<ActionResult<ResponseDTO>> CheckInTicketProcess([FromQuery] string qrCode, [FromRoute] Guid stationId)
+        [Route("check-in-ticket-process")]
+        public async Task<ActionResult<ResponseDTO>> CheckInTicketProcess([FromBody] TicketProcessDTO ticketProcessDTO)
         {
-            var response = await _ticketService.CheckInTicketProcess(qrCode, stationId);
+            var response = await _ticketService.CheckInTicketProcess(ticketProcessDTO.QrCode, ticketProcessDTO.StationId);
             return StatusCode(response.StatusCode, response);
         }
 
         [HttpPut]
-        [Route("check-out-ticket-process/{stationId:guid}")]
-        public async Task<ActionResult<ResponseDTO>> CheckOutTicketProcess([FromQuery] string qrCode, [FromRoute] Guid stationId)
+        [Route("check-out-ticket-process")]
+        public async Task<ActionResult<ResponseDTO>> CheckOutTicketProcess([FromBody] TicketProcessDTO ticketProcessDTO)
         {
-            var response = await _ticketService.CheckOutTicketProcess(qrCode, stationId);
+            var response = await _ticketService.CheckOutTicketProcess(ticketProcessDTO.QrCode, ticketProcessDTO.StationId);
             return StatusCode(response.StatusCode, response);
         }
 
