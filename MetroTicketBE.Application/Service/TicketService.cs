@@ -9,6 +9,7 @@ using System.Security.Claims;
 using MetroTicketBE.Domain.Enum;
 using MetroTicketBE.WebAPI.Extentions;
 using Microsoft.AspNetCore.SignalR;
+using System.Net.Sockets;
 
 namespace MetroTicketBE.Application.Service
 {
@@ -460,6 +461,7 @@ namespace MetroTicketBE.Application.Service
             }
             else
             {
+                await SendNotifyOverStation(ticket, stationId, "Bạn đã vượt trạm! Vui lòng thanh toán thêm.");
                 return new ResponseDTO
                 {
                     Message = "Trạm không đúng với phạm vi cho phép bắt đầu của vé (nằm ngoài vùng cho phép check-in).",
@@ -617,22 +619,7 @@ namespace MetroTicketBE.Application.Service
             }
             else
             {
-                var customer = await _unitOfWork.CustomerRepository.GetByIdAsync(ticket.CustomerId);
-                if (customer is null)
-                {
-                    return new ResponseDTO
-                    {
-                        Message = "Không tìm thấy khách hàng.",
-                        IsSuccess = false,
-                        StatusCode = 404
-                    };
-                }
-                await _hubContext.Clients.User(customer.UserId).SendAsync("NotifyOverStation", new
-                {
-                    TicketId = ticket.Id,
-                    StationId = stationId,
-                    Message = "Bạn đã vượt trạm! Vui lòng thanh toán thêm."
-                });
+                await SendNotifyOverStation(ticket, stationId, "Bạn đã vượt trạm! Vui lòng thanh toán thêm.");
                 return new ResponseDTO
                 {
                     Message = "Trạm không đúng với phạm vi cho phép kết thúc của vé (nằm ngoài vùng cho phép check-out).",
@@ -658,22 +645,7 @@ namespace MetroTicketBE.Application.Service
             }
             else
             {
-                var customer = await _unitOfWork.CustomerRepository.GetByIdAsync(ticket.CustomerId);
-                if (customer is null)
-                {
-                    return new ResponseDTO
-                    {
-                        Message = "Không tìm thấy khách hàng.",
-                        IsSuccess = false,
-                        StatusCode = 404
-                    };
-                }
-                await _hubContext.Clients.All.SendAsync("NotifyOverStation", new
-                {
-                    TicketId = ticket.Id,
-                    StationId = stationId,
-                    Message = "Bạn đã vượt trạm! Vui lòng thanh toán thêm."
-                });
+                await SendNotifyOverStation(ticket, stationId, "Bạn đã vượt trạm! Vui lòng thanh toán thêm.");
                 return new ResponseDTO
                 {
                     Message = "Trạm không đúng với phạm vi cho phép kết thúc của vé (nằm ngoài vùng cho phép check-out).",
@@ -710,22 +682,7 @@ namespace MetroTicketBE.Application.Service
             }
             else
             {
-                var customer = await _unitOfWork.CustomerRepository.GetByIdAsync(ticket.CustomerId);
-                if (customer is null)
-                {
-                    return new ResponseDTO
-                    {
-                        Message = "Không tìm thấy khách hàng.",
-                        IsSuccess = false,
-                        StatusCode = 404
-                    };
-                }
-                await _hubContext.Clients.All.SendAsync("NotifyOverStation", new
-                {
-                    TicketId = ticket.Id,
-                    StationId = stationId,
-                    Message = "Bạn đã vượt trạm! Vui lòng thanh toán thêm."
-                });
+                await SendNotifyOverStation(ticket, stationId, "Bạn đã vượt trạm! Vui lòng thanh toán thêm.");
                 return new ResponseDTO
                 {
                     Message = "Trạm không đúng với phạm vi cho phép bắt đầu của vé (nằm ngoài vùng cho phép check-in).",
@@ -761,22 +718,7 @@ namespace MetroTicketBE.Application.Service
             }
             else
             {
-                var customer = await _unitOfWork.CustomerRepository.GetByIdAsync(ticket.CustomerId);
-                if (customer is null)
-                {
-                    return new ResponseDTO
-                    {
-                        Message = "Không tìm thấy khách hàng.",
-                        IsSuccess = false,
-                        StatusCode = 404
-                    };
-                }
-                await _hubContext.Clients.All.SendAsync("NotifyOverStation", new
-                {
-                    TicketId = ticket.Id,
-                    StationId = stationId,
-                    Message = "Bạn đã vượt trạm! Vui lòng thanh toán thêm."
-                });
+                await SendNotifyOverStation(ticket, stationId, "Bạn đã vượt trạm! Vui lòng thanh toán thêm.");
                 return new ResponseDTO
                 {
                     Message = "Trạm không đúng với phạm vi cho phép kết thúc của vé lượt (nằm ngoài vùng cho phép check-out).",
@@ -855,6 +797,33 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
+        private async Task<ResponseDTO> SendNotifyOverStation(Ticket ticket, Guid stationId, string message)
+        {
+            var customer = await _unitOfWork.CustomerRepository.GetByIdAsync(ticket.CustomerId);
+            if (customer is null)
+            {
+                return new ResponseDTO
+                {
+                    Message = "Không tìm thấy khách hàng.",
+                    IsSuccess = false,
+                    StatusCode = 404
+                };
+            }
+
+            await _hubContext.Clients.User(customer.UserId).SendAsync("NotifyOverStation", new
+            {
+                TicketId = ticket.Id,
+                StationId = stationId,
+                Message = message
+            });
+
+            return new ResponseDTO
+            {
+                Message = "Thông báo vượt trạm đã được gửi thành công.",
+                IsSuccess = true,
+                StatusCode = 200
+            };
+        }
 
         //private async Task<bool> CheckOutTicket(Ticket ticket, Guid stationId, Guid metroLineId)
         //{
