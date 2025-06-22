@@ -810,7 +810,7 @@ namespace MetroTicketBE.Application.Service
                 };
             }
 
-            await _hubContext.Clients.User(customer.UserId).SendAsync("NotifyOverStation", new
+            await _hubContext.Clients.User("45aacdc2-8eee-4f65-9107-f9c251462633").SendAsync("NotifyOverStation", new
             {
                 TicketId = ticket.Id,
                 StationId = stationId,
