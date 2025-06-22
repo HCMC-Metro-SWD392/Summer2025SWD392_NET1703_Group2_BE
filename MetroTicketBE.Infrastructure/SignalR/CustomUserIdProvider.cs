@@ -7,7 +7,9 @@ namespace MetroTicketBE.Infrastructure.SignalR
     {
         public string? GetUserId(HubConnectionContext connection)
         {
-            return connection.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = connection.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            Console.WriteLine($"[SignalR] Connected UserId: {userId}");
+            return userId;
         }
     }
 }
