@@ -764,7 +764,7 @@ namespace MetroTicketBE.Application.Service
             int totalPrice = 0;
             TicketRoute? ticketRoute = null;
 
-            if (ticket.TicketRoute is not null && ticket.SubscriptionTicket is null)
+            if (ticket.TicketRoute is not null)
             {
                 stationPathWithStartStation = _graph.FindShortestPath(ticket.TicketRoute.StartStationId, stationId);
                 stationPathWithEndStation = _graph.FindShortestPath(ticket.TicketRoute.EndStationId, stationId);
@@ -811,8 +811,17 @@ namespace MetroTicketBE.Application.Service
                         distance = _graph.GetPathDistance(stationPathWithStartStation);
                     }
                 }
-                int ticketPrice = await _unitOfWork.FareRuleRepository.CalculatePriceFromDistance(distance);
-                totalPrice = Math.Abs(ticketPrice - ticket.Price);
+                if (ticket.SubscriptionTicket is null)
+                {
+                    int ticketPrice = await _unitOfWork.FareRuleRepository.CalculatePriceFromDistance(distance);
+                    totalPrice = Math.Abs(ticketPrice - ticket.Price);
+                }
+                else
+                {
+                    int ticketPrice = await _unitOfWork.FareRuleRepository.CalculatePriceFromDistance(distance);
+                    int tickRoutePrice = await _unitOfWork.FareRuleRepository.CalculatePriceFromDistance(ticket.TicketRoute.Distance);
+                    totalPrice = Math.Abs(ticketPrice - tickRoutePrice);
+                }
             }
             else
             {
