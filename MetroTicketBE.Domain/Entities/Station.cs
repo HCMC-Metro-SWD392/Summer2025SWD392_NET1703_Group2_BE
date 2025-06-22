@@ -22,7 +22,7 @@ public class Station
     public ICollection<MetroLine> EndStations { get; set; } = new List<MetroLine>();
     
     public ICollection<TrainSchedule> StrainSchedules { get; set; } = new List<TrainSchedule>();
-
     public ICollection<MetroLineStation> MetroLineStations { get; set; } = new List<MetroLineStation>();
 
+    public ICollection<StaffSchedule> StaffSchedules { get; set; } = new List<StaffSchedule>();
 }

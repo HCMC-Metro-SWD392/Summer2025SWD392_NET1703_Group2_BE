@@ -13,13 +13,10 @@ public class StaffScheduleRepository: Repository<StaffSchedule>, IStaffScheduleR
         _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
-    public Task<List<StaffSchedule>> GetSchedules(DateOnly startDate, DateOnly endDate)
+    public IQueryable<StaffSchedule> GetSchedules(DateOnly startDate, DateOnly endDate)
     {
         var schedules = _context.StaffSchedules
-            .Include(s => s.Staff)
-            .Include(s => s.Shift)
-            .Where(s => s.WorkingDate >= startDate && s.WorkingDate <= endDate)
-            .ToListAsync();
+            .Where(s => s.WorkingDate >= startDate && s.WorkingDate <= endDate);
         return schedules;
     }
     
@@ -30,5 +27,11 @@ public class StaffScheduleRepository: Repository<StaffSchedule>, IStaffScheduleR
             .Include(s => s.Shift)
             .FirstOrDefaultAsync(s => s.StaffId == staffId && s.WorkingDate == workingDate);
         return schedule;
+    }
+    public IQueryable<StaffSchedule> GetByStationIdAndDate(Guid stationId, DateOnly workingDate)
+    {
+        var schedules = _context.StaffSchedules
+            .Where(s => s.WorkingStationId == stationId && s.WorkingDate == workingDate);
+        return schedules;
     }
 }

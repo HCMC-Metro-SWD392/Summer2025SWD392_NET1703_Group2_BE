@@ -11,6 +11,7 @@ using MetroTicketBE.Domain.DTO.MetroLineStation;
 using MetroTicketBE.Domain.DTO.Station;
 using MetroTicketBE.Domain.DTO.Ticket;
 using MetroTicketBE.Domain.DTO.Promotion;
+using MetroTicketBE.Domain.DTO.StaffSchedule;
 using MetroTicketBE.Domain.DTO.SubscriptionTicket;
 using MetroTicketBE.Domain.DTO.TrainSchedule;
 
@@ -39,6 +40,12 @@ namespace MetroTicketBE.Application.Mappings
                 .ForMember(dest => dest.MetroLineName, opt => opt.MapFrom(src => src.MetroLine.MetroName))
                 .ForMember(dest => dest.StationName, opt => opt.MapFrom(src => src.Station.Name)).ReverseMap();
             CreateMap<SubscriptionTicket, GetSubscriptionTicketDTO>();
+            CreateMap<StaffShift, ShiftInfoDto>();
+            CreateMap<Station, StationInfoDto>();
+            CreateMap<Staff, StaffInfoDto>()
+                .ForMember(dest => dest.FullName,
+                    opt => opt.MapFrom(src => src.User.FullName));
+            CreateMap<StaffSchedule, GetScheduleDTO>();
         }
     }
 }

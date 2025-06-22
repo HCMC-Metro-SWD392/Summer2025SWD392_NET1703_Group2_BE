@@ -33,4 +33,14 @@ public class StaffScheduleController: ControllerBase
         }
         return BadRequest(response);
     }
+    [HttpGet("schedules-by-station")]
+    public async Task<IActionResult> GetSchedulesByStationIdAndDate([FromQuery] Guid stationId, [FromQuery] DateOnly workingDate)
+    {
+        var response = await _staffScheduleService.GetSchedulesByStationIdAndDate(stationId, workingDate);
+        if (response.IsSuccess)
+        {
+            return Ok(response);
+        }
+        return BadRequest(response);
+    }
 }

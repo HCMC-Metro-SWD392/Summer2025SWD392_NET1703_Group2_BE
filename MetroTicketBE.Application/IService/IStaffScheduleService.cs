@@ -7,4 +7,5 @@ public interface IStaffScheduleService
 {
     Task<ResponseDTO> GetAllSchedules(DateOnly startDate, DateOnly endDate);
     Task<ResponseDTO> CreateStaffSchedule(CreateStaffScheduleDTO dto);
+    Task<ResponseDTO> GetSchedulesByStationIdAndDate(Guid stationId, DateOnly workingDate);
 }

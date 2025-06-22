@@ -9,8 +9,10 @@ public class StaffSchedule
     public Guid ShiftId { get; set; }
     public Guid StaffId { get; set; }
     public DateOnly WorkingDate { get; set; }
+    public Guid WorkingStationId { get; set; }
     public StaffScheduleStatus Status { get; set; }
     
     public Staff Staff { get; set; } = null!;
     public StaffShift Shift { get; set; } = null!;
+    public Station WorkingStation { get; set; } = null!;
 }
