@@ -3,7 +3,7 @@
 public class StaffShift
 {
     public Guid Id { get; set; }
-    public String ShiftName { get; set; } = null!;
+    public string ShiftName { get; set; } = string.Empty!;
     public TimeSpan StartTime { get; set; }
     public TimeSpan EndTime { get; set; }
     
