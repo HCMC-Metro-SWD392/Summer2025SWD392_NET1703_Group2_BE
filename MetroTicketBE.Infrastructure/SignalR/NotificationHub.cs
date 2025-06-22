@@ -1,12 +1,16 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 
 namespace MetroTicketBE.Domain.Entities
 {
+    [Authorize]
     public class NotificationHub : Hub
     {
-        public async Task SendNotificationToAll(string message)
+        public override async Task OnConnectedAsync()
         {
-            await Clients.All.SendAsync("ReceiveNotification", message);
+            var userId = Context.UserIdentifier;
+            Console.WriteLine($"[Hub] Connected user: {userId}");
+            await base.OnConnectedAsync();
         }
     }
 }

@@ -10,6 +10,7 @@ using MetroTicketBE.Domain.Enum;
 using MetroTicketBE.WebAPI.Extentions;
 using Microsoft.AspNetCore.SignalR;
 using System.Net.Sockets;
+using Microsoft.Extensions.Logging;
 
 namespace MetroTicketBE.Application.Service
 {
@@ -20,13 +21,15 @@ namespace MetroTicketBE.Application.Service
         private readonly ITokenService _tokenService;
         private readonly IMapper _mapper;
         private readonly IHubContext<NotificationHub> _hubContext;
-        public TicketService(IUnitOfWork unitOfWork, IMapper mapper, ITokenService tokenService, IHubContext<NotificationHub> hubContext)
+        private readonly ILogger<TicketService> _logger; // Add this field
+        public TicketService(IUnitOfWork unitOfWork, IMapper mapper, ITokenService tokenService, IHubContext<NotificationHub> hubContext, ILogger<TicketService> logger)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             random = new Random();
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
             _hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<ResponseDTO> GetAllTicketRoutes(
@@ -810,7 +813,7 @@ namespace MetroTicketBE.Application.Service
                 };
             }
 
-            await _hubContext.Clients.User("45aacdc2-8eee-4f65-9107-f9c251462633").SendAsync("NotifyOverStation", new
+            await _hubContext.Clients.User(customer.UserId).SendAsync("NotifyOverStation", new
             {
                 TicketId = ticket.Id,
                 StationId = stationId,
