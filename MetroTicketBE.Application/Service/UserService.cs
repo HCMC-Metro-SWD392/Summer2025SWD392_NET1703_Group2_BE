@@ -135,7 +135,7 @@ public class UserService: IUserService
         }
     }
 
-    public async Task<ResponseDTO> CreateStaffAsync(RegisterCustomerDTO dto, UserRole role)
+    public async Task<ResponseDTO> CreateStaffAsync(RegisterCustomerDTO dto, string role)
     {
         try
         {
@@ -189,24 +189,14 @@ public class UserService: IUserService
                 };
             }
 
-            var userRole = StaticUserRole.Staff;
-            switch (role)
-            {
-                case UserRole.Manager:
-                    userRole = StaticUserRole.Manager;
-                    break;
-                case UserRole.Admin:
-                    userRole = StaticUserRole.Admin;
-                    break;
-            }
 
-            var isRoleExist = await _roleManager.RoleExistsAsync(userRole);
+            var isRoleExist = await _roleManager.RoleExistsAsync(role.ToUpper());
             if (isRoleExist is false)
             {
-                await _roleManager.CreateAsync(new IdentityRole(userRole));
+                await _roleManager.CreateAsync(new IdentityRole(role.ToUpper()));
             }
 
-            var addToRoleResult = await _unitOfWork.UserManagerRepository.AddtoRoleAsync(newUser, userRole);
+            var addToRoleResult = await _unitOfWork.UserManagerRepository.AddtoRoleAsync(newUser, role.ToUpper());
             if (addToRoleResult.Succeeded is false)
             {
                 return new ResponseDTO

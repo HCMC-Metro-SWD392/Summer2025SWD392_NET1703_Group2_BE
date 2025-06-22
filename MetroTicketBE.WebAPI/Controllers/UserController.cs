@@ -42,7 +42,7 @@ public class UserController: ControllerBase
         return Ok(response);
     }
     [HttpPost("create-staff")]
-    public async Task<ActionResult<ResponseDTO>> CreateStaffAsync([FromBody] RegisterCustomerDTO dto, [FromQuery] UserRole role)
+    public async Task<ActionResult<ResponseDTO>> CreateStaffAsync([FromBody] RegisterCustomerDTO dto, [FromQuery] string role)
     {
         ResponseDTO response = await _userService.CreateStaffAsync(dto, role);
         
