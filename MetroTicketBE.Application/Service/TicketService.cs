@@ -783,14 +783,64 @@ namespace MetroTicketBE.Application.Service
                     }
                     int ticketPrice = await _unitOfWork.FareRuleRepository.CalculatePriceFromDistance(distance);
                     totalPrice = Math.Abs(ticketPrice - ticket.Price);
-                    if (totalPrice == 0)
+                }
+                else
+                {
+                    stationPathWithStartStation = _graph.FindShortestPath(ticket.SubscriptionTicket.StartStationId, stationId);
+                    stationPathWithEndStation = _graph.FindShortestPath(ticket.SubscriptionTicket.EndStationId, stationId);
+
+                    if (stationPathWithStartStation.Count == 0 || stationPathWithEndStation.Count == 0)
                     {
-                        await SendNotifyOverStation(ticket, stationId, $"Bạn đã vượt trạm nhưng nằm trong vùng đổi vé miễn phí, vui lòng xác nhận để chuyển sang vé phù hợp.", userId);
+                        return new ResponseDTO
+                        {
+                            Message = "Không tìm thấy đường đi từ ga xuất phát hoặc ga kết thúc đến ga cần mua thêm",
+                            IsSuccess = false,
+                            StatusCode = 404
+                        };
                     }
                     else
                     {
-                        await SendNotifyOverStation(ticket, stationId, $"Bạn đã vượt trạm! Vui lòng thanh toán thêm {totalPrice}VND", userId);
+                        if (stationPathWithStartStation.Count >= stationPathWithEndStation.Count)
+                        {
+                            var TicketRouteLeft = await _unitOfWork.TicketRouteRepository.GetTicketRouteByStartAndEndStation(ticket.SubscriptionTicket.EndStationId, stationId);
+                            if (TicketRouteLeft is null)
+                            {
+                                CreateTicketRouteDTO create = new CreateTicketRouteDTO
+                                {
+                                    StartStationId = ticket.SubscriptionTicket.EndStationId,
+                                    EndStationId = stationId
+                                };
+                                await _ticketRouteService.CraeteTicketRoute(create);
+                            }
+                            ticketRoute = await _unitOfWork.TicketRouteRepository.GetTicketRouteByStartAndEndStation(ticket.SubscriptionTicket.EndStationId, stationId);
+                            distance = _graph.GetPathDistance(stationPathWithEndStation);
+                        }
+                        else
+                        {
+                            var TicketRouteLeft = await _unitOfWork.TicketRouteRepository.GetTicketRouteByStartAndEndStation(stationId, ticket.SubscriptionTicket.StartStationId);
+                            if (TicketRouteLeft is null)
+                            {
+                                CreateTicketRouteDTO create = new CreateTicketRouteDTO
+                                {
+                                    StartStationId = stationId,
+                                    EndStationId = ticket.SubscriptionTicket.StartStationId
+                                };
+                                await _ticketRouteService.CraeteTicketRoute(create);
+                            }
+                            ticketRoute = await _unitOfWork.TicketRouteRepository.GetTicketRouteByStartAndEndStation(stationId, ticket.SubscriptionTicket.StartStationId);
+                            distance = _graph.GetPathDistance(stationPathWithStartStation);
+                        }
+
+                        totalPrice = await _unitOfWork.FareRuleRepository.CalculatePriceFromDistance(distance);
                     }
+                }
+                if (totalPrice == 0)
+                {
+                    await SendNotifyOverStation(ticket, stationId, $"Bạn đã vượt trạm nhưng nằm trong vùng đổi vé miễn phí, vui lòng xác nhận để chuyển sang vé phù hợp.", userId);
+                }
+                else
+                {
+                    await SendNotifyOverStation(ticket, stationId, $"Bạn đã vượt trạm! Vui lòng thanh toán thêm {totalPrice}VND", userId);
                 }
                 return new ResponseDTO
                 {
