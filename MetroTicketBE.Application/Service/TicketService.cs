@@ -764,7 +764,7 @@ namespace MetroTicketBE.Application.Service
             int totalPrice = 0;
             TicketRoute? ticketRoute = null;
 
-            if (ticket.TicketRoute is not null)
+            if (ticket.TicketRoute is not null && ticket.SubscriptionTicket is null)
             {
                 stationPathWithStartStation = _graph.FindShortestPath(ticket.TicketRoute.StartStationId, stationId);
                 stationPathWithEndStation = _graph.FindShortestPath(ticket.TicketRoute.EndStationId, stationId);
