@@ -1,4 +1,5 @@
-﻿using MetroTicket.Domain.Entities;
+﻿using AutoMapper;
+using MetroTicket.Domain.Entities;
 using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.Customer;
@@ -7,13 +8,15 @@ using MetroTicketBE.Infrastructure.IRepository;
 
 namespace MetroTicketBE.Application.Service;
 
-public class CustomerService: ICustomerService
+public class CustomerService : ICustomerService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
 
-    public CustomerService(IUnitOfWork unitOfWork)
+    public CustomerService(IUnitOfWork unitOfWork, IMapper mapper)
     {
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     public async Task<ResponseDTO> GetCustomerByIdAsync(Guid customerId)
@@ -190,5 +193,76 @@ public class CustomerService: ICustomerService
             Points = customer.Points,
             StudentExpiration = customer.StudentExpiration
         };
+    }
+
+    public async Task<ResponseDTO> GetAllCustomersAsync(string? filterOn, string? filterQuery, string? sortBy, bool? isAscending, int pageNumber, int pageSize)
+    {
+        try
+        {
+            var customers = await _unitOfWork.CustomerRepository.GetAllAsync(includeProperties: "User");
+
+            if (!string.IsNullOrEmpty(filterOn) && !string.IsNullOrEmpty(filterQuery))
+            {
+                string filter = filterOn.Trim().ToLower();
+                string query = filterQuery.Trim().ToLower();
+
+                customers = filter switch
+                {
+                    "fullname" => customers.Where(c => c.User.FullName.ToLower().Contains(query, StringComparison.CurrentCultureIgnoreCase)),
+                    "email" => customers.Where(c => c.User.Email.ToLower().Contains(query, StringComparison.CurrentCultureIgnoreCase)),
+                    "phonenumber" => customers.Where(c => c.User.PhoneNumber.ToLower().Contains(query, StringComparison.CurrentCultureIgnoreCase)),
+
+                    _ => customers
+                };
+            }
+
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                customers = sortBy.Trim().ToLower() switch
+                {
+                    "fullname" => isAscending == true ? customers.OrderBy(c => c.User.FullName) : customers.OrderByDescending(c => c.User.FullName),
+                    "email" => isAscending == true ? customers.OrderBy(c => c.User.Email) : customers.OrderByDescending(c => c.User.Email),
+                    "phonenumber" => isAscending == true ? customers.OrderBy(c => c.User.PhoneNumber) : customers.OrderByDescending(c => c.User.PhoneNumber),
+
+                    _ => customers
+                };
+            }
+
+            if (pageNumber <= 0 || pageSize <= 0)
+            {
+                return new ResponseDTO()
+                {
+                    Message = "Số trang hoặc kích thước trang không hợp lệ",
+                    Result = null,
+                    IsSuccess = false,
+                    StatusCode = 400
+                };
+            }
+            else
+            {
+                customers = customers
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize).ToList();
+            }
+
+            var getCustomer = _mapper.Map<List<CustomerResponseDTO>>(customers);
+            return new ResponseDTO()
+            {
+                Message = "Lấy danh sách khách hàng thành công",
+                Result = getCustomer,
+                IsSuccess = true,
+                StatusCode = 200
+            };
+        }
+        catch (Exception exception)
+        {
+            return new ResponseDTO()
+            {
+                Message = $"Đã xảy ra lỗi khi lấy danh sách khách hàng: {exception.Message}",
+                Result = null,
+                IsSuccess = false,
+                StatusCode = 500
+            };
+        }
     }
 }

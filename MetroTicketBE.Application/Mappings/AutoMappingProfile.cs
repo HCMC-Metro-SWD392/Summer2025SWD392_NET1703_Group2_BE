@@ -16,6 +16,8 @@ using MetroTicketBE.Domain.DTO.SubscriptionTicket;
 using MetroTicketBE.Domain.DTO.TrainSchedule;
 using MetroTicketBE.Domain.DTO.FormRequest;
 using MetroTicketBE.Domain.DTO.Staff;
+using MetroTicketBE.Domain.DTO.Customer;
+using MetroTicketBE.Domain.Enums;
 
 namespace MetroTicketBE.Application.Mappings
 {
@@ -57,6 +59,22 @@ namespace MetroTicketBE.Application.Mappings
                 .ForMember(dest => dest.IdentityId, opt => opt.MapFrom(src => src.User.IdentityId))
                 .ForMember(dest => dest.Sex, opt => opt.MapFrom(src => src.User.Sex))
                 .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.User.DateOfBirth)).ReverseMap();
+
+            CreateMap<Customer, CustomerResponseDTO>()
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FullName))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber))
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.User.Address))
+                .ForMember(dest => dest.IdentityId, opt => opt.MapFrom(src => src.User.IdentityId))
+                .ForMember(dest => dest.CustomerType, opt => opt.MapFrom(src => src.CustomerType))
+                .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.User.DateOfBirth))
+                .ForPath(dest => dest.Membership.Id, opt => opt.MapFrom(src => src.Membership.Id))
+                .ForPath(dest => dest.Membership.MembershipType, opt => opt.MapFrom(src => src.Membership.MembershipType))
+                .ForMember(dest => dest.Points, opt => opt.MapFrom(src => src.Points))
+                .ForMember(dest => dest.StudentExpiration, opt => opt.MapFrom(src => src.StudentExpiration))
+                .ForMember(dest => dest.Sex, opt => opt.MapFrom(src => src.User.Sex)).ReverseMap();
+
         }
     }
 }
