@@ -15,6 +15,7 @@ using MetroTicketBE.Domain.DTO.StaffSchedule;
 using MetroTicketBE.Domain.DTO.SubscriptionTicket;
 using MetroTicketBE.Domain.DTO.TrainSchedule;
 using MetroTicketBE.Domain.DTO.FormRequest;
+using MetroTicketBE.Domain.DTO.Staff;
 
 namespace MetroTicketBE.Application.Mappings
 {
@@ -48,6 +49,14 @@ namespace MetroTicketBE.Application.Mappings
                     opt => opt.MapFrom(src => src.User.FullName));
             CreateMap<StaffSchedule, GetScheduleDTO>();
             CreateMap<GetFormRequestDTO, FormRequest>().ReverseMap();
+            CreateMap<Staff, GetStaffDTO>()
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FullName))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.User.Address))
+                .ForMember(dest => dest.IdentityId, opt => opt.MapFrom(src => src.User.IdentityId))
+                .ForMember(dest => dest.Sex, opt => opt.MapFrom(src => src.User.Sex))
+                .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.User.DateOfBirth)).ReverseMap();
         }
     }
 }
