@@ -12,5 +12,6 @@ namespace MetroTicketBE.Application.IService
         Task<ResponseDTO> Logout(ClaimsPrincipal user);
         Task<ResponseDTO> SetStaffRole(string email);
         Task<ResponseDTO> CreateStaffAsync(RegisterCustomerDTO dto);
+        Task<ResponseDTO> ChangPassword(ClaimsPrincipal user, ChangePasswordDTO changePasswordDTO);
     }
 }

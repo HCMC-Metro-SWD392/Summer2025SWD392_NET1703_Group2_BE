@@ -583,6 +583,77 @@ namespace MetroTicketBE.Application.Service
                 };
             }
         }
+
+        public async Task<ResponseDTO> ChangPassword(ClaimsPrincipal user, ChangePasswordDTO changePasswordDTO)
+        {
+            try
+            {
+                var userId = user?.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (userId is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Chưa đăng nhập",
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+                var applicationUser = await _unitOfWork.UserManagerRepository.GetByIdAsync(userId);
+                if (applicationUser is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Người dùng không tồn tại",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+
+                var isPasswordValid = await _userManager.CheckPasswordAsync(applicationUser, changePasswordDTO.CurrentPassword);
+                if (isPasswordValid is false)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Mật khẩu hiện tại không chính xác",
+                        IsSuccess = false,
+                        StatusCode = 401
+                    };
+                }
+
+                var changePasswordResult = await _userManager.ChangePasswordAsync(applicationUser, changePasswordDTO.CurrentPassword, changePasswordDTO.NewPassword);
+
+                if (changePasswordResult.Succeeded is true)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Đổi mật khẩu thành công",
+                        Result = null,
+                        IsSuccess = true,
+                        StatusCode = 200
+                    };
+                }
+                else
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Đổi mật khẩu không thành công",
+                        Result = changePasswordResult.Errors,
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    Message = $"Đã xảy ra lỗi khi thay đổi mật khẩu: {ex.Message}",
+                    Result = null,
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
     }
 }
 
