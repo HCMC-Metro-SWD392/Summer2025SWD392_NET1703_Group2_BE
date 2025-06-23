@@ -51,5 +51,13 @@ namespace MetroTicketBE.WebAPI.Controllers
             var response = await _promotionService.GetPromotionById(promotionId);
             return StatusCode(response.StatusCode, response);
         }
+
+        [HttpDelete]
+        [Route("delete-promotion/{promotionId}")]
+        public async Task<ActionResult<ResponseDTO>> DeletePromotion([FromRoute] Guid promotionId)
+        {
+            var response = await _promotionService.DeletePromotion(promotionId);
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }
