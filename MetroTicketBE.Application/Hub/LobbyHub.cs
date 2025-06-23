@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace MetroTicketBE.Application.Hub;
 
-[Authorize]
 public class LobbyHub: Microsoft.AspNetCore.SignalR.Hub
 {
     private string GetCurrentUserId() => Context.User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -43,24 +42,32 @@ public class LobbyHub: Microsoft.AspNetCore.SignalR.Hub
     {
         var joinerId = GetCurrentUserId();
 
-        if (ChatRoomStore.ChatRooms.TryGetValue(roomId, out var room) && room.Status == StaticRoomStatus.Open)
+        if (ChatRoomStore.ChatRooms.TryGetValue(roomId, out var room))
         {
-            // Không cho phép tự tham gia phòng mình tạo
-            if (room.CreatorUserId == joinerId) return;
+            // Kiểm tra điều kiện thất bại và gửi phản hồi RÕ RÀNG
+            if (room.CreatorUserId == joinerId)
+            {
+                // Thay vì "return;" -> Gửi lỗi về cho client
+                await Clients.Caller.SendAsync("JoinRoomFailed", "Bạn không thể tham gia phòng do chính mình tạo.");
+                return;
+            }
 
-            // Đánh dấu phòng đã đóng và gán người tham gia
+            if (room.Status != StaticRoomStatus.Open)
+            {
+                await Clients.Caller.SendAsync("JoinRoomFailed", "Phòng đã đóng hoặc không còn tồn tại.");
+                return;
+            }
+
+            // Nếu mọi thứ OK, tiến hành join phòng
             room.PartnerUserId = joinerId;
             room.Status = StaticRoomStatus.Closed;
-
-            // Thông báo cho TẤT CẢ client trong sảnh chờ để xóa phòng này khỏi danh sách
             await Clients.All.SendAsync("RoomClosed", roomId);
-
-            // Thông báo cho người tạo phòng rằng đã có người tham gia
-            // và gửi thông tin phòng đã được cập nhật
             await Clients.User(room.CreatorUserId).SendAsync("PartnerJoined", room);
-            
-            // Thông báo cho chính người tham gia rằng họ đã vào phòng thành công
             await Clients.Caller.SendAsync("JoinSuccess", room);
+        }
+        else
+        {
+            await Clients.Caller.SendAsync("JoinRoomFailed", "Không tìm thấy phòng với ID này.");
         }
     }
 }

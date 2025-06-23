@@ -69,9 +69,6 @@ public class Program
         // Register SignalR
         builder.AddSignalR();
 
-        // Register custom UserIdProvider for SignalR
-        builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
-
         // Register SwaggerGen and config for Authorize
         // Base on Extensions.WebApplicationBuilderExtensions
         builder.AddSwaggerGen();

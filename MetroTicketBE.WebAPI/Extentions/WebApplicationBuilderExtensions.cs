@@ -1,7 +1,9 @@
 ﻿using System.Text;
 using Amazon.OpsWorks.Model;
 using MetroTicketBE.Domain.Entities;
+using MetroTicketBE.Infrastructure.SignalR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -92,6 +94,8 @@ public static class WebApplicationBuilderExtensions
         {
             options.EnableDetailedErrors = true;
         });
+
+        builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 
         return builder;
     }
