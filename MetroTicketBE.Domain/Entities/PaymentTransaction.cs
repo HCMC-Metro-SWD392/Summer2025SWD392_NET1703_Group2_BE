@@ -15,7 +15,8 @@ public class PaymentTransaction
     public Guid? PromotionId { get; set; }
     public Guid PaymentMethodId { get; set; }
     public PaymentStatus Status { get; set; }
-    
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
     public Ticket Ticket { get; set; } = null!;
 
     public Customer Customer { get; set; } = null!;

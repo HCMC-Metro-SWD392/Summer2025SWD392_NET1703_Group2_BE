@@ -1,17 +1,11 @@
-using System.Text;
 using MetroTicketBE.Application.Hub;
 using MetroTicketBE.Application.Mappings;
-using MetroTicketBE.Application.Service;
 using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Infrastructure.Context;
-using MetroTicketBE.Infrastructure.SignalR;
 using MetroTicketBE.WebAPI.Extentions;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 
 namespace MetroTicketBE.WebAPI;
 
