@@ -51,18 +51,22 @@ namespace MetroTicketBE.WebAPI.Extentions
             services.AddScoped<ITrainScheduleService, TrainScheduleService>();
             // Registering ISubscriptionTicketTypeService with its implementation SubscriptionTicketTypeService
             services.AddScoped<ISubscriptionTicketTypeService, SubscriptionTicketTypeService>();
+            // Registering IUserService with its implementation UserService
             services.AddScoped<IUserService, UserService>();
+            // Registering IFareRuleRepository with its implementation FareRuleRepository
             services.AddScoped<IFareRuleRepository, FareRuleRepository>();
+            // Registering ISubscriptionTicketTypeRepository with its implementation SubscriptionTicketTypeRepository
             services.AddScoped<ISubscriptionTicketTypeRepository, SubscriptionTicketTypeRepository>();
             // Registering IStaffScheduleService with its implementation StaffScheduleService
             services.AddScoped<IStaffScheduleService, StaffScheduleService>();
             // Registering IStaffShiftService with its implementation StaffShiftService
             services.AddScoped<IStaffShiftService, StaffShiftService>();
-
             // Registering IFormRequestService with its implementation FormRequestService
             services.AddScoped<IFormRequestService, FormRequestService>();
             // Registering IS3Service with its implementation S3Service
             services.AddScoped<IS3Service, S3Service>();
+            // Registering IStaffService with its implementation StaffService
+            services.AddScoped<IStaffService, StaffService>();
 
             // Register the Identity services with default configuration
             services.AddIdentity<ApplicationUser, IdentityRole>()
