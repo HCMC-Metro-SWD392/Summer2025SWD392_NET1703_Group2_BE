@@ -48,10 +48,26 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
+                var sender = await _unitOfWork.CustomerRepository.GetByUserIdAsync(formRequest.SenderId);
+                if (sender is null)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        Message = "Không tìm thấy người gửi yêu cầu",
+                        StatusCode = 404
+                    };
+                }
+
+                sender.CustomerType = changeFormStatusDTO.CustomerType;
+                _unitOfWork.CustomerRepository.Update(sender);
+
+
                 formRequest.Status = changeFormStatusDTO.FormStatus;
                 formRequest.RejectionReason = changeFormStatusDTO.RejectionReason;
                 formRequest.ReviewerId = userId;
                 _unitOfWork.FormRequestRepository.Update(formRequest);
+
                 await _unitOfWork.SaveAsync();
 
                 return new ResponseDTO
