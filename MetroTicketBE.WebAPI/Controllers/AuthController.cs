@@ -95,13 +95,21 @@ namespace MetroTicketBE.WebAPI.Controllers
         public async Task<ActionResult<ResponseDTO>> CreateStaffAsync([FromBody] RegisterCustomerDTO dto)
         {
             ResponseDTO response = await _authService.CreateStaffAsync(dto);
-        
+
             if (!response.IsSuccess)
             {
                 return BadRequest(response);
             }
 
             return Ok(response);
+        }
+
+        [HttpPut]
+        [Route("change-password")]
+        public async Task<ActionResult<ResponseDTO>> ChangePassword([FromBody] ChangePasswordDTO changePasswordDTO)
+        {
+            var response = await _authService.ChangPassword(User, changePasswordDTO);
+            return StatusCode(response.StatusCode, response);
         }
     }
 }
