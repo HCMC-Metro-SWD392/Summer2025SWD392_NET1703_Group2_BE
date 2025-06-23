@@ -123,6 +123,41 @@ namespace MetroTicketBE.Application.Service
 
         }
 
+        public async Task<ResponseDTO> DeletePromotion(Guid promotionId)
+        {
+            try
+            {
+                var promotion = await _unitOfWork.PromotionRepository.GetByIdAsync(promotionId);
+                if (promotion is null)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        StatusCode = 404,
+                        Message = "Mã giảm giá không tồn tại"
+                    };
+                }
+
+                _unitOfWork.PromotionRepository.Remove(promotion);
+                await _unitOfWork.SaveAsync();
+                return new ResponseDTO
+                {
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Message = "Xóa mã giảm giá thành công"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Message = $"Lỗi khi xóa mã giảm giá: {ex.Message}"
+                };
+            }
+        }
+
         public async Task<ResponseDTO> GetAll(ClaimsPrincipal user, string? filterOn, string? filterQuery, string? sortBy, bool? isAcsending, int pageNumber, int pageSize)
         {
             try
