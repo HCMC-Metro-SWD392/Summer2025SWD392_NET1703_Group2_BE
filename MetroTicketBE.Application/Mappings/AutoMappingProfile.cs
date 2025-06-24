@@ -46,6 +46,7 @@ namespace MetroTicketBE.Application.Mappings
             CreateMap<SubscriptionTicket, GetSubscriptionTicketDTO>();
             CreateMap<StaffShift, ShiftInfoDto>();
             CreateMap<Station, StationInfoDto>();
+            CreateMap<Station, StationMetroLineDTO>();
             CreateMap<Staff, StaffInfoDto>()
                 .ForMember(dest => dest.FullName,
                     opt => opt.MapFrom(src => src.User.FullName));

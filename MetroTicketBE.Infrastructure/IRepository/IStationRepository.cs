@@ -17,5 +17,6 @@ namespace MetroTicketBE.Infrastructure.IRepository
         Task<List<Station>> GetAllStationsAsync(bool? isAscending);
         Task<int> GetOrderStationById(Guid stationId, Guid metroLineId);
         Task<List<Station>> SearchStationsByName(string? name);
+        IQueryable<Station> GetAllStationDTOAsync(bool? isAscending);
     }
 }
