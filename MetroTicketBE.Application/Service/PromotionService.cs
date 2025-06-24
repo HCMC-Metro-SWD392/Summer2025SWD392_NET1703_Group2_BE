@@ -234,6 +234,50 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
+        public async Task<ResponseDTO> GetPromotionByCode(string code)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(code))
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        StatusCode = 400,
+                        Message = "Mã giảm giá không được để trống"
+                    };
+                }
+
+                var promotion = await _unitOfWork.PromotionRepository.GetByCodeAsync(code);
+                if (promotion is null)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        StatusCode = 404,
+                        Message = "Mã giảm giá không tồn tại"
+                    };
+                }
+                var getPromotion = _mapper.Map<GetPromotionDTO>(promotion);
+                return new ResponseDTO
+                {
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Message = "Lấy mã giảm giá thành công",
+                    Result = getPromotion
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Message = $"Lỗi khi lấy mã giảm giá: {ex.Message}"
+                };
+            }
+        }
+
         public async Task<ResponseDTO> GetPromotionById(Guid id)
         {
             try
