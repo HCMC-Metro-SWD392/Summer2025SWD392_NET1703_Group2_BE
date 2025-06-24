@@ -32,5 +32,11 @@ namespace MetroTicketBE.Infrastructure.Repository
             return _context.Promotions
                 .AnyAsync(p => p.Code == code);
         }
+
+        public Task<bool> IsExistByCodeExceptId(string code, Guid exceptId)
+        {
+            return _context.Promotions
+                .AnyAsync(p => p.Code == code && p.Id != exceptId);
+        }
     }
 }

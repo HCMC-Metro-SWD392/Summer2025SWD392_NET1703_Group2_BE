@@ -1,9 +1,4 @@
 ﻿using MetroTicketBE.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MetroTicketBE.Infrastructure.IRepository
 {
@@ -12,5 +7,6 @@ namespace MetroTicketBE.Infrastructure.IRepository
         Task<Promotion?> GetByCodeAsync(string code);
         Task<Promotion?> GetByIdAsync(Guid promotionId);
         Task<bool> IsExistByCode(string code);
+        Task<bool> IsExistByCodeExceptId(string code, Guid exceptId);
     }
 }
