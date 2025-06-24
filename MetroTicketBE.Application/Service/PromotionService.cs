@@ -431,19 +431,14 @@ namespace MetroTicketBE.Application.Service
                     promotion.EndDate = updatePromotionDTO.EndDate.Value;
                 }
 
-                if (updatePromotionDTO.PromotionType != default)
-                {
-                    promotion.PromotionType = updatePromotionDTO.PromotionType;
-                }
-
-                if (updatePromotionDTO.Percentage is not null)
+                if (updatePromotionDTO.PromotionType == PromotionType.Percentage)
                 {
                     promotion.Percentage = updatePromotionDTO.Percentage;
-                }
-
-                if (updatePromotionDTO.FixedAmount is not null)
+                    promotion.FixedAmount = null; // Đặt FixedAmount thành null nếu PromotionType là Percentage
+                } else
                 {
                     promotion.FixedAmount = updatePromotionDTO.FixedAmount;
+                    promotion.Percentage = null; // Đặt Percentage thành null nếu PromotionType là FixedAmount
                 }
 
                 _unitOfWork.PromotionRepository.Update(promotion);
