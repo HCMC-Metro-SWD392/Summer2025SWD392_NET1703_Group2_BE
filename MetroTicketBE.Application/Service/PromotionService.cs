@@ -357,7 +357,7 @@ namespace MetroTicketBE.Application.Service
                     var newCode = updatePromotionDTO.Code.Trim().ToUpper();
                     if (newCode != promotion.Code)
                     {
-                        var isExist = await _unitOfWork.PromotionRepository.IsExistByCode(newCode);
+                        var isExist = await _unitOfWork.PromotionRepository.IsExistByCodeExceptId(newCode, promotion.Id);
                         if (isExist)
                         {
                             return new ResponseDTO
