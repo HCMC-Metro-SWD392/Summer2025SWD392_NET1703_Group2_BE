@@ -39,7 +39,7 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                var isExistOrderNumber = await _unitOfWork.MetroLineStationRepository.IsExistByOrderNumer(createMetroLineStationDTO.StationOder);
+                var isExistOrderNumber = await _unitOfWork.MetroLineStationRepository.IsExistByOrderNumer(createMetroLineStationDTO.MetroLineId, createMetroLineStationDTO.StationId,createMetroLineStationDTO.StationOder);
                 if (isExistOrderNumber is true)
                 {
                     return new ResponseDTO
