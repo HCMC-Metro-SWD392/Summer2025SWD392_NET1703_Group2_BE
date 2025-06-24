@@ -120,7 +120,7 @@ namespace MetroTicketBE.Application.Service
 
             if (qrCode is not null)
             {
-                return qrCode;
+                await _redisService.DeleteStringAysnc($"qrCode:{qrCode}-ticketId"); // Xóa mã QR cũ nếu có
             }
 
             qrCode = GenerateQRCodeAsync();
