@@ -431,7 +431,7 @@ namespace MetroTicketBE.Application.Service
                     promotion.EndDate = updatePromotionDTO.EndDate.Value;
                 }
 
-                if (updatePromotionDTO.PromotionType != default)
+                if (Enum.IsDefined(typeof(PromotionType), updatePromotionDTO.PromotionType))
                 {
                     promotion.PromotionType = updatePromotionDTO.PromotionType;
                 }
