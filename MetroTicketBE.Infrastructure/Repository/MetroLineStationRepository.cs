@@ -12,9 +12,10 @@ namespace MetroTicketBE.Infrastructure.Repository
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
-        public async Task<bool> IsExistByOrderNumer(int stationOrder)
+        public async Task<bool> IsExistByOrderNumer(Guid metroLineId, Guid stationId,int stationOrder)
         {
-            return await _context.MetroLineStations.AnyAsync(x => x.StationOrder == stationOrder);
+            return await _context.MetroLineStations.
+                AnyAsync(mls => mls.MetroLineId == metroLineId && mls.StationId == stationId && mls.StationOrder == stationOrder);;
         }
         
         public async Task<List<Station>> GetStationByMetroLineIdAsync(Guid metroLineId)
