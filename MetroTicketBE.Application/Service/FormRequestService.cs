@@ -60,6 +60,7 @@ namespace MetroTicketBE.Application.Service
                 }
 
                 sender.CustomerType = changeFormStatusDTO.CustomerType;
+                sender.StudentExpiration = changeFormStatusDTO.Expiration;
                 _unitOfWork.CustomerRepository.Update(sender);
 
 
