@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.Station;
 using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Infrastructure.IRepository;
+using Microsoft.EntityFrameworkCore;
 
 namespace MetroTicketBE.Application.Service
 {
@@ -151,10 +153,11 @@ namespace MetroTicketBE.Application.Service
         {
             try
             {
-                var stations = await _unitOfWork.StationRepository.GetAllStationsAsync(isAscending);
+                var stations =  _unitOfWork.StationRepository.GetAllStationDTOAsync(isAscending);
+                var stationDTO = await stations.ProjectTo<GetStationDTO>(_mapper.ConfigurationProvider).ToListAsync();
                 if (pageNumber > 0 || pageSize > 0)
                 {
-                    stations = stations.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+                    stationDTO = stationDTO.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
                 }
                 
                 return new ResponseDTO
@@ -162,7 +165,7 @@ namespace MetroTicketBE.Application.Service
                     IsSuccess = true,
                     StatusCode = 200,
                     Message = "Lấy danh sách trạm Metro thành công",
-                    Result = _mapper.Map<List<GetStationDTO>>(stations)
+                    Result = stationDTO
                 };
             }
             catch (Exception ex)

@@ -1,4 +1,5 @@
-﻿using MetroTicketBE.Domain.Entities;
+﻿using MetroTicketBE.Domain.DTO.Station;
+using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Infrastructure.Context;
 using MetroTicketBE.Infrastructure.IRepository;
 using Microsoft.EntityFrameworkCore;
@@ -81,7 +82,8 @@ namespace MetroTicketBE.Infrastructure.Repository
             {
                 return await _context.Stations
                     .OrderBy(s => s.CreatedAt)
-                    .Include(s => s.MetroLineStations).ThenInclude(mls => mls.MetroLine)
+                    .Include(s => s.MetroLineStations)
+                    .ThenInclude(mls => mls.MetroLine)
                     .ToListAsync();
             }
 
@@ -89,6 +91,22 @@ namespace MetroTicketBE.Infrastructure.Repository
                     .OrderByDescending(s => s.CreatedAt)
                     .Include(s => s.MetroLineStations).ThenInclude(mls => mls.MetroLine)
                 .ToListAsync();
+        }
+
+        public IQueryable<Station> GetAllStationDTOAsync(bool? isAscending)
+        {
+            var stationsQuery = _context.Stations.AsQueryable();
+
+            if (isAscending.HasValue && isAscending.Value)
+            {
+                stationsQuery = stationsQuery.OrderBy(s => s.CreatedAt);
+            }
+            else
+            {
+                stationsQuery = stationsQuery.OrderByDescending(s => s.CreatedAt);
+            }
+
+            return stationsQuery;
         }
 
         public async Task<List<Station>> SearchStationsByName(string? name)
