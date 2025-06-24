@@ -1006,7 +1006,7 @@ namespace MetroTicketBE.Application.Service
                 };
             }
 
-            await _hubContext.Clients.User(userId).SendAsync("NotifyOverStation", new
+            await _hubContext.Clients.User(userId).SendAsync("NotifyCheckinCheckout", new
             {
                 Message = message
             });
