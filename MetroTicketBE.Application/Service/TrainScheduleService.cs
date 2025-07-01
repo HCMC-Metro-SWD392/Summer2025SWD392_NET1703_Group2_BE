@@ -14,23 +14,23 @@ namespace MetroTicketBE.Application.Service
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         
-        private const int TravelTimeBetweenStationsInSeconds = 180;
-        private const int DwellTimeAtStationInSeconds = 30;
-        private readonly (TimeSpan Start, TimeSpan End) _peakHour1 = (new TimeSpan(7, 0, 0), new TimeSpan(9, 0, 0));
-        private readonly (TimeSpan Start, TimeSpan End) _peakHour2 = (new TimeSpan(17, 0, 0), new TimeSpan(19, 0, 0));
-        private const int PeakHourHeadwayInSeconds = 300;
-        private const int OffPeakHourHeadwayInSeconds = 600;
+        // private const int TravelTimeBetweenStationsInSeconds = 180;
+        // private const int DwellTimeAtStationInSeconds = 30;
+        // private readonly (TimeSpan Start, TimeSpan End) _peakHour1 = (new TimeSpan(7, 0, 0), new TimeSpan(9, 0, 0));
+        // private readonly (TimeSpan Start, TimeSpan End) _peakHour2 = (new TimeSpan(17, 0, 0), new TimeSpan(19, 0, 0));
+        // private const int PeakHourHeadwayInSeconds = 300;
+        // private const int OffPeakHourHeadwayInSeconds = 600;
         public TrainScheduleService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        public async Task<ResponseDTO> GenerateScheduleForMetroLine(Guid metroLineId)
+        public async Task<ResponseDTO> GenerateScheduleForMetroLine(CreateTrainScheduleDTO dto)
         {
             try
             {
-                if (metroLineId == Guid.Empty)
+                if (dto.MetroLineId == Guid.Empty)
                 {
                     return new ResponseDTO()
                     {
@@ -39,31 +39,32 @@ namespace MetroTicketBE.Application.Service
                         IsSuccess = false
                     };
                 }
-                var existedSchedules = await _unitOfWork.TrainScheduleRepository.GetByMetroLineIdSortedAsync(metroLineId);
-                if (existedSchedules is not null && existedSchedules.Any())
+                var existedSchedules = await _unitOfWork.TrainScheduleRepository.GetByMetroLineIdSortedAsync(dto.MetroLineId);
+                if (existedSchedules.Any())
                 {
                     _unitOfWork.TrainScheduleRepository.RemoveRange(existedSchedules);
                 }
                 var allSchedules = new List<TrainSchedule>();
                 var orderedStations =
-                    await _unitOfWork.MetroLineStationRepository.GetStationByMetroLineIdAsync(metroLineId);
-                var metroLine = await _unitOfWork.MetroLineRepository.GetByIdAsync(metroLineId);
-
+                    await _unitOfWork.MetroLineStationRepository.GetStationByMetroLineIdAsync(dto.MetroLineId);
+                var metroLine = await _unitOfWork.MetroLineRepository.GetByIdAsync(dto.MetroLineId);
+                if (metroLine is null)
+                {
+                    return new ResponseDTO()
+                    {
+                        StatusCode = 404,
+                        Message = "Tuyến metro không tồn tại.",
+                        IsSuccess = false
+                    };
+                }
                 var forwardSchedules =
-                    await GenerateDirectionSchedules(metroLineId, orderedStations, TrainScheduleType.Forward);
+                    await GenerateDirectionSchedules(metroLine, orderedStations, TrainScheduleType.Forward, dto.TravelTimeBetweenStationsInSeconds, dto.DwellTimeAtStationInSeconds, dto.PeakHourMorningStart, dto.PeakHourMorningEnd, dto.PeakHourEveningStart, dto.PeakHourEveningEnd, dto.PeakHourHeadwayInSeconds, dto.OffPeakHourHeadwayInSeconds, metroLine.StartTime);
                 allSchedules.AddRange(forwardSchedules);
-
-                int singleTripDurationInSeconds = (orderedStations.Count - 1) *
-                                                  (TravelTimeBetweenStationsInSeconds + DwellTimeAtStationInSeconds);
-                int turnAroundTimeInSeconds = 300; // Giả sử thời gian quay đầu là 5 phút
-
-                TimeSpan backwardStartTime = metroLine.StartTime
-                                             + TimeSpan.FromSeconds(singleTripDurationInSeconds +
-                                                                    turnAroundTimeInSeconds);
+                
                 var backwardStations = new List<Station>(orderedStations);
                 backwardStations.Reverse();
                 var backwardSchedules =
-                    await GenerateDirectionSchedules(metroLineId, backwardStations, TrainScheduleType.Backward, backwardStartTime);
+                    await GenerateDirectionSchedules(metroLine, backwardStations, TrainScheduleType.Backward, dto.TravelTimeBetweenStationsInSeconds, dto.DwellTimeAtStationInSeconds, dto.PeakHourMorningStart, dto.PeakHourMorningEnd, dto.PeakHourEveningStart, dto.PeakHourEveningEnd, dto.PeakHourHeadwayInSeconds, dto.OffPeakHourHeadwayInSeconds, metroLine.StartTime);
                 allSchedules.AddRange(backwardSchedules);
                 await _unitOfWork.TrainScheduleRepository.AddRangeAsync(allSchedules);
                 await _unitOfWork.SaveAsync();
@@ -87,25 +88,37 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        private async Task<List<TrainSchedule>> GenerateDirectionSchedules(Guid metroLineId, List<Station> orderedStations,
-            TrainScheduleType direction, TimeSpan? currentStartTime = null)
+        private async Task<List<TrainSchedule>> GenerateDirectionSchedules(MetroLine metroLine,
+            List<Station> orderedStations,
+            TrainScheduleType direction,
+            int travelTimeBetweenStationsInSeconds,
+            int dwellTimeAtStationInSeconds,
+            TimeSpan peakHourMorningStart,
+            TimeSpan peakHourMorningEnd,
+            TimeSpan peakHourEveningStart,
+            TimeSpan peakHourEveningEnd,
+            int peakHourHeadwayInSeconds,
+            int offPeakHourHeadwayInSeconds,
+            TimeSpan? currentStartTime = null)
         {
             var directionSchedules = new List<TrainSchedule>();
-            // Sử dụng await thay vì .Result để tránh deadlock
-            var metroLine = await _unitOfWork.MetroLineRepository.GetByIdAsync(metroLineId);
             if (metroLine is null)
             {
                 throw new ArgumentException("Tuyến metro không tồn tại.");
             }
     
-            // FIX 1: Tính toán tổng thời gian của một chuyến đi
-            int singleTripDurationInSeconds = (orderedStations.Count - 1) * (TravelTimeBetweenStationsInSeconds + DwellTimeAtStationInSeconds);
+            int stationCount = orderedStations.Count;
+            int singleTripDurationInSeconds = 0;
+            if (stationCount > 1)
+            {
+                singleTripDurationInSeconds = ((stationCount - 1) * travelTimeBetweenStationsInSeconds) + 
+                                              ((stationCount - 2) * dwellTimeAtStationInSeconds);
+            }
             TimeSpan tripDuration = TimeSpan.FromSeconds(singleTripDurationInSeconds);
 
             var initialTime = currentStartTime ?? metroLine.StartTime;
             
             var currentTime = initialTime;
-            // FIX 1: Điều kiện dừng mới: thời gian khởi hành cộng với thời gian chuyến đi phải nhỏ hơn hoặc bằng thời gian kết thúc
             var lastPossibleDepartureTime = metroLine.EndTime - tripDuration;
 
             while (currentTime <= lastPossibleDepartureTime)
@@ -115,12 +128,12 @@ namespace MetroTicketBE.Application.Service
                 {
                     if (i > 0)
                     {
-                        tripTime = tripTime.Add(TimeSpan.FromSeconds(TravelTimeBetweenStationsInSeconds + DwellTimeAtStationInSeconds));
+                        tripTime = tripTime.Add(TimeSpan.FromSeconds(travelTimeBetweenStationsInSeconds + dwellTimeAtStationInSeconds));
                     }
 
                     directionSchedules.Add(new TrainSchedule()
                     {
-                        MetroLineId = metroLineId,
+                        MetroLineId = metroLine.Id,
                         StationId = orderedStations[i].Id,
                         StartTime = tripTime,
                         Direction = direction,
@@ -128,9 +141,9 @@ namespace MetroTicketBE.Application.Service
                     });
                 }
 
-                bool isPeakHour = (currentTime >= _peakHour1.Start && currentTime < _peakHour1.End) ||
-                                  (currentTime >= _peakHour2.Start && currentTime < _peakHour2.End);
-                int headwayInSeconds = isPeakHour ? PeakHourHeadwayInSeconds : OffPeakHourHeadwayInSeconds;
+                bool isPeakHour = (currentTime >= peakHourMorningStart && currentTime < peakHourMorningEnd) ||
+                                  (currentTime >= peakHourEveningStart && currentTime < peakHourEveningEnd);
+                int headwayInSeconds = isPeakHour ? peakHourHeadwayInSeconds : offPeakHourHeadwayInSeconds;
                 currentTime = currentTime.Add(TimeSpan.FromSeconds(headwayInSeconds));
             }
             return directionSchedules;
