@@ -75,7 +75,6 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpPut]
         [Route("check-in-ticket-process")]
-        [Authorize(Roles = StaticUserRole.StaffManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> CheckInTicketProcess([FromBody] TicketProcessDTO ticketProcessDTO)
         {
             var response = await _ticketService.CheckInTicketProcess(ticketProcessDTO.QrCode, ticketProcessDTO.StationId);

@@ -77,7 +77,8 @@ namespace MetroTicketBE.Application.Mappings
                 .ForMember(dest => dest.StudentExpiration, opt => opt.MapFrom(src => src.StudentExpiration))
                 .ForMember(dest => dest.Sex, opt => opt.MapFrom(src => src.User.Sex)).ReverseMap();
 
-            CreateMap<TicketProcess, GetTicketProcessDTO>().ReverseMap();
+            CreateMap<TicketProcess, GetTicketProcessDTO>()
+                .ForMember(dest => dest.StationName, opt => opt.MapFrom(src => src.Station.Name)).ReverseMap();
         }
     }
 }
