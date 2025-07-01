@@ -20,7 +20,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpGet]
         [Route("get-all-ticket-routes")]
-        [Authorize(Roles = StaticUserRole.ManagerAdmin)]
+        [Authorize]
         public async Task<ActionResult<ResponseDTO>> GetAllTicketRoutesAsync(
             [FromQuery] string? filterOn,
             [FromQuery] string? filterQuery,

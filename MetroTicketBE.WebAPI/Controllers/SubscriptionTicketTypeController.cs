@@ -32,7 +32,7 @@ public class SubscriptionTicketTypeController: ControllerBase
     
     [HttpGet]
     [Route("all")]
-    [Authorize(Roles = StaticUserRole.ManagerAdmin)]
+    [Authorize]
     public async Task<IActionResult> GetAllSubscriptionTicketTypesAsync()
     {
         var response = await _subscriptionTicketTypeService.GetAllAsync();
