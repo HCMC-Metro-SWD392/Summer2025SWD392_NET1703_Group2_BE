@@ -1,4 +1,5 @@
 ﻿using MetroTicketBE.Application.IService;
+using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.Ticket;
 using MetroTicketBE.Domain.Enums;
@@ -19,7 +20,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpGet]
         [Route("get-all-ticket-routes")]
-        [Authorize]
+        [Authorize(Roles = StaticUserRole.ManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> GetAllTicketRoutesAsync(
             [FromQuery] string? filterOn,
             [FromQuery] string? filterQuery,
@@ -37,6 +38,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpGet]
         [Route("get-ticket/{serial}")]
+        [Authorize(Roles = StaticUserRole.StaffManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> GetTicketBySerialAsync([FromRoute] string serial)
         {
             var response = await _ticketService.GetTicketBySerial(serial);
@@ -45,6 +47,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpPut]
         [Route("change-ticket-route-status/{ticketId:guid}")]
+        [Authorize(Roles = StaticUserRole.StaffManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> ChangeTicketRouteStatus([FromRoute] Guid ticketId)
         {
             var response = await _ticketService.ChangeTicketRouteStatus(ticketId);
@@ -53,6 +56,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpPost]
         [Route("create-ticket-for-special-case")]
+        [Authorize(Roles = StaticUserRole.StaffManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> CreateTicketForSpecialCase([FromQuery] Guid subscriptionId)
         {
             if (subscriptionId == Guid.Empty)
@@ -71,6 +75,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpPut]
         [Route("check-in-ticket-process")]
+        [Authorize(Roles = StaticUserRole.StaffManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> CheckInTicketProcess([FromBody] TicketProcessDTO ticketProcessDTO)
         {
             var response = await _ticketService.CheckInTicketProcess(ticketProcessDTO.QrCode, ticketProcessDTO.StationId);
@@ -79,6 +84,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpPut]
         [Route("check-out-ticket-process")]
+        [Authorize(Roles = StaticUserRole.StaffManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> CheckOutTicketProcess([FromBody] TicketProcessDTO ticketProcessDTO)
         {
             var response = await _ticketService.CheckOutTicketProcess(ticketProcessDTO.QrCode, ticketProcessDTO.StationId);
@@ -87,6 +93,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpGet]
         [Route("get-qr-code/{ticketId:guid}")]
+        [Authorize]
         public async Task<ActionResult<ResponseDTO>> GetORCode([FromRoute] Guid ticketId)
         {
             if (ticketId == Guid.Empty)

@@ -1,6 +1,8 @@
 ﻿using MetroTicketBE.Application.IService;
+using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.SubscriptionTicket;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MetroTicketBE.WebAPI.Controllers;
@@ -17,6 +19,7 @@ public class SubscriptionTicketController: ControllerBase
     
     [HttpPost]
     [Route("create-subscription-ticket")]
+    [Authorize]
     public async Task<IActionResult> CreateSubscriptionAsync([FromBody] CreateSubscriptionDTO dto)
     {
         if (dto == null)
@@ -40,6 +43,7 @@ public class SubscriptionTicketController: ControllerBase
     
     [HttpGet]
     [Route("all")]
+    [Authorize(Roles = StaticUserRole.ManagerAdmin)]
     public async Task<IActionResult> GetAllSubscriptionsAsync()
     {
         var response = await _subscriptionService.GetAllSubscriptionsAsync();
@@ -53,6 +57,7 @@ public class SubscriptionTicketController: ControllerBase
     
     [HttpGet]
     [Route("{id:guid}")]
+    [Authorize(Roles = StaticUserRole.ManagerAdmin)]
     public async Task<IActionResult> GetSubscriptionAsync(Guid id)
     {
         var response = await _subscriptionService.GetSubscriptionAsync(id);
@@ -65,6 +70,7 @@ public class SubscriptionTicketController: ControllerBase
     
     [HttpGet]
     [Route("by-station/{startStationId:guid}/{endStationId:guid}/{ticketTypeId:guid}")]
+    [Authorize]
     public async Task<IActionResult> GetSubscriptionByStationAsync(Guid startStationId, Guid endStationId, Guid ticketTypeId)
     {
         var response = await _subscriptionService.GetSubscriptionByStationAsync(startStationId, endStationId, ticketTypeId);
@@ -77,6 +83,7 @@ public class SubscriptionTicketController: ControllerBase
 
     [HttpPut]
     [Route("update/{id:guid}")]
+    [Authorize(Roles = StaticUserRole.ManagerAdmin)]
     public async Task<IActionResult> UpdateSubscriptionAsync(Guid id, [FromBody] UpdateSubscriptionDTO dto)
     {
         var response = await _subscriptionService.UpdateSubscriptionAsync(id, dto);

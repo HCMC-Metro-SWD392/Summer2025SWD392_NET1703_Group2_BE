@@ -1,5 +1,7 @@
 ﻿using MetroTicketBE.Application.IService;
+using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Domain.DTO.StaffSchedule;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MetroTicketBE.WebAPI.Controllers;
@@ -14,6 +16,7 @@ public class StaffScheduleController: ControllerBase
         _staffScheduleService = staffScheduleService ?? throw new ArgumentNullException(nameof(staffScheduleService));
     }
     [HttpGet("schedules")]
+    [Authorize(Roles = StaticUserRole.StaffManagerAdmin)]
     public async Task<IActionResult> GetAllSchedules([FromQuery] DateOnly startDate, [FromQuery] DateOnly endDate)
     {
         var response = await _staffScheduleService.GetAllSchedules(startDate, endDate);
@@ -24,6 +27,7 @@ public class StaffScheduleController: ControllerBase
         return BadRequest(response);
     }
     [HttpPost("create")]
+    [Authorize(Roles = StaticUserRole.ManagerAdmin)]
     public async Task<IActionResult> CreateStaffSchedule([FromBody] CreateStaffScheduleDTO dto)
     {
         var response = await _staffScheduleService.CreateStaffSchedule(dto);
@@ -34,6 +38,7 @@ public class StaffScheduleController: ControllerBase
         return BadRequest(response);
     }
     [HttpGet("schedules-by-station")]
+    [Authorize]
     public async Task<IActionResult> GetSchedulesByStationIdAndDate([FromQuery] Guid stationId, [FromQuery] DateOnly workingDate)
     {
         var response = await _staffScheduleService.GetSchedulesByStationIdAndDate(stationId, workingDate);

@@ -1,4 +1,6 @@
 ﻿using MetroTicketBE.Application.IService;
+using MetroTicketBE.Domain.Constants;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,6 +18,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpGet]
         [Route("GetAllStaff")]
+        [Authorize(Roles = StaticUserRole.ManagerAdmin)]
         public async Task<IActionResult> GetAllStaff()
         {
             var response = await _staffService.GetAllStaff();

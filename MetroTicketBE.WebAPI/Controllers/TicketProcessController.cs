@@ -18,6 +18,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpGet]
         [Route("GetAllTicketProcessByTicketId/{ticketId:guid}")]
+        [Authorize]
         public async Task<ActionResult<ResponseDTO>> GetAllTicketProcessByTicketId(Guid ticketId)
         {
             var response = await _ticketProcessService.GetAllTicketProcessByTicketId(ticketId);

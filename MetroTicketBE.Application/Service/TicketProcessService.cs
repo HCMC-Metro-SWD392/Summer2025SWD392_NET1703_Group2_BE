@@ -19,7 +19,7 @@ namespace MetroTicketBE.Application.Service
         {
             try
             {
-                var ticketProcesses = (await _unitOfWork.TicketProcessRepository.GetAllAsync(includeProperties: "Station, Ticket"))
+                var ticketProcesses = (await _unitOfWork.TicketProcessRepository.GetAllAsync(includeProperties: "Station,Ticket"))
                     .Where(tp => tp.TicketId == ticketId).ToList();
                 if (ticketProcesses is null || !ticketProcesses.Any())
                 {
