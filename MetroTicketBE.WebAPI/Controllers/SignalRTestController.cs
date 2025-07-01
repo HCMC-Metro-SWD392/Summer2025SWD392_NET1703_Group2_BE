@@ -1,4 +1,6 @@
-﻿using MetroTicketBE.Domain.Entities;
+﻿using MetroTicketBE.Domain.Constants;
+using MetroTicketBE.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 
@@ -14,6 +16,8 @@ public class SignalRTestController : ControllerBase
     }
 
     [HttpPost]
+    [Route("send-test-message")]
+    [Authorize(Roles = StaticUserRole.ManagerAdmin)]
     public async Task<IActionResult> SendTestMessage()
     {
         await _hubContext.Clients.All.SendAsync("ReceiveNotification", "🚀 Thử SignalR thành công!");

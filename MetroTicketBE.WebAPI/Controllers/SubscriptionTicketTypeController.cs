@@ -1,6 +1,8 @@
 ﻿using MetroTicketBE.Application.IService;
+using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Domain.DTO.SubscriptionTicketType;
 using MetroTicketBE.Infrastructure.IRepository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MetroTicketBE.WebAPI.Controllers;
@@ -16,6 +18,8 @@ public class SubscriptionTicketTypeController: ControllerBase
     }
     
     [HttpPost]
+    [Route("create-subscription-ticket-type")]
+    [Authorize(Roles = StaticUserRole.ManagerAdmin)]
     public async Task<IActionResult> CreateSubscriptionTicketTypeAsync([FromBody] CreateSubscriptionTicketTypeDTO subscriptionTicketType)
     {
         var response = await _subscriptionTicketTypeService.CreateAsync(subscriptionTicketType);
@@ -28,6 +32,7 @@ public class SubscriptionTicketTypeController: ControllerBase
     
     [HttpGet]
     [Route("all")]
+    [Authorize(Roles = StaticUserRole.ManagerAdmin)]
     public async Task<IActionResult> GetAllSubscriptionTicketTypesAsync()
     {
         var response = await _subscriptionTicketTypeService.GetAllAsync();
@@ -39,6 +44,7 @@ public class SubscriptionTicketTypeController: ControllerBase
     }
     [HttpGet]
     [Route("{id:guid}")]
+    [Authorize(Roles = StaticUserRole.ManagerAdmin)]
     public async Task<IActionResult> GetSubscriptionTicketTypeAsync(Guid id)
     {
         var response = await _subscriptionTicketTypeService.GetByIdAsync(id);
@@ -50,6 +56,7 @@ public class SubscriptionTicketTypeController: ControllerBase
     }
     [HttpGet]
     [Route("name/{name}")]
+    [Authorize]
     public async Task<IActionResult> GetSubscriptionTicketTypeByNameAsync(string name)
     {
         var response = await _subscriptionTicketTypeService.GetByNameAsync(name);

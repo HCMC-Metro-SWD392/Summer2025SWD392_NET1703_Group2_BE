@@ -1,6 +1,8 @@
 ﻿using MetroTicketBE.Application.IService;
+using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.Customer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MetroTicketBE.WebAPI.Controllers;
@@ -17,6 +19,7 @@ public class CustomerController : ControllerBase
     }
 
     [HttpGet("{customerId:guid}")]
+    [Authorize(Roles = StaticUserRole.StaffManagerAdmin)]
     public async Task<ActionResult<ResponseDTO>> GetCustomerByIdAsync(Guid customerId)
     {
         ResponseDTO response = await _customerService.GetCustomerByIdAsync(customerId);
@@ -31,6 +34,7 @@ public class CustomerController : ControllerBase
 
 
     [HttpGet("user/{userId}")]
+    [Authorize(Roles = StaticUserRole.StaffManagerAdmin)]
     public async Task<ActionResult<ResponseDTO>> GetCustomerByUserIdAsync(string userId)
     {
         ResponseDTO response = await _customerService.GetCustomerByUserIdAsync(userId);
@@ -44,6 +48,7 @@ public class CustomerController : ControllerBase
     }
 
     [HttpGet("email/{email}")]
+    [Authorize(Roles = StaticUserRole.StaffManagerAdmin)]
     public async Task<ActionResult<ResponseDTO>> GetCustomerByEmailAsync(string email)
     {
         ResponseDTO response = await _customerService.GetCustomerByEmailAsync(email);
@@ -58,6 +63,7 @@ public class CustomerController : ControllerBase
 
     [HttpGet]
     [Route("get-all-customers")]
+    [Authorize(Roles = StaticUserRole.ManagerAdmin)]
     public async Task<ActionResult<ResponseDTO>> GetAllCustomersAsync(
         [FromQuery] string? filterOn,
         [FromQuery] string? filterQuery,

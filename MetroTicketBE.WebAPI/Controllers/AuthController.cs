@@ -1,6 +1,8 @@
 ﻿using MetroTicket.Domain.Entities;
 using MetroTicketBE.Application.IService;
+using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Domain.DTO.Auth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -86,12 +88,15 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpPut]
         [Route("set-staff-role/{email}")]
+        [Authorize(Roles = StaticUserRole.Manager)]
         public async Task<ActionResult<ResponseDTO>> SetStaffRole([FromRoute] string email)
         {
             var response = await _authService.SetStaffRole(email);
             return StatusCode(response.StatusCode, response);
         }
+
         [HttpPost("create-staff")]
+        [Authorize(Roles = StaticUserRole.Manager)]
         public async Task<ActionResult<ResponseDTO>> CreateStaffAsync([FromBody] RegisterCustomerDTO dto)
         {
             ResponseDTO response = await _authService.CreateStaffAsync(dto);
@@ -106,6 +111,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpPut]
         [Route("change-password")]
+        [Authorize]
         public async Task<ActionResult<ResponseDTO>> ChangePassword([FromBody] ChangePasswordDTO changePasswordDTO)
         {
             var response = await _authService.ChangPassword(User, changePasswordDTO);

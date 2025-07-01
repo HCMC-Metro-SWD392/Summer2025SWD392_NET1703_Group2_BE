@@ -23,6 +23,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpPost]
         [Route("create-form-request")]
+        [Authorize]
         public async Task<ActionResult<ResponseDTO>> CreateFormRequest([FromForm] CreateFormRequestDTO createFormRequestDTO)
         {
             var response = await _formRequestService.CreateFormRequest(User, createFormRequestDTO);
@@ -59,7 +60,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpGet]
         [Route("get-all-form-requests")]
-        //[Authorize(Roles = StaticUserRole.StaffManagerAdmin)]
+        [Authorize(Roles = StaticUserRole.StaffManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> GetAllFormRequests(
            [FromQuery] string sortBy = "createdAt",
            [FromQuery] FormStatus formStatus = FormStatus.Pending,
@@ -73,6 +74,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpGet]
         [Route("get-all-form-attachments")]
+        [Authorize(Roles = StaticUserRole.StaffManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> GetAllFormAttachments([FromQuery] Guid formRequestId)
         {
             var response = await _formRequestService.GetAllFormAttachment(formRequestId);
@@ -81,6 +83,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpPut]
         [Route("change-form-request-status/{formRequestId:Guid}")]
+        [Authorize(Roles = StaticUserRole.StaffManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> ChangeFormRequestStatus([FromRoute] Guid formRequestId, [FromBody] ChangeFormStatusDTO changeFormStatusDTO)
         {
             var response = await _formRequestService.ChangeFormRequestStatus(User, formRequestId, changeFormStatusDTO);

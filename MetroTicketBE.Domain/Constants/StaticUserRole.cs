@@ -14,5 +14,6 @@ namespace MetroTicketBE.Domain.Constants
         public const string Manager = "MANAGER";
 
         public const string StaffManagerAdmin = "STAFF, MANAGER, ADMIN";
+        public const string ManagerAdmin = "MANAGER, ADMIN";
     }
 }
