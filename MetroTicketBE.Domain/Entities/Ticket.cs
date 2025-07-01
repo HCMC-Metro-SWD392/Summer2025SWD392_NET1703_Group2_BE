@@ -19,4 +19,5 @@ public class Ticket
     public SubscriptionTicket? SubscriptionTicket { get; set; } = null!;
     public TicketRoute? TicketRoute { get; set; } = null!;
     public ICollection<PaymentTransaction> Transaction { get; set; } = new List<PaymentTransaction>();
+    public ICollection<TicketProcess> TicketProcesses { get; set; } = new List<TicketProcess>();
 }

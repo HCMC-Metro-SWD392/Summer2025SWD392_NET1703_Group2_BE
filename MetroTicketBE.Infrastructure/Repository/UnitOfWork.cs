@@ -32,6 +32,7 @@ namespace MetroTicketBE.Infrastructure.Repository
         public IStaffScheduleRepository StaffScheduleRepository { get; private set; }
         public IStaffShiftRepository StaffShiftRepository { get; private set; }
         public IStaffRepository StaffRepository { get; private set; }
+        public ITicketProcessRepository TicketProcessRepository { get; private set; }
 
         public UnitOfWork(ApplicationDBContext context, UserManager<ApplicationUser> userManager)
         {
@@ -56,6 +57,7 @@ namespace MetroTicketBE.Infrastructure.Repository
             StaffScheduleRepository = new StaffScheduleRepository(_context);
             StaffShiftRepository = new StaffShiftRepository(_context);
             StaffRepository = new StaffRepository(_context);
+            TicketProcessRepository = new TicketProcessRepository(_context);
         }
         public async Task<int> SaveAsync()
         {
