@@ -234,6 +234,50 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
+        public async Task<ResponseDTO> GetPromotionByCode(string code)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(code))
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        StatusCode = 400,
+                        Message = "Mã giảm giá không được để trống"
+                    };
+                }
+
+                var promotion = await _unitOfWork.PromotionRepository.GetByCodeAsync(code);
+                if (promotion is null)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        StatusCode = 404,
+                        Message = "Mã giảm giá không tồn tại"
+                    };
+                }
+                var getPromotion = _mapper.Map<GetPromotionDTO>(promotion);
+                return new ResponseDTO
+                {
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Message = "Lấy mã giảm giá thành công",
+                    Result = getPromotion
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Message = $"Lỗi khi lấy mã giảm giá: {ex.Message}"
+                };
+            }
+        }
+
         public async Task<ResponseDTO> GetPromotionById(Guid id)
         {
             try
@@ -357,7 +401,7 @@ namespace MetroTicketBE.Application.Service
                     var newCode = updatePromotionDTO.Code.Trim().ToUpper();
                     if (newCode != promotion.Code)
                     {
-                        var isExist = await _unitOfWork.PromotionRepository.IsExistByCode(newCode);
+                        var isExist = await _unitOfWork.PromotionRepository.IsExistByCodeExceptId(newCode, promotion.Id);
                         if (isExist)
                         {
                             return new ResponseDTO
@@ -387,19 +431,20 @@ namespace MetroTicketBE.Application.Service
                     promotion.EndDate = updatePromotionDTO.EndDate.Value;
                 }
 
-                if (updatePromotionDTO.PromotionType != default)
+                if (Enum.IsDefined(typeof(PromotionType), updatePromotionDTO.PromotionType))
                 {
                     promotion.PromotionType = updatePromotionDTO.PromotionType;
                 }
 
-                if (updatePromotionDTO.Percentage is not null)
+                if (updatePromotionDTO.PromotionType == PromotionType.Percentage)
                 {
                     promotion.Percentage = updatePromotionDTO.Percentage;
+                    promotion.FixedAmount = null; // Đặt FixedAmount thành null nếu PromotionType là Percentage
                 }
-
-                if (updatePromotionDTO.FixedAmount is not null)
+                else
                 {
                     promotion.FixedAmount = updatePromotionDTO.FixedAmount;
+                    promotion.Percentage = null; // Đặt Percentage thành null nếu PromotionType là FixedAmount
                 }
 
                 _unitOfWork.PromotionRepository.Update(promotion);

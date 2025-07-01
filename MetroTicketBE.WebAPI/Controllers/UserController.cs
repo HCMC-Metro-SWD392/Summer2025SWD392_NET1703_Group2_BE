@@ -1,7 +1,9 @@
 ﻿using MetroTicketBE.Application.IService;
+using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.Customer;
 using MetroTicketBE.Domain.Enum;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MetroTicketBE.WebAPI.Controllers;
@@ -17,6 +19,7 @@ public class UserController: ControllerBase
     }
     
     [HttpGet("{userId}")]
+    [Authorize]
     public async Task<ActionResult<ResponseDTO>> GetUserByIdAsync(string userId)
     {
         ResponseDTO response = await _userService.GetUserByIdAsync(userId);
@@ -30,6 +33,7 @@ public class UserController: ControllerBase
     }
     
     [HttpPut("{userId}")]
+    [Authorize]
     public async Task<ActionResult<ResponseDTO>> UpdateUserAsync(string userId, [FromBody] UpdateUserDTO userDTO)
     {
         ResponseDTO response = await _userService.UpdateUserAsync(userId, userDTO);

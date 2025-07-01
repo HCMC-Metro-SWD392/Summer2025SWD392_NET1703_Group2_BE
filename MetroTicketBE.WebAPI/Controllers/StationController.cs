@@ -1,8 +1,8 @@
 ﻿using MetroTicketBE.Application.IService;
-using MetroTicketBE.Application.Service;
+using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.Station;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MetroTicketBE.WebAPI.Controllers
@@ -18,6 +18,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         }
         [HttpPost]
         [Route("create-station")]
+        [Authorize(Roles = StaticUserRole.ManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> CreateStation([FromBody] CreateStationDTO createStationDTO)
         {
             var response = await _stationService.CreateStation(createStationDTO);
@@ -27,6 +28,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpPut]
         [Route("update-station/{stationId}")]
+        [Authorize(Roles = StaticUserRole.ManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> UpdateStation(Guid stationId,
             [FromBody] UpdateStationDTO updateStationDTO)
         {
@@ -36,6 +38,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpGet]
         [Route("get-all-stations")]
+        [Authorize]
         public async Task<ActionResult<ResponseDTO>> GetAllStations(bool? isAscending, int pageNumber, int pageSize)
         {
             var response = await _stationService.GetAllStations(isAscending, pageNumber, pageSize);
@@ -44,6 +47,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         
         [HttpGet]
         [Route("get-station-by-id/{stationId}")]
+        [Authorize(Roles = StaticUserRole.StaffManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> GetStationById(Guid stationId)
         {
             var response = await _stationService.GetStationById(stationId);
@@ -52,6 +56,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpGet]
         [Route("search-stations-by-name")]
+        [Authorize]
         public async Task<ActionResult<ResponseDTO>> SearchStationsByName([FromQuery] string? name)
         {
             var response = await _stationService.SearchStationsByName(name);

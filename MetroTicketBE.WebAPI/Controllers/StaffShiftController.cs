@@ -1,6 +1,8 @@
 ﻿using MetroTicketBE.Application.IService;
+using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.StaffShift;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MetroTicketBE.WebAPI.Controllers;
@@ -15,6 +17,7 @@ public class StaffShiftController: ControllerBase
         _staffShiftService = staffShiftService ?? throw new ArgumentNullException(nameof(staffShiftService));
     }
     [HttpGet("get-all")]
+    [Authorize(Roles = StaticUserRole.ManagerAdmin)]
     public async Task<IActionResult> GetAllStaffShifts()
     {
         var response = await _staffShiftService.GetAllStaffShifts();
@@ -25,6 +28,7 @@ public class StaffShiftController: ControllerBase
         return BadRequest(response);
     }
     [HttpPost("create")]
+    [Authorize(Roles = StaticUserRole.ManagerAdmin)]
     public async Task<IActionResult> CreateStaffShift([FromBody] CreateShiftDTO createShiftDTO)
     {
         if (createShiftDTO == null)

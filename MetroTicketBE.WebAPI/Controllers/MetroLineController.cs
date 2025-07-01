@@ -1,7 +1,9 @@
 ﻿using MetroTicketBE.Application.IService;
+using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.MetroLine;
 using MetroTicketBE.Infrastructure.IRepository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MetroTicketBE.WebAPI.Controllers
@@ -18,7 +20,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpPost]
         [Route("create-metro-line")]
-
+        [Authorize(Roles = StaticUserRole.Admin)]
         public async Task<ActionResult<ResponseDTO>> CreateMetroLine([FromBody] CreateMetroLineDTO createMetroLineDTO)
         {
             var response = await _metroLineService.CreateMetroLine(createMetroLineDTO);
@@ -27,6 +29,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpGet]
         [Route("metro-lines/all")]
+        //[Authorize(Roles = StaticUserRole.Admin)]
         public async Task<ActionResult<ResponseDTO>> GetAllMetroLines()
         {
             var response = await _metroLineService.GetAllMetroLines();
@@ -35,6 +38,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpGet]
         [Route("metro-line/{metroLineId}")]
+        [Authorize(Roles = StaticUserRole.Admin)]
         public async Task<ActionResult<ResponseDTO>> GetMetroLineById(Guid metroLineId)
         {
             var response = await _metroLineService.GetMetroLineById(metroLineId);
@@ -43,6 +47,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpPut]
         [Route("update-metro-line/{metroLineId}")]
+        [Authorize(Roles = StaticUserRole.Admin)]
         public async Task<ActionResult<ResponseDTO>> UpdateMetroLine(Guid metroLineId,
             [FromBody] UpdateMetroLineDTO updateMetroLineDTO)
         {
