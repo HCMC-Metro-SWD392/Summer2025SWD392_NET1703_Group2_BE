@@ -27,6 +27,7 @@ namespace MetroTicketBE.Infrastructure.IRepository
         IStaffScheduleRepository StaffScheduleRepository { get; }
         IStaffShiftRepository StaffShiftRepository { get; }
         IStaffRepository StaffRepository { get; }
+        ITicketProcessRepository TicketProcessRepository { get; }
         Task<int> SaveAsync();
     }
 }

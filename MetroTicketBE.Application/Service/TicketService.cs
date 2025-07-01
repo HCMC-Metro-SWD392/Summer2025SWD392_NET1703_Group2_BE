@@ -476,6 +476,9 @@ namespace MetroTicketBE.Application.Service
             {
                 ticket.TicketRtStatus = TicketStatus.ActiveOverStation;
                 _unitOfWork.TicketRepository.Update(ticket);
+
+                await CreateTicketProcess(ticket, stationId, TicketProcessStatus.Checkin);
+
                 await _unitOfWork.SaveAsync();
                 return new ResponseDTO
                 {
@@ -664,6 +667,19 @@ namespace MetroTicketBE.Application.Service
                 ticket.QrCode = null;
                 _unitOfWork.TicketRepository.Update(ticket);
                 await _unitOfWork.TicketRepository.AddAsync(newTicket);
+
+                TicketProcess ticketProcess = new TicketProcess
+                {
+                    TicketId = ticket.Id,
+                    Status = TicketProcessStatus.Checkout,
+                    StationId = stationId,
+                    ProcessedAt = DateTime.UtcNow
+                };
+
+                await _unitOfWork.TicketProcessRepository.AddAsync(ticketProcess);
+
+                await CreateTicketProcess(ticket, stationId, TicketProcessStatus.Checkout);
+
                 await _unitOfWork.SaveAsync();
                 await SendNotifyToUser(userId, "Vé đã được check-out thành công.");
                 return new ResponseDTO
@@ -691,6 +707,9 @@ namespace MetroTicketBE.Application.Service
             {
                 ticket.TicketRtStatus = TicketStatus.Inactive;
                 _unitOfWork.TicketRepository.Update(ticket);
+
+                await CreateTicketProcess(ticket, stationId, TicketProcessStatus.Checkout);
+
                 await _unitOfWork.SaveAsync();
                 await SendNotifyToUser(userId, "Vé đã được check-out thành công.");
                 return new ResponseDTO
@@ -729,6 +748,9 @@ namespace MetroTicketBE.Application.Service
             {
                 ticket.TicketRtStatus = TicketStatus.Active;
                 _unitOfWork.TicketRepository.Update(ticket);
+
+                await CreateTicketProcess(ticket, stationId, TicketProcessStatus.Checkin);
+
                 await _unitOfWork.SaveAsync();
                 await SendNotifyToUser(userId, "Vé đã được check-in thành công.");
                 return new ResponseDTO
@@ -903,6 +925,9 @@ namespace MetroTicketBE.Application.Service
             {
                 ticket.TicketRtStatus = TicketStatus.Used;
                 _unitOfWork.TicketRepository.Update(ticket);
+
+                await CreateTicketProcess(ticket, stationId, TicketProcessStatus.Checkout);
+
                 await _unitOfWork.SaveAsync();
                 await SendNotifyToUser(userId, "Vé lượt của bạn đã được check-out thành công.");
                 return new ResponseDTO
@@ -1034,6 +1059,20 @@ namespace MetroTicketBE.Application.Service
                 IsSuccess = true,
                 StatusCode = 200
             };
+        }
+
+        private async Task CreateTicketProcess(Ticket ticket, Guid stationId, TicketProcessStatus status)
+        {
+            TicketProcess ticketProcess = new TicketProcess
+            {
+                TicketId = ticket.Id,
+                Status = status,
+                StationId = stationId,
+                ProcessedAt = DateTime.UtcNow
+            };
+
+            await _unitOfWork.TicketProcessRepository.AddAsync(ticketProcess);
+            await _unitOfWork.SaveAsync();
         }
 
         //private async Task<bool> CheckOutTicket(Ticket ticket, Guid stationId, Guid metroLineId)

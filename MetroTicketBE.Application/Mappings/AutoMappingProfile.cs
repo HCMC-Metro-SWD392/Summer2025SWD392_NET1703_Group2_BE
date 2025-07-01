@@ -18,6 +18,7 @@ using MetroTicketBE.Domain.DTO.FormRequest;
 using MetroTicketBE.Domain.DTO.Staff;
 using MetroTicketBE.Domain.DTO.Customer;
 using MetroTicketBE.Domain.Enums;
+using MetroTicketBE.Domain.DTO.TicketProcess;
 
 namespace MetroTicketBE.Application.Mappings
 {
@@ -76,6 +77,7 @@ namespace MetroTicketBE.Application.Mappings
                 .ForMember(dest => dest.StudentExpiration, opt => opt.MapFrom(src => src.StudentExpiration))
                 .ForMember(dest => dest.Sex, opt => opt.MapFrom(src => src.User.Sex)).ReverseMap();
 
+            CreateMap<TicketProcess, GetTicketProcessDTO>().ReverseMap();
         }
     }
 }
