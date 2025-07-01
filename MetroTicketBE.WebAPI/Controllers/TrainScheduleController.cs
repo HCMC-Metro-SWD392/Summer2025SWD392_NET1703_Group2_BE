@@ -47,7 +47,6 @@ namespace MetroTicketBE.WebAPI.Controllers
         [HttpPost]
         [Route("create-train-schedule")]
         [Authorize(Roles = StaticUserRole.Admin)]
-        public async Task<ActionResult<ResponseDTO>> CreateTrainSchedule([FromBody] Guid metroLineId)
         public async Task<ActionResult<ResponseDTO>> CreateTrainSchedule([FromBody] CreateTrainScheduleDTO createTrainScheduleDto)
         {
             if (createTrainScheduleDto.MetroLineId == Guid.Empty)
