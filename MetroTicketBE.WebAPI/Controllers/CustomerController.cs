@@ -34,7 +34,7 @@ public class CustomerController : ControllerBase
 
 
     [HttpGet("user/{userId}")]
-    [Authorize(Roles = StaticUserRole.StaffManagerAdmin)]
+    [Authorize]
     public async Task<ActionResult<ResponseDTO>> GetCustomerByUserIdAsync(string userId)
     {
         ResponseDTO response = await _customerService.GetCustomerByUserIdAsync(userId);
