@@ -10,11 +10,14 @@ namespace MetroTicketBE.Domain.DTO.TrainSchedule
 {
     public class CreateTrainScheduleDTO
     {
-        //public Guid TrainId { get; set; }
         public Guid MetroLineId { get; set; }
-        public Guid StationId { get; set; }
-        public TimeSpan StartTime { get; set; }
-        public TimeSpan EndTime { get; set; }
-        public TrainScheduleType Direction { get; set; }
+        public int TravelTimeBetweenStationsInSeconds { get; set; }
+        public int DwellTimeAtStationInSeconds { get; set; }
+        public TimeSpan PeakHourMorningStart { get; set; }
+        public TimeSpan PeakHourMorningEnd { get; set; }
+        public TimeSpan PeakHourEveningStart { get; set; }
+        public TimeSpan PeakHourEveningEnd { get; set; }
+        public int PeakHourHeadwayInSeconds { get; set; }
+        public int OffPeakHourHeadwayInSeconds { get; set; }
     }
 }
