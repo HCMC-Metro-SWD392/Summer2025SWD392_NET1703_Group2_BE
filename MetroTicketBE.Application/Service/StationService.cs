@@ -92,7 +92,7 @@ namespace MetroTicketBE.Application.Service
 
                 if (!string.IsNullOrEmpty(updateStationDTO.Name))
                 {
-                    var isExistName = await _unitOfWork.StationRepository.IsExistByName(updateStationDTO.Name);
+                    var isExistName = await _unitOfWork.StationRepository.IsExistByNameAndStationId(updateStationDTO.Name, stationId);
                     if (isExistName)
                     {
                         return new ResponseDTO
@@ -108,7 +108,7 @@ namespace MetroTicketBE.Application.Service
 
                 if (!string.IsNullOrEmpty(updateStationDTO.Address))
                 {
-                    var isExistAddress = await _unitOfWork.StationRepository.IsExistByAddress(updateStationDTO.Address);
+                    var isExistAddress = await _unitOfWork.StationRepository.IsExistByAddress(updateStationDTO.Address, stationId);
                     if (isExistAddress)
                     {
                         return new ResponseDTO

@@ -45,18 +45,22 @@ namespace MetroTicketBE.Infrastructure.Repository
                 .AnyAsync(s => s.Id == stationId);
         }
 
+        public async Task<bool> IsExistByNameAndStationId(string stationName, Guid stationId)
+        {
+                return await _context.Stations
+                    .AnyAsync(s => s.Name == stationName && s.Id != stationId);
+        }
         public async Task<bool> IsExistByName(string stationName)
         {
             return await _context.Stations
                 .AnyAsync(s => s.Name == stationName);
         }
-
-        public async Task<bool> IsExistByAddress(string address)
+        public async Task<bool> IsExistByAddress(string address, Guid stationId)
         {
             return await _context.Stations
-                .AnyAsync(s => s.Address == address);
+                .AnyAsync(s => s.Address == address && s.Id != stationId);
         }
-
+        
         public Task<string?> GetNameById(Guid stationId)
         {
             return _context.Stations

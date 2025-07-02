@@ -10,9 +10,10 @@ namespace MetroTicketBE.Infrastructure.IRepository
     public interface IStationRepository : IRepository<Station>
     {
         public double CalculateTotalDistance(List<Guid> stationPath, List<MetroLine> allMetroLines);
+        Task<bool> IsExistByNameAndStationId(string stationName, Guid stationId);
         Task<bool> IsExistByName(string stationName);
         Task<bool> IsExistById(Guid stationId);
-        Task<bool> IsExistByAddress(string stationAddress);
+        Task<bool> IsExistByAddress(string stationAddress, Guid stationId);
         Task<string?> GetNameById(Guid stationId);
         Task<List<Station>> GetAllStationsAsync(bool? isAscending);
         Task<int> GetOrderStationById(Guid stationId, Guid metroLineId);
