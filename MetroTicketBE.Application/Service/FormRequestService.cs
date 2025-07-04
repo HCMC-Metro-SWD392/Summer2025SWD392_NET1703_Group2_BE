@@ -6,6 +6,7 @@ using MetroTicketBE.Domain.DTO.FormRequest;
 using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Domain.Enum;
 using MetroTicketBE.Infrastructure.IRepository;
+using System.Reflection;
 using System.Security.Claims;
 
 namespace MetroTicketBE.Application.Service
@@ -274,6 +275,27 @@ namespace MetroTicketBE.Application.Service
                     {
                         IsSuccess = false,
                         Message = "Bạn đã có một yêu cầu đang chờ duyệt. Chờ đợi là hạnh phúc",
+                        StatusCode = 400
+                    };
+                }
+
+                var sender = await _unitOfWork.CustomerRepository.GetByUserIdAsync(senderId);
+                if (sender is null)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        Message = "Không tìm thấy người dùng hiện đang truy cập",
+                        StatusCode = 404
+                    };
+                }
+
+                if (sender.CustomerType == createFormRequestDTO.CustomerType)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        Message = "Người dùng còn hiệu lực loại người dùng không thề gửi cùng loại để xét duyệt",
                         StatusCode = 400
                     };
                 }
