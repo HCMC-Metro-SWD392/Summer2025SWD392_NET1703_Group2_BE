@@ -117,5 +117,13 @@ namespace MetroTicketBE.WebAPI.Controllers
             var response = await _authService.ChangPassword(User, changePasswordDTO);
             return StatusCode(response.StatusCode, response);
         }
+
+        [HttpPost]
+        [Route("reset-password")]
+        public async Task<ActionResult<ResponseDTO>> ResetPassword([FromBody] ResetPasswordDTO resetPasswordDTO)
+        {
+            var response = await _authService.ResetPassword(resetPasswordDTO);
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }

@@ -69,10 +69,13 @@ namespace MetroTicketBE.Application.Service
 
         public async Task<bool> SendVerifyEmail(string toMail, string confirmationLink)
         {
-            return await SendEmailFromTemplate(toMail, "SendVerifyEmail", confirmationLink);
+            return await SendEmailFromTemplate(toMail, "SendVerifyEmail", new Dictionary<string, string>
+            {
+                { "{Login}", confirmationLink }
+            });
         }
 
-        public async Task<bool> SendEmailFromTemplate(string toMail, string templateName, string replacementValue)
+        public async Task<bool> SendEmailFromTemplate(string toMail, string templateName, Dictionary<string, string> replacements)
         {
             var template = await _unitOfWork.EmailTemplateRepository.GetAsync(t => t.TemplateName == templateName);
 
@@ -82,12 +85,45 @@ namespace MetroTicketBE.Application.Service
             }
 
             string subject = template.SubjectLine;
-            string body = template.BodyContent.Replace("{Login}", replacementValue);
+            string body = template.BodyContent;
+
+            foreach (var replacement in replacements)
+            {
+                subject = subject.Replace(replacement.Key, replacement.Value);
+                body = body.Replace(replacement.Key, replacement.Value);
+            }
 
             return await SendEmailAsync(toMail, subject, body);
-
         }
 
+        public async Task<bool> SendResetPasswordEmail(string toMail, string resetLink, string userName = "", int expirationHours = 24)
+        {
+            var expirationTime = $"{expirationHours} giờ";
+            return await SendEmailFromTemplate(toMail, "ResetPasswordEmail", new Dictionary<string, string>
+            {
+                { "{ResetLink}", resetLink },
+                { "{UserName}", !string.IsNullOrEmpty(userName) ? userName : "Quý khách" },
+                { "{ExpirationTime}", expirationTime }
+            });
+        }
+
+        //public async Task<bool> SendPasswordChangedNotification(string toMail, string userName)
+        //{
+        //    return await SendEmailFromTemplate(toMail, "PasswordChangedNotificationEmail", new Dictionary<string, string>
+        //    {
+        //        { "{UserName}", !string.IsNullOrEmpty(userName) ? userName : "Quý khách" },
+        //        { "{ChangeDateTime}", DateTime.Now.ToString("dd/MM/yyyy HH:mm") }
+        //    });
+        //}
+
+        //// Method để gửi email welcome sau khi verify thành công
+        //public async Task<bool> SendWelcomeEmail(string toMail, string userName)
+        //{
+        //    return await SendEmailFromTemplate(toMail, "WelcomeEmail", new Dictionary<string, string>
+        //    {
+        //        { "{UserName}", !string.IsNullOrEmpty(userName) ? userName : "Quý khách" }
+        //    });
+        //}
         public async Task<ResponseDTO> CreateEmailTemplate(ClaimsPrincipal user, CreateEmailTemplateDTO createEmailTemplateDTO)
         {
             try
