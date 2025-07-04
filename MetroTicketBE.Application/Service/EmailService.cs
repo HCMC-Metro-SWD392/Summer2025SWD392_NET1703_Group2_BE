@@ -69,7 +69,7 @@ namespace MetroTicketBE.Application.Service
 
         public async Task<bool> SendVerifyEmail(string toMail, string confirmationLink)
         {
-            return await SendEmailFromTemplate(toMail, "SendVerifyEmail", new Dictionary<string, string>
+            return await SendEmailFromTemplate(toMail, "VerifyEmail", new Dictionary<string, string>
             {
                 { "{Login}", confirmationLink }
             });
