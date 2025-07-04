@@ -1,12 +1,14 @@
-﻿
-using Amazon;
+﻿using Amazon;
 using Amazon.SimpleEmailV2;
 using Amazon.SimpleEmailV2.Model;
 using MetroTicketBE.Application.IService;
+using MetroTicketBE.Domain.DTO.Auth;
+using MetroTicketBE.Domain.DTO.Email;
+using MetroTicketBE.Domain.Entities;
+using MetroTicketBE.Domain.Enum;
 using MetroTicketBE.Infrastructure.IRepository;
 using Microsoft.Extensions.Configuration;
-using System.Net;
-using System.Net.Mail;
+using System.Security.Claims;
 
 namespace MetroTicketBE.Application.Service
 {
@@ -84,6 +86,71 @@ namespace MetroTicketBE.Application.Service
 
             return await SendEmailAsync(toMail, subject, body);
 
+        }
+
+        public async Task<ResponseDTO> CreateEmailTemplate(ClaimsPrincipal user, CreateEmailTemplateDTO createEmailTemplateDTO)
+        {
+            try
+            {
+                var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        Message = "Không tìm thấy thông tin người dùng.",
+                        StatusCode = 400
+                    };
+                }
+
+                // Kiểm tra xem template đã tồn tại chưa
+                var existingTemplate = await _unitOfWork.EmailTemplateRepository.IsExistByTemplateName(createEmailTemplateDTO.TemplateName);
+                if (existingTemplate)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        Message = $"Template [{createEmailTemplateDTO.TemplateName}] đã tồn tại.",
+                        StatusCode = 409
+                    };
+                }
+
+                var emailTemplate = new EmailTemplate
+                {
+                    TemplateName = createEmailTemplateDTO.TemplateName,
+                    SubjectLine = createEmailTemplateDTO.SubjectLine,
+                    BodyContent = createEmailTemplateDTO.BodyContent,
+                    SenderName = createEmailTemplateDTO.SenderName,
+                    Category = createEmailTemplateDTO.Category,
+                    PreHeaderText = createEmailTemplateDTO.PreHeaderText,
+                    PersonalizationTags = createEmailTemplateDTO.PersonalizationTags,
+                    FooterContent = createEmailTemplateDTO.FooterContent,
+                    CallToAction = createEmailTemplateDTO.CallToAction,
+                    Language = createEmailTemplateDTO.Language,
+                    RecipientType = createEmailTemplateDTO.RecipientType,
+                    Status = EmailStatus.Active,
+                    CreatedBy = userId
+                };
+
+                await _unitOfWork.EmailTemplateRepository.AddAsync(emailTemplate);
+                await _unitOfWork.SaveAsync();
+
+                return new ResponseDTO
+                {
+                    IsSuccess = true,
+                    Message = "Email template đã được tạo thành công",
+                    StatusCode = 201
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    IsSuccess = false,
+                    Message = $"Lỗi khi tạo template email: {ex.Message}",
+                    StatusCode = 500
+                };
+            }
         }
     }
 }

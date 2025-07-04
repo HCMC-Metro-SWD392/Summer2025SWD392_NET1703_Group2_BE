@@ -41,7 +41,7 @@ namespace MetroTicketBE.Infrastructure.Context
         {
             base.OnModelCreating(modelBuilder);
             //Seeding
-            ApplicationDBContextSeed.SeedEmailTemplate(modelBuilder);
+            //ApplicationDBContextSeed.SeedEmailTemplate(modelBuilder);
 
             //TicketProcesses
             modelBuilder.Entity<TicketProcess>()
