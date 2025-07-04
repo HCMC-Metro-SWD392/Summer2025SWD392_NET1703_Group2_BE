@@ -10,7 +10,6 @@ public class EmailTemplate
     public string SubjectLine { get; set; } = null!;
     public string BodyContent { get; set; } = null!;
     public string SenderName { get; set; } = null!;
-    public string SenderEmail { get; set; } = null!;
     public string Category { get; set; } = null!;
     public string PreHeaderText { get; set; } = null!;
     public string PersonalizationTags { get; set; } = null!;
