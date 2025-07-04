@@ -32,12 +32,10 @@ namespace MetroTicketBE.Application.Mappings
             CreateMap<MetroLineStation, GetMetroLineStationDTO>();
             CreateMap<MetroLine, MetroLineDTO>();
             CreateMap<Ticket, GetTicketDTO>()
-            .ForMember(dest => dest.FromStation, opt => opt.MapFrom(src =>
-                src.TicketRoute != null ? src.TicketRoute.StartStation.Name :
-                src.SubscriptionTicket != null ? src.SubscriptionTicket.StartStation.Name : null))
-            .ForMember(dest => dest.ToStation, opt => opt.MapFrom(src =>
-                src.TicketRoute != null ? src.TicketRoute.EndStation.Name :
-                src.SubscriptionTicket != null ? src.SubscriptionTicket.EndStation.Name : null)).ReverseMap();
+            .ForMember(dest => dest.FromStationRoute, opt => opt.MapFrom(src => src.TicketRoute.StartStation.Name))
+            .ForMember(dest => dest.ToStationRoute, opt => opt.MapFrom(src => src.TicketRoute.EndStation.Name))
+            .ForMember(dest => dest.FromStationSub, opt => opt.MapFrom(src => src.SubscriptionTicket.StartStation.Name))
+            .ForMember(dest => dest.ToStationSub, opt => opt.MapFrom(src => src.SubscriptionTicket.EndStation.Name)).ReverseMap();
 
             CreateMap<ApplicationUser, UserDTO>();
             CreateMap<Promotion, GetPromotionDTO>();
