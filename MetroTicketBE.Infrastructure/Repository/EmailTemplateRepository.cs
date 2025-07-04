@@ -1,11 +1,7 @@
 ﻿using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Infrastructure.Context;
 using MetroTicketBE.Infrastructure.IRepository;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace MetroTicketBE.Infrastructure.Repository
 {
@@ -15,6 +11,12 @@ namespace MetroTicketBE.Infrastructure.Repository
         public EmailTemplateRepository(ApplicationDBContext context) : base(context)
         {
             _context = context;
+        }
+
+        public async Task<bool> IsExistByTemplateName(string templateName)
+        {
+            return await _context.EmailTemplates
+                .AnyAsync(et => et.TemplateName.ToLower() == templateName.ToLower());
         }
     }
 }

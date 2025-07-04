@@ -14,7 +14,5 @@ namespace MetroTicket.Domain.Entities
         public ICollection<Log> Logs { get; set; } = new List<Log>();
         public ICollection<FormRequest> FormRequestsAsSenders { get; set; } = new List<FormRequest>();
         public ICollection<FormRequest> FormRequestsAsReviewers { get; set; } = new List<FormRequest>();
-
-        public ICollection<EmailTemplate> EmailTemplates { get; set; } = new List<EmailTemplate>();
     }
 }
