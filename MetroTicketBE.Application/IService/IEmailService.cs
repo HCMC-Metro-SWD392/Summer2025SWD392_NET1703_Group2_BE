@@ -13,7 +13,8 @@ namespace MetroTicketBE.Application.IService
     {
         Task<bool> SendEmailAsync(string to, string subject, string body);
         Task<bool> SendVerifyEmail(string toMail, string confirmationLink);
-        Task<bool> SendEmailFromTemplate(string toEmail, string templateName, string confirmationLink);
+        Task<bool> SendEmailFromTemplate(string toEmail, string templateName, Dictionary<string, string> replacements);
+        Task<bool> SendResetPasswordEmail(string toMail, string resetLink, string userName = "", int expirationHours = 24);
         Task<ResponseDTO> CreateEmailTemplate(ClaimsPrincipal user, CreateEmailTemplateDTO createEmailTemplateDTO);
     }
 }

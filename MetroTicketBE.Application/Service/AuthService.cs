@@ -654,6 +654,44 @@ namespace MetroTicketBE.Application.Service
                 };
             }
         }
+
+        public async Task<ResponseDTO> ResetPassword(ResetPasswordDTO resetPasswordDTO)
+        {
+            try
+            {
+                var user = await _unitOfWork.UserManagerRepository.GetByEmailAsync(resetPasswordDTO.Email);
+                if (user is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Người dùng không tồn tại",
+                        Result = null,
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var resetLink = $"{StaticURL.Frontend_Url_Reset_Password}?email={resetPasswordDTO.Email}&token={Uri.EscapeDataString(token)}";
+
+                await _emailService.SendResetPasswordEmail(resetPasswordDTO.Email, resetLink);
+                return new ResponseDTO
+                {
+                    Message = "Email đặt lại mật khẩu đã được gửi",
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
+            }
+            catch (Exception e)
+            {
+                return new ResponseDTO
+                {
+                    Message = $"Đã xảy ra lỗi khi gửi email đặt lại mật khẩu: {e.Message}",
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
     }
 }
 
