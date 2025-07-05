@@ -6,7 +6,7 @@ namespace MetroTicketBE.Domain.DTO.MetroLine;
 public class GetMetroLineDTO
 {
     public Guid Id { get; set; }
-    public int MetroLineNumber { get; set; }
+    public string MetroLineNumber { get; set; }
     public string? MetroName { get; set; }
     public DateTime CreatedAt { get; set; }
     public GetStationDTO? StartStation { get; set; }
