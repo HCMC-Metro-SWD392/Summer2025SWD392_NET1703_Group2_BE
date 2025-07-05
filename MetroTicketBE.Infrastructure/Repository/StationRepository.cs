@@ -47,8 +47,9 @@ namespace MetroTicketBE.Infrastructure.Repository
 
         public async Task<bool> IsExistByNameAndStationId(string stationName, Guid stationId)
         {
+            var trimmedStationName = stationName.Trim();
                 return await _context.Stations
-                    .AnyAsync(s => s.Name == stationName && s.Id != stationId);
+                    .AnyAsync(s => s.Name.ToUpper() == stationName.ToUpper() && s.Id != stationId);
         }
         public async Task<bool> IsExistByName(string stationName)
         {
@@ -57,8 +58,9 @@ namespace MetroTicketBE.Infrastructure.Repository
         }
         public async Task<bool> IsExistByAddress(string address, Guid stationId)
         {
+            var trimmedAddress = address.Trim();
             return await _context.Stations
-                .AnyAsync(s => s.Address == address && s.Id != stationId);
+                .AnyAsync(s => s.Address.ToUpper() == trimmedAddress.ToUpper() && s.Id != stationId);
         }
         
         public Task<string?> GetNameById(Guid stationId)

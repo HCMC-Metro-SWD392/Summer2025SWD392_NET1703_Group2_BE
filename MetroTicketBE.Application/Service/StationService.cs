@@ -103,7 +103,7 @@ namespace MetroTicketBE.Application.Service
                         };
                     }
 
-                    station.Name = updateStationDTO.Name;
+                    station.Name = updateStationDTO.Name.Trim();
                 }
 
                 if (!string.IsNullOrEmpty(updateStationDTO.Address))
@@ -119,7 +119,7 @@ namespace MetroTicketBE.Application.Service
                         };
                     }
 
-                    station.Address = updateStationDTO.Address;
+                    station.Address = updateStationDTO.Address.Trim();
                 }
 
                 if (!string.IsNullOrEmpty(updateStationDTO.Description))
