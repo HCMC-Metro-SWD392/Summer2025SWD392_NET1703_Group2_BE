@@ -42,7 +42,7 @@ namespace MetroTicketBE.Infrastructure.Repository
                 .AnyAsync(metroLine => metroLine.Id == id);
         }
 
-        public async Task<bool> IsExistByMetroLineNumber(int metroLineNumber, Guid? currentMetroLineId)
+        public async Task<bool> IsExistByMetroLineNumber(string metroLineNumber, Guid? currentMetroLineId)
         {
             var query = _context.MetroLines.Where(m => m.MetroLineNumber == metroLineNumber);
             if (currentMetroLineId.HasValue)

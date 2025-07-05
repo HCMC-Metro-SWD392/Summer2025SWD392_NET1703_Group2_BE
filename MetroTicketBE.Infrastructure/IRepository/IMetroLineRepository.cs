@@ -6,7 +6,7 @@ namespace MetroTicketBE.Infrastructure.IRepository
     {
         Task<List<MetroLine>> GetAllListAsync();
         Task<MetroLine?> GetByIdAsync(Guid id);
-        Task<bool> IsExistByMetroLineNumber(int metroLineNumber, Guid? currentMetroLineId);
+        Task<bool> IsExistByMetroLineNumber(string metroLineNumber, Guid? currentMetroLineId);
         Task<bool> IsExistById(Guid id);
         Task<bool> IsSameMetroLine(Guid stationOneId, Guid stationTwoId);
     }

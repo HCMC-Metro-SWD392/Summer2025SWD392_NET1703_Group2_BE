@@ -232,9 +232,9 @@ namespace MetroTicketBE.Application.Service
         }
         private static void  PatchMetroLine(MetroLine metroLine, UpdateMetroLineDTO updateMetroLineDTO)
         {
-            if (updateMetroLineDTO.MetroLineNumber.HasValue)
+            if (!string.IsNullOrEmpty(updateMetroLineDTO.MetroLineNumber))
             {
-                metroLine.MetroLineNumber = updateMetroLineDTO.MetroLineNumber.Value;
+                metroLine.MetroLineNumber = updateMetroLineDTO.MetroLineNumber;
             }
             if (!string.IsNullOrEmpty(updateMetroLineDTO.MetroName))
             {

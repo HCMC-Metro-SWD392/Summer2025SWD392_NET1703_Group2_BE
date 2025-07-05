@@ -2,7 +2,7 @@
 
 public class UpdateMetroLineDTO
 {
-    public int? MetroLineNumber { get; set; }
+    public string? MetroLineNumber { get; set; }
     public string? MetroName { get; set; }
     public Guid? StartStationId { get; set; }
     public Guid? EndStationId { get; set; }
