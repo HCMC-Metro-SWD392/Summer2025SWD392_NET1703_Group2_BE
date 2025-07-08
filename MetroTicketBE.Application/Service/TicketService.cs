@@ -897,11 +897,13 @@ namespace MetroTicketBE.Application.Service
             }
             if (totalPrice == 0)
             {
-                await SendNotifyOverStation(ticket, stationId, $"Bạn đã vượt trạm nhưng nằm trong vùng đổi vé miễn phí, vui lòng xác nhận để chuyển sang vé phù hợp.", userId);
+                var stationName = await _unitOfWork.StationRepository.GetNameById(stationId);
+                await SendNotifyOverStation(ticket, stationId, $"Bạn đã vượt trạm tại {stationName}, nhưng nằm trong vùng đổi vé miễn phí, vui lòng xác nhận để chuyển sang vé phù hợp.", userId);
             }
             else
             {
-                await SendNotifyOverStation(ticket, stationId, $"Bạn đã vượt trạm! Vui lòng thanh toán thêm {totalPrice}VND", userId);
+                var stationName = await _unitOfWork.StationRepository.GetNameById(stationId);
+                await SendNotifyOverStation(ticket, stationId, $"Bạn đã vượt trạm tại {stationName}. Vui lòng thanh toán thêm {totalPrice} đồng", userId);
             }
             return new ResponseDTO
             {
