@@ -2,6 +2,7 @@
 using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.DashBoard;
+using MetroTicketBE.Domain.Enum;
 using MetroTicketBE.Infrastructure.IRepository;
 
 namespace MetroTicketBE.Application.Service
@@ -199,6 +200,64 @@ namespace MetroTicketBE.Application.Service
                 return new ResponseDTO
                 {
                     Message = $"Lỗi khi lấy thống kê vé: {ex.Message}",
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
+
+        public async Task<ResponseDTO> ViewTicketRouteStatisticsNumber(DateTime dateFrom, DateTime dateTo, PaymentStatus status)
+        {
+            try
+            {
+                var transactions = (await _unitOfWork.PaymentTransactionRepository.GetAllAsync(includeProperties: "Ticket"))
+                    .Where(pt => pt.CreatedAt >= dateFrom && pt.CreatedAt <= dateTo && pt.Status == status &&
+                    (pt.Ticket.SubscriptionTicket == null || (pt.Ticket.SubscriptionTicket != null && pt.Ticket.TicketRoute != null)));
+
+                var count = transactions.Count();
+
+                return new ResponseDTO
+                {
+                    Result = count,
+                    Message = "Lấy số lượng thống kê vé thành công.",
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    Result = null,
+                    Message = $"Lỗi khi lấy số lượng thống kê vé: {ex.Message}",
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
+
+        public async Task<ResponseDTO> ViewSubscriptionTicketStatisticsNumber(DateTime dateFrom, DateTime dateTo, PaymentStatus status)
+        {
+            try
+            {
+                var transactions = (await _unitOfWork.PaymentTransactionRepository.GetAllAsync(includeProperties: "Ticket"))
+                                    .Where(pt => pt.CreatedAt >= dateFrom && pt.CreatedAt <= dateTo && pt.Status == status &&
+                                    pt.Ticket.SubscriptionTicket != null);
+                var count = transactions.Select(tr => tr.TicketId).Distinct().Count();
+                return new ResponseDTO
+                {
+                    Result = count,
+                    Message = "Lấy số lượng thống kê vé định kỳ thành công.",
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    Result = null,
+                    Message = $"Lỗi khi lấy số lượng thống kê vé định kỳ: {ex.Message}",
                     IsSuccess = false,
                     StatusCode = 500
                 };

@@ -2,6 +2,7 @@
 using MetroTicketBE.Application.Service;
 using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Domain.DTO.Auth;
+using MetroTicketBE.Domain.Enum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -47,14 +48,39 @@ namespace MetroTicketBE.WebAPI.Controllers
         [Route("ticket-statistics")]
         [Authorize(Roles = StaticUserRole.ManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> ViewTicketStatistics(
-           [FromQuery] DateTime dateFrom = default,
-           [FromQuery] DateTime dateTo = default,
+           [FromQuery] DateTime dateFrom,
+           [FromQuery] DateTime dateTo,
            [FromQuery] bool? isAccendingCreated = false,
            [FromQuery] int pageNumber = 1,
            [FromQuery] int pageSize = 10)
         {
-            dateFrom = dateFrom == default ? DateTime.UtcNow : dateFrom;
             var response = await _dashBoardService.ViewTicketStatistics(dateFrom, dateTo, isAccendingCreated, pageNumber, pageSize);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpGet]
+        [Route("ticket-route-statistics-number")]
+        //[Authorize(Roles = StaticUserRole.ManagerAdmin)]
+        public async Task<ActionResult<ResponseDTO>> ViewTicketStatisticsNumber(
+            [FromQuery] DateTime dateFrom,
+            [FromQuery] DateTime dateTo,
+            [FromQuery] PaymentStatus status
+        )
+        {
+            var response = await _dashBoardService.ViewTicketRouteStatisticsNumber(dateFrom, dateTo, status);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpGet]
+        [Route("subscription-ticket-statistics-number")]
+        //[Authorize(Roles = StaticUserRole.ManagerAdmin)]
+        public async Task<ActionResult<ResponseDTO>> ViewSubscriptionTicketStatisticsNumber(
+            [FromQuery] DateTime dateFrom,
+            [FromQuery] DateTime dateTo,
+            [FromQuery] PaymentStatus status
+        )
+        {
+            var response = await _dashBoardService.ViewSubscriptionTicketStatisticsNumber(dateFrom, dateTo, status);
             return StatusCode(response.StatusCode, response);
         }
     }
