@@ -11,8 +11,9 @@ namespace MetroTicketBE.Application.IService
     public interface IMetroLineService
     {
         Task<ResponseDTO> CreateMetroLine(CreateMetroLineDTO createMetroLineDTO);
-        Task<ResponseDTO> GetAllMetroLines();
+        Task<ResponseDTO> GetAllMetroLines(bool? isActive);
         Task<ResponseDTO> GetMetroLineById(Guid metroLineId);
         Task<ResponseDTO> UpdateMetroLine(Guid metroLineId, UpdateMetroLineDTO updateMetroLineDTO);
+        Task<ResponseDTO> SetIsActiveMetroLine(Guid metroLineId, bool isActive);
     }
 }

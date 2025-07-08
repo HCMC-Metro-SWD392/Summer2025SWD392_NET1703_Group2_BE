@@ -14,16 +14,19 @@ namespace MetroTicketBE.Infrastructure.Repository
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public async Task<List<MetroLine>> GetAllListAsync()
+        public async Task<List<MetroLine>> GetAllListAsync(bool? isActive = null)
         {
-            return await _context.MetroLines
-                .AsNoTracking()
+            var query = _context.MetroLines.AsQueryable();
+            if (isActive.HasValue)
+            {
+                query = query.Where(m => m.IsActive == isActive.Value);
+            }
+
+            return await query.AsNoTracking()
                 .Include(mt => mt.StartStation)
                 .Include(mt => mt.EndStation)
                 .Include(mt => mt.MetroLineStations)
-                .ThenInclude(mts => mts.Station)
-                .OrderBy(mts => mts.CreatedAt)
-                .ToListAsync();
+                .ThenInclude(mts => mts.Station).ToListAsync();
         }
 
         public async Task<MetroLine?> GetByIdAsync(Guid id)
@@ -41,7 +44,7 @@ namespace MetroTicketBE.Infrastructure.Repository
             return await _context.MetroLines
                 .AnyAsync(metroLine => metroLine.Id == id);
         }
-
+        
         public async Task<bool> IsExistByMetroLineNumber(string metroLineNumber, Guid? currentMetroLineId)
         {
             var query = _context.MetroLines.Where(m => m.MetroLineNumber == metroLineNumber);
@@ -62,5 +65,6 @@ namespace MetroTicketBE.Infrastructure.Repository
                     mls2 => mls2.MetroLineId,
                     (mls1, mls2) => mls1).AnyAsync();
         }
+        
     }
 }

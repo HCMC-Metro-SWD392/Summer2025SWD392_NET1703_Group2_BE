@@ -30,9 +30,9 @@ namespace MetroTicketBE.WebAPI.Controllers
         [HttpGet]
         [Route("metro-lines/all")]
         //[Authorize(Roles = StaticUserRole.Admin)]
-        public async Task<ActionResult<ResponseDTO>> GetAllMetroLines()
+        public async Task<ActionResult<ResponseDTO>> GetAllMetroLines([FromQuery]bool? isActive = null)
         {
-            var response = await _metroLineService.GetAllMetroLines();
+            var response = await _metroLineService.GetAllMetroLines(isActive);
             return StatusCode(response.StatusCode, response);
         }
 
@@ -52,6 +52,15 @@ namespace MetroTicketBE.WebAPI.Controllers
             [FromBody] UpdateMetroLineDTO updateMetroLineDTO)
         {
             var response = await _metroLineService.UpdateMetroLine(metroLineId, updateMetroLineDTO);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpPatch]
+        [Route("set-isActive/{metroLineId:guid}")]
+        [Authorize(Roles = StaticUserRole.Admin)]
+        public async Task<ActionResult<ResponseDTO>> SetIsActive(Guid metroLineId, [FromQuery] bool isActive)
+        {
+            var response = await _metroLineService.SetIsActiveMetroLine(metroLineId, isActive);
             return StatusCode(response.StatusCode, response);
         }
     }
