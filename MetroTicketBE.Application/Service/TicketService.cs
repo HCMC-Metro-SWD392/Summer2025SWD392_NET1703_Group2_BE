@@ -402,7 +402,7 @@ namespace MetroTicketBE.Application.Service
                 }
                 else if (ticket.TicketRtStatus == TicketStatus.Inactive)
                 {
-                    var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
+                    var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync(null);
 
                     var _graph = new StationGraph(allMetroLines);
 
@@ -430,7 +430,7 @@ namespace MetroTicketBE.Application.Service
                 }
                 else
                 {
-                    var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
+                    var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync(null);
 
                     var _graph = new StationGraph(allMetroLines);
 
@@ -575,7 +575,7 @@ namespace MetroTicketBE.Application.Service
                 else if (ticket.TicketRtStatus == TicketStatus.Active)
                 {
 
-                    var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
+                    var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync(null);
 
                     var _graph = new StationGraph(allMetroLines);
 
@@ -603,7 +603,7 @@ namespace MetroTicketBE.Application.Service
                 }
                 else
                 {
-                    var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
+                    var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync(null);
 
                     var _graph = new StationGraph(allMetroLines);
 
@@ -777,7 +777,7 @@ namespace MetroTicketBE.Application.Service
 
         private async Task<ResponseDTO> FindTicketRouteForOverStationAndGetPrice(Ticket ticket, Guid stationId, string userId)
         {
-            var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
+            var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync(null);
 
             var _graph = new StationGraph(allMetroLines);
 

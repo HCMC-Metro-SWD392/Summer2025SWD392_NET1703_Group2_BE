@@ -82,50 +82,58 @@ namespace MetroTicketBE.Infrastructure.Repository
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<List<Station>> GetAllStationsAsync(bool? isAscending)
+        public async Task<List<Station>> GetAllStationsAsync(bool? isAscending, bool? isActive = null)
         {
-            if (isAscending.HasValue && isAscending.Value == true)
+            var query = _context.Stations.AsQueryable();
+
+            if (isActive.HasValue)
             {
-                return await _context.Stations
+                query = query.Where(s => s.IsActive == isActive.Value);
+            }
+
+            if (isAscending.HasValue && isAscending.Value)
+            {
+                return await query
                     .OrderBy(s => s.CreatedAt)
                     .Include(s => s.MetroLineStations)
                     .ThenInclude(mls => mls.MetroLine)
                     .ToListAsync();
             }
 
-            return await _context.Stations
-                    .OrderByDescending(s => s.CreatedAt)
-                    .Include(s => s.MetroLineStations).ThenInclude(mls => mls.MetroLine)
+            return await query
+                .OrderByDescending(s => s.CreatedAt)
+                .Include(s => s.MetroLineStations).ThenInclude(mls => mls.MetroLine)
                 .ToListAsync();
         }
 
-        public IQueryable<Station> GetAllStationDTOAsync(bool? isAscending)
+        public IQueryable<Station> GetAllStationDTOAsync(bool? isAscending, bool? isActive = null)
         {
             var stationsQuery = _context.Stations.AsQueryable();
 
-            if (isAscending.HasValue && isAscending.Value)
+            if (isAscending.HasValue && isAscending.Value )
             {
-                stationsQuery = stationsQuery.OrderBy(s => s.CreatedAt);
+                stationsQuery = stationsQuery.Where(s => isActive == null || s.IsActive == isActive).OrderBy(s => s.CreatedAt);
             }
             else
             {
-                stationsQuery = stationsQuery.OrderByDescending(s => s.CreatedAt);
+                stationsQuery = stationsQuery.Where(s => isActive == null || s.IsActive == isActive).OrderByDescending(s => s.CreatedAt);
             }
 
             return stationsQuery;
         }
 
-        public async Task<List<Station>> SearchStationsByName(string? name)
+        public async Task<List<Station>> SearchStationsByName(string? name, bool? isActive = null)
         {
             
             if (name is null)
             {
-                return await _context.Stations
+                return await _context.Stations.Where(s => isActive == null || s.IsActive == isActive.Value)
                     .ToListAsync();
             }
         
             return await _context.Stations
-                .Where(s => s.Name.ToLower().Contains(name.ToLower()))
+                .Where(s => s.Name.ToLower().Contains(name.ToLower())  && 
+                            (isActive == null || s.IsActive == isActive.Value))
                 .Include(s => s.MetroLineStations).ThenInclude(mls => mls.MetroLine)
                 .ToListAsync();
         }

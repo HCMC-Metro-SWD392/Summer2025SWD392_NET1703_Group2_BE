@@ -12,8 +12,9 @@ namespace MetroTicketBE.Application.IService
     {
         Task<ResponseDTO> CreateStation(CreateStationDTO createStationDTO);
         Task<ResponseDTO> UpdateStation(Guid stationId, UpdateStationDTO updateStationDTO);
-        Task<ResponseDTO> GetAllStations(bool? isAscending, int pageNumber, int pageSize);
+        Task<ResponseDTO> GetAllStations(bool? isAscending, int pageNumber, int pageSize, bool? isActive);
         Task<ResponseDTO> GetStationById(Guid stationId);
-        Task<ResponseDTO> SearchStationsByName(string? name);
+        Task<ResponseDTO> SearchStationsByName(string? name, bool? isActive);
+        Task<ResponseDTO> SetIsActiveStation(Guid stationId, bool isActive);
     }
 }

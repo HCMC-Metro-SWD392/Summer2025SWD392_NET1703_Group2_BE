@@ -39,9 +39,9 @@ namespace MetroTicketBE.WebAPI.Controllers
         [HttpGet]
         [Route("get-all-stations")]
         [Authorize]
-        public async Task<ActionResult<ResponseDTO>> GetAllStations(bool? isAscending, int pageNumber, int pageSize)
+        public async Task<ActionResult<ResponseDTO>> GetAllStations(bool? isAscending, int pageNumber, int pageSize, bool? isActive = null)
         {
-            var response = await _stationService.GetAllStations(isAscending, pageNumber, pageSize);
+            var response = await _stationService.GetAllStations(isAscending, pageNumber, pageSize, isActive);
             return StatusCode(response.StatusCode, response);
         }
         
@@ -57,10 +57,20 @@ namespace MetroTicketBE.WebAPI.Controllers
         [HttpGet]
         [Route("search-stations-by-name")]
         [Authorize]
-        public async Task<ActionResult<ResponseDTO>> SearchStationsByName([FromQuery] string? name)
+        public async Task<ActionResult<ResponseDTO>> SearchStationsByName([FromQuery] string? name, bool? isActive = null)
         {
-            var response = await _stationService.SearchStationsByName(name);
+            var response = await _stationService.SearchStationsByName(name, isActive);
             return StatusCode(response.StatusCode, response);
         }
+
+        [HttpPatch]
+        [Route("set-isActive/{stationId:guid}")]
+        [Authorize(Roles = StaticUserRole.Admin)]
+        public async Task<ActionResult<ResponseDTO>> SetIsActive(Guid stationId, [FromQuery] bool isActive)
+        {
+            var response = await _stationService.SetIsActiveStation(stationId, isActive);
+            return StatusCode(response.StatusCode, response);
+        }
+
     }
 }

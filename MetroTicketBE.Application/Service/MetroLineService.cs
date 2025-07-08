@@ -67,7 +67,7 @@ namespace MetroTicketBE.Application.Service
                     MetroLineNumber = createMetroLineDTO.MetroLineNumber,
                     MetroName = createMetroLineDTO.MetroName,
                     StartStationId = createMetroLineDTO.StartStationId,
-                    EndStationId = createMetroLineDTO.EndStationId
+                    EndStationId = createMetroLineDTO.EndStationId,
                 };
 
                 await _unitOfWork.MetroLineRepository.AddAsync(metroLine);
@@ -92,11 +92,11 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> GetAllMetroLines()
+        public async Task<ResponseDTO> GetAllMetroLines(bool? isActive = null)
         {
             try
             {
-                var metroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
+                var metroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync(isActive);
                 if (metroLines is null || !metroLines.Any())
                 {
                     return new ResponseDTO
@@ -230,6 +230,43 @@ namespace MetroTicketBE.Application.Service
                 };
             }
         }
+        
+        public async Task<ResponseDTO> SetIsActiveMetroLine(Guid metroLineId, bool isActive)
+        {
+            try
+            {
+                var metroLine = await _unitOfWork.MetroLineRepository.GetByIdAsync(metroLineId);
+                if (metroLine is null)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        StatusCode = 404,
+                        Message = "Không tìm thấy tuyến Metro"
+                    };
+                }
+                metroLine.IsActive = isActive;
+                await _unitOfWork.SaveAsync();
+
+                return new ResponseDTO
+                {
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Message = "Cập nhật trạng thái tuyến Metro thành công",
+                    Result = _mapper.Map<GetMetroLineDTO>(metroLine)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Message = "Lỗi khi cập nhật trạng thái tuyến Metro: " + ex.InnerException?.Message ?? ex.Message
+                };
+            }
+        }
+        
         private static void  PatchMetroLine(MetroLine metroLine, UpdateMetroLineDTO updateMetroLineDTO)
         {
             if (!string.IsNullOrEmpty(updateMetroLineDTO.MetroLineNumber))

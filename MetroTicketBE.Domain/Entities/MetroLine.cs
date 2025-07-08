@@ -16,6 +16,7 @@ namespace MetroTicketBE.Domain.Entities
         public TimeSpan EndTime { get; set; }
         public Station StartStation { get; set; } = null!;
         public Station EndStation { get; set; } = null!;
+        public bool IsActive { get; set; } = true;
 
         public ICollection<MetroLineStation> MetroLineStations { get; set; } = new List<MetroLineStation>();
 

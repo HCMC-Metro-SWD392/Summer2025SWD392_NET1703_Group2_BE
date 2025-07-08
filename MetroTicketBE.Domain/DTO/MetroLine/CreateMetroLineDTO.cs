@@ -12,5 +12,6 @@ namespace MetroTicketBE.Domain.DTO.MetroLine
         public string? MetroName { get; set; }
         public Guid StartStationId { get; set; }
         public Guid EndStationId { get; set; }
+        
     }
 }

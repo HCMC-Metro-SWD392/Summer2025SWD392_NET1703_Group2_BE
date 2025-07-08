@@ -7,7 +7,7 @@ public class Station
     public string Address { get; set; } = null!;
     public string Description { get; set; } = null!;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    
+    public bool IsActive { get; set; } = true;
     public ICollection<TicketRoute> TicketRoutesAsFirstStation { get; set; } = new List<TicketRoute>();
     public ICollection<TicketRoute> TicketRoutesAsLastStation { get; set; } = new List<TicketRoute>();
     public ICollection<SubscriptionTicket> SubscriptionTicketsAsStartStation { get; set; } = new List<SubscriptionTicket>();

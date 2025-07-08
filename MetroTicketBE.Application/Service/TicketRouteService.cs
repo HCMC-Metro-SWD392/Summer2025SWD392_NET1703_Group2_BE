@@ -130,7 +130,7 @@ namespace MetroTicketBE.Application.Service
         {
             try
             {
-                var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
+                var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync(null);
 
                 var _graph = new StationGraph(allMetroLines);
 
