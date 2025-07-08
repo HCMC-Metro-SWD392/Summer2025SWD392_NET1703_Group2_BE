@@ -67,8 +67,8 @@ namespace MetroTicketBE.WebAPI.Extentions
             services.AddScoped<IS3Service, S3Service>();
             // Registering IStaffService with its implementation StaffService
             services.AddScoped<IStaffService, StaffService>();
-            // Registering IPaymentTransactionService with its implementation PaymentTransactionService
-            services.AddScoped<IPaymentTransactionService, PaymentTransactionService>();
+            // Registering IDashBoardService with its implementation DashBoardService
+            services.AddScoped<IDashBoardService, DashBoardService>();
             // Registering ITicketProcessService with its implementation TicketProcessService
             services.AddScoped<ITicketProcessService, TicketProcessService>();
 
