@@ -22,29 +22,35 @@ public class LogRepository: Repository<Log>, ILogRepository
             .ToList();
     }
     
-    public async Task<List<Log>> GetByCreatedAtRange(DateTime startDate, DateTime endDate)
+    public async Task<List<Log>> GetByCreatedAtRange(DateTime startDate, DateTime endDate, int pageNumber = 1, int pageSize = 10)
     {
         var startDateUtc = DateTime.SpecifyKind(startDate, DateTimeKind.Utc);
         var endDateUtc = DateTime.SpecifyKind(endDate, DateTimeKind.Utc);
         return await _context.Logs
             .Where(l => l.CreatedAt >= startDateUtc && l.CreatedAt <= endDateUtc)
             .Include(l => l.User)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
     }
     
-    public async Task<List<Log>> GetByUserIdAsync(string userId)
+    public async Task<List<Log>> GetByUserIdAsync(string userId, int pageNumber = 1, int pageSize = 10)
     {
         return await _context.Logs
             .Where(l => l.UserId == userId)
             .Include(l => l.User)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
     }
     
-    public async Task<List<Log>> GetByLogTypeAsync(LogType logType)
+    public async Task<List<Log>> GetByLogTypeAsync(LogType logType, int pageNumber = 1, int pageSize = 10)
     {
         return await _context.Logs
             .Where(l => l.LogType == logType)
             .Include(l => l.User)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
     }
 }

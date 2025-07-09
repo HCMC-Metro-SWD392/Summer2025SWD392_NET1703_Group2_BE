@@ -47,9 +47,9 @@ public class LogService: ILogService
         };
     }
     
-    public async Task<ResponseDTO> GetLogsByCreatedAtRange(DateTime startDate, DateTime endDate)
+    public async Task<ResponseDTO> GetLogsByCreatedAtRange(DateTime startDate, DateTime endDate, int pageNumber = 1, int pageSize = 10)
     {
-        var logs = await _unitOfWork.LogRepository.GetByCreatedAtRange(startDate, endDate);
+        var logs = await _unitOfWork.LogRepository.GetByCreatedAtRange(startDate, endDate, pageNumber, pageSize);
         return new ResponseDTO()
         {
             IsSuccess = true,
@@ -59,9 +59,9 @@ public class LogService: ILogService
         };
     }
 
-    public async Task<ResponseDTO> GetLogsByUserId(string userId)
+    public async Task<ResponseDTO> GetLogsByUserId(string userId, int pageNumber = 1, int pageSize = 10)
     {
-        var logs = await _unitOfWork.LogRepository.GetByUserIdAsync(userId);
+        var logs = await _unitOfWork.LogRepository.GetByUserIdAsync(userId, pageNumber, pageSize);
         return new ResponseDTO()
         {
             IsSuccess = true,
@@ -71,9 +71,9 @@ public class LogService: ILogService
         };
     }
     
-    public async Task<ResponseDTO> GetLogsByLogType(LogType logType)
+    public async Task<ResponseDTO> GetLogsByLogType(LogType logType, int pageNumber = 1, int pageSize = 10)
     {
-        var logs = await _unitOfWork.LogRepository.GetByLogTypeAsync(logType);
+        var logs = await _unitOfWork.LogRepository.GetByLogTypeAsync(logType, pageNumber, pageSize);
         return new ResponseDTO()
         {
             IsSuccess = true,
@@ -83,7 +83,7 @@ public class LogService: ILogService
         };
     }
     
-    private string ConvertLogTypeToString(LogType logType)
+    private static string ConvertLogTypeToString(LogType logType)
     {
         return logType switch
         {

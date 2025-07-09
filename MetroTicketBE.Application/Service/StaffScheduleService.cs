@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Security.Claims;
+using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.DTO.Auth;
@@ -57,7 +58,7 @@ public class StaffScheduleService: IStaffScheduleService
                     StatusCode = 400,
                 };
             }
-            var workingStation = _unitOfWork.StationRepository.GetAsync(s => s.Id == dto.WorkingStationId);
+            var workingStation = await _unitOfWork.StationRepository.GetAsync(s => s.Id == dto.WorkingStationId);
             if (workingStation is null)
             {
                 return new ResponseDTO()
@@ -104,15 +105,13 @@ public class StaffScheduleService: IStaffScheduleService
     {
         try
         {
-            var schedules =  _unitOfWork.StaffScheduleRepository.GetSchedules(startDate, endDate);
-            var shedulesDTO = await schedules
-                .ProjectTo<GetScheduleDTO>(_mapper.ConfigurationProvider)
-                .ToListAsync();
+            var schedules =  await _unitOfWork.StaffScheduleRepository.GetSchedules(startDate, endDate);
+          
             return new ResponseDTO()
             {
                 IsSuccess = true,
                 Message = "Lấy danh sách ca làm việc thành công.",
-                Result =  shedulesDTO,
+                Result =  _mapper.Map<List<GetScheduleDTO>>(schedules),
                 StatusCode = 200,
             };
         }
@@ -144,15 +143,13 @@ public class StaffScheduleService: IStaffScheduleService
                 };
             }
             
-            var schedules =  _unitOfWork.StaffScheduleRepository.GetByStationIdAndDate(stationId, workingDate);
-            var shedulesDTO = await schedules
-                .ProjectTo<GetScheduleDTO>(_mapper.ConfigurationProvider)
-                .ToListAsync();
+            var schedules = await  _unitOfWork.StaffScheduleRepository.GetByStationIdAndDate(stationId, workingDate);
+            
             return new ResponseDTO()
             {
                 IsSuccess = true,
                 Message = "Lấy danh sách ca làm việc theo trạm và ngày thành công.",
-                Result = shedulesDTO,
+                Result =  _mapper.Map<List<GetScheduleDTO>>(schedules),
                 StatusCode = 200,
             };
         }
@@ -162,6 +159,63 @@ public class StaffScheduleService: IStaffScheduleService
             {
                 IsSuccess = false,
                 Message = "Đã xảy ra lỗi khi lấy danh sách ca làm việc theo trạm và ngày: " + ex.Message,
+                Result = null,
+                StatusCode = 500,
+            };
+        }
+    }
+    
+    public async Task<ResponseDTO> GetSchedulesByStaffIdAndDate(ClaimsPrincipal user, DateOnly? fromDate = null, DateOnly? toDate = null)
+    {
+        try
+        {
+            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return new ResponseDTO()
+                {
+                    IsSuccess = false,
+                    Message = "Không tìm thấy thông tin người dùng.",
+                    Result = null,
+                    StatusCode = 400,
+                };
+            }
+            var staff = await _unitOfWork.StaffRepository.GetAsync(s => s.UserId == userId);
+            if (staff is null)
+            {
+                return new ResponseDTO()
+                {
+                    IsSuccess = false,
+                    Message = "Nhân viên không tồn tại.",
+                    Result = null,
+                    StatusCode = 404,
+                };
+            }
+            var schedules = await _unitOfWork.StaffScheduleRepository.GetSchedulesForStaff(staff.Id, fromDate, toDate);
+            if (schedules is null)
+            {
+                return new ResponseDTO()
+                {
+                    IsSuccess = false,
+                    Message = "Không tìm thấy ca làm việc cho nhân viên vào ngày này.",
+                    Result = null,
+                    StatusCode = 404,
+                };
+            }
+            return new ResponseDTO()
+            {
+                IsSuccess = true,
+                Message = "Lấy danh sách ca làm việc theo nhân viên và ngày thành công.",
+                Result = _mapper.Map<List<GetScheduleDTO>>(schedules),
+                StatusCode = 200,
+            };
+        }
+        catch (Exception ex)
+        {
+            return new ResponseDTO()
+            {
+                IsSuccess = false,
+                Message = "Đã xảy ra lỗi khi lấy danh sách ca làm việc theo nhân viên và ngày: " + ex.Message,
                 Result = null,
                 StatusCode = 500,
             };

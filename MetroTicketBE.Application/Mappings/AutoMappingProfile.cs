@@ -44,13 +44,15 @@ namespace MetroTicketBE.Application.Mappings
                 .ForMember(dest => dest.MetroLineName, opt => opt.MapFrom(src => src.MetroLine.MetroName))
                 .ForMember(dest => dest.StationName, opt => opt.MapFrom(src => src.Station.Name)).ReverseMap();
             CreateMap<SubscriptionTicket, GetSubscriptionTicketDTO>();
-            CreateMap<StaffShift, ShiftInfoDto>();
-            CreateMap<Station, StationInfoDto>();
             CreateMap<Station, StationMetroLineDTO>();
-            CreateMap<Staff, StaffInfoDto>()
-                .ForMember(dest => dest.FullName,
-                    opt => opt.MapFrom(src => src.User.FullName));
-            CreateMap<StaffSchedule, GetScheduleDTO>();
+            CreateMap<StaffSchedule, GetScheduleDTO>()
+                .ForMember(dest => dest.StaffFullName, opt => opt.MapFrom(src => src.Staff.User.FullName))
+                .ForMember(dest => dest.ShiftName, opt => opt.MapFrom(src => src.Shift.ShiftName))
+                .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => src.Shift.StartTime))
+                .ForMember(dest => dest.EndTime, opt => opt.MapFrom(src => src.Shift.EndTime))
+                .ForMember(dest => dest.StationId, opt => opt.MapFrom(src => src.WorkingStationId))
+                .ForMember(dest => dest.StationName, opt => opt.MapFrom(src => src.WorkingStation.Name))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
             CreateMap<GetFormRequestDTO, FormRequest>().ReverseMap();
             CreateMap<Staff, GetStaffDTO>()
                 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FullName))
