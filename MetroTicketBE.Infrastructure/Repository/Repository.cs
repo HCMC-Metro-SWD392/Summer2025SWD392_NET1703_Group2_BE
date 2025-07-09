@@ -35,13 +35,13 @@ namespace MetroTicketBE.Infrastructure.Repository
             await dbSet.AddRangeAsync(entities);
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null, string? includeProperties = null)
+        public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null, Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null, string? includeProperties = null)
         {
             IQueryable<T> query = dbSet;
 
             // If a filter is provided, apply it to the query
             if (filter != null)
-            query = query.Where(filter);
+                query = query.Where(filter);
 
             if(!string.IsNullOrEmpty(includeProperties))
             {
@@ -49,6 +49,10 @@ namespace MetroTicketBE.Infrastructure.Repository
                 {
                     query = query.Include(property);
                 }
+            }
+            if (orderBy != null)
+            {
+                query = orderBy(query);
             }
 
             return await query.ToListAsync();

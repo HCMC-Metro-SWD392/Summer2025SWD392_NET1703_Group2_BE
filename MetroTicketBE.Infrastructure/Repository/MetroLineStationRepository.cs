@@ -18,13 +18,21 @@ namespace MetroTicketBE.Infrastructure.Repository
                 AnyAsync(mls => mls.MetroLineId == metroLineId && mls.StationId == stationId && mls.StationOrder == stationOrder);;
         }
         
-        public async Task<List<Station>> GetStationByMetroLineIdAsync(Guid metroLineId)
+        public async Task<List<Station>> GetStationByMetroLineIdAsync(Guid metroLineId, bool? isActive = null)
         {
-            var stationsInMetroLine = await _context.MetroLineStations
-                .Where(mls => mls.MetroLineId == metroLineId)
+            IQueryable<MetroLineStation> query = _context.MetroLineStations
+                .Where(mls => mls.MetroLineId == metroLineId);
+
+            if (isActive.HasValue)
+            {
+                query = query.Where(mls => mls.IsActive == isActive.Value);
+            }
+
+            var stationsInMetroLine = await query
                 .OrderBy(mls => mls.StationOrder) // nếu muốn theo thứ tự đi
                 .Select(mls => mls.Station)
                 .ToListAsync();
+
             return stationsInMetroLine;
         }
     }
