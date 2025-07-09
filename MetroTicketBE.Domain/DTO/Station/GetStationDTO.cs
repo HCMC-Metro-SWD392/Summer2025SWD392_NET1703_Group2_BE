@@ -6,6 +6,7 @@ public class GetStationDTO
     public string Name { get; set; } = null!;
     public string? Address { get; set; }
     public string? Description { get; set; }
+    public bool IsActive { get; set; }
     public List<MetroLineDTO> MetroLines { get; set; } = new List<MetroLineDTO>();
 }
 
