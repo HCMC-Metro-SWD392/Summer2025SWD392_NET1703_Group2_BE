@@ -68,6 +68,8 @@ namespace MetroTicketBE.Application.Service
                     MetroName = createMetroLineDTO.MetroName,
                     StartStationId = createMetroLineDTO.StartStationId,
                     EndStationId = createMetroLineDTO.EndStationId,
+                    StartTime = createMetroLineDTO.StartTime,
+                    EndTime = createMetroLineDTO.EndTime,
                 };
 
                 await _unitOfWork.MetroLineRepository.AddAsync(metroLine);

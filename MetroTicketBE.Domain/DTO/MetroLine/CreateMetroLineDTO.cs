@@ -13,5 +13,7 @@ namespace MetroTicketBE.Domain.DTO.MetroLine
         public Guid StartStationId { get; set; }
         public Guid EndStationId { get; set; }
         
+        public TimeSpan StartTime { get; set; }
+        public TimeSpan EndTime { get; set; }
     }
 }
