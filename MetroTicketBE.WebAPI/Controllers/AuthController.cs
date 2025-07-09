@@ -62,6 +62,14 @@ namespace MetroTicketBE.WebAPI.Controllers
         }
 
         [HttpPost]
+        [Route("sign-in-by-google")]
+        public async Task<ActionResult<ResponseDTO>> LoginUserByGoogle([FromBody] LoginByGoogleDTO loginByGoogleDTO)
+        {
+            var response = await _authService.LoginUserByGoogle(loginByGoogleDTO);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpPost]
         [Route("send-verify-email")]
         public async Task<ActionResult<ResponseDTO>> SendVerifyEmail([FromBody] SendVerifyEmailDTO sendVerifyEmailDTO)
         {
