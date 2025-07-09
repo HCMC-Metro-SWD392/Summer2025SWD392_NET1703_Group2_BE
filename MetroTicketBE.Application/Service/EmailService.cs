@@ -188,5 +188,102 @@ namespace MetroTicketBE.Application.Service
                 };
             }
         }
+
+        public async Task<ResponseDTO> UpdateEmailTemplate(ClaimsPrincipal user, Guid templateId, UpdateEmailTemplateDTO updateEmailTemplateDTO)
+        {
+            try
+            {
+                var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        Message = "Không tìm thấy thông tin người dùng.",
+                        StatusCode = 400
+                    };
+                }
+
+                var existingTemplate = await _unitOfWork.EmailTemplateRepository.GetByIdAsync(templateId);
+                if (existingTemplate == null)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        Message = $"Không tìm thấy template với ID: {templateId}",
+                        StatusCode = 404
+                    };
+                }
+
+                if (!string.IsNullOrEmpty(updateEmailTemplateDTO.TemplateName) &&
+                    !string.Equals(existingTemplate.TemplateName, updateEmailTemplateDTO.TemplateName, StringComparison.OrdinalIgnoreCase))
+                {
+                    var isDuplicate = await _unitOfWork.EmailTemplateRepository.IsExistByTemplateName(updateEmailTemplateDTO.TemplateName);
+                    if (isDuplicate)
+                    {
+                        return new ResponseDTO
+                        {
+                            IsSuccess = false,
+                            Message = $"Template [{updateEmailTemplateDTO.TemplateName}] đã tồn tại.",
+                            StatusCode = 409
+                        };
+                    }
+                    existingTemplate.TemplateName = updateEmailTemplateDTO.TemplateName;
+                }
+
+                if (updateEmailTemplateDTO.SubjectLine != null)
+                    existingTemplate.SubjectLine = updateEmailTemplateDTO.SubjectLine;
+
+                if (updateEmailTemplateDTO.BodyContent != null)
+                    existingTemplate.BodyContent = updateEmailTemplateDTO.BodyContent;
+
+                if (updateEmailTemplateDTO.SenderName != null)
+                    existingTemplate.SenderName = updateEmailTemplateDTO.SenderName;
+
+                if (updateEmailTemplateDTO.Category != null)
+                    existingTemplate.Category = updateEmailTemplateDTO.Category;
+
+                if (updateEmailTemplateDTO.PreHeaderText != null)
+                    existingTemplate.PreHeaderText = updateEmailTemplateDTO.PreHeaderText;
+
+                if (updateEmailTemplateDTO.PersonalizationTags != null)
+                    existingTemplate.PersonalizationTags = updateEmailTemplateDTO.PersonalizationTags;
+
+                if (updateEmailTemplateDTO.FooterContent != null)
+                    existingTemplate.FooterContent = updateEmailTemplateDTO.FooterContent;
+
+                if (updateEmailTemplateDTO.CallToAction != null)
+                    existingTemplate.CallToAction = updateEmailTemplateDTO.CallToAction;
+
+                if (updateEmailTemplateDTO.Language != null)
+                    existingTemplate.Language = updateEmailTemplateDTO.Language;
+
+                if (updateEmailTemplateDTO.RecipientType != null)
+                    existingTemplate.RecipientType = updateEmailTemplateDTO.RecipientType;
+
+                existingTemplate.UpdatedAt = DateTime.UtcNow;
+                existingTemplate.UpdatedBy = userId;
+
+                _unitOfWork.EmailTemplateRepository.Update(existingTemplate);
+                await _unitOfWork.SaveAsync();
+
+                return new ResponseDTO
+                {
+                    IsSuccess = true,
+                    Message = "Cập nhật template email thành công.",
+                    StatusCode = 200
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    IsSuccess = false,
+                    Message = $"Lỗi khi cập nhật template email: {ex.Message}",
+                    StatusCode = 500
+                };
+            }
+        }
+
     }
 }

@@ -13,6 +13,11 @@ namespace MetroTicketBE.Infrastructure.Repository
             _context = context;
         }
 
+        public async Task<EmailTemplate?> GetByIdAsync(Guid emailTemplateId)
+        {
+            return await _context.EmailTemplates.FirstOrDefaultAsync(et => et.Id == emailTemplateId);
+        }
+
         public async Task<bool> IsExistByTemplateName(string templateName)
         {
             return await _context.EmailTemplates
