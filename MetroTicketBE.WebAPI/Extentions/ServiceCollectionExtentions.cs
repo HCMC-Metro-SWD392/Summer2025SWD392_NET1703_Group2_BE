@@ -71,6 +71,8 @@ namespace MetroTicketBE.WebAPI.Extentions
             services.AddScoped<IDashBoardService, DashBoardService>();
             // Registering ITicketProcessService with its implementation TicketProcessService
             services.AddScoped<ITicketProcessService, TicketProcessService>();
+            // Registering ILogService with its implementation LogService
+            services.AddScoped<ILogService, LogService>();
 
             // Register the Identity services with default configuration
             services.AddIdentity<ApplicationUser, IdentityRole>()

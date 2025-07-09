@@ -1,9 +1,11 @@
-﻿using AutoMapper;
+﻿using System.Security.Claims;
+using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.Station;
 using MetroTicketBE.Domain.Entities;
+using MetroTicketBE.Domain.Enum;
 using MetroTicketBE.Infrastructure.IRepository;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,14 +15,17 @@ namespace MetroTicketBE.Application.Service
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ILogService _logService;
+        private const string EntityName = "Trạm Metro";
 
-        public StationService(IUnitOfWork unitOfWork, IMapper mapper)
+        public StationService(IUnitOfWork unitOfWork, IMapper mapper, ILogService logService)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _logService = logService ?? throw new ArgumentNullException(nameof(logService));
         }
 
-        public async Task<ResponseDTO> CreateStation(CreateStationDTO createStationDTO)
+        public async Task<ResponseDTO> CreateStation(ClaimsPrincipal user,CreateStationDTO createStationDTO)
         {
             try
             {
@@ -45,7 +50,8 @@ namespace MetroTicketBE.Application.Service
 
                 await _unitOfWork.StationRepository.AddAsync(station);
                 await _unitOfWork.SaveAsync();
-
+                await _logService.AddLogAsync(LogType.Create, user.FindFirstValue(ClaimTypes.NameIdentifier),EntityName, station.Name);
+                
                 return new ResponseDTO
                 {
                     IsSuccess = true,
@@ -65,7 +71,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> UpdateStation(Guid stationId, UpdateStationDTO updateStationDTO)
+        public async Task<ResponseDTO> UpdateStation(ClaimsPrincipal user,Guid stationId, UpdateStationDTO updateStationDTO)
         {
             try
             {
@@ -129,6 +135,7 @@ namespace MetroTicketBE.Application.Service
 
                 _unitOfWork.StationRepository.Update(station);
                 await _unitOfWork.SaveAsync();
+                _logService.AddLogAsync(LogType.Update, user.FindFirstValue(ClaimTypes.NameIdentifier), EntityName, station.Name);
                 return new ResponseDTO
                 {
                     IsSuccess = true,
@@ -244,7 +251,7 @@ namespace MetroTicketBE.Application.Service
             };
         }
 
-        public async Task<ResponseDTO> SetIsActiveStation(Guid stationId, bool isActive)
+        public async Task<ResponseDTO> SetIsActiveStation(ClaimsPrincipal user, Guid stationId, bool isActive)
         {
             try
             {
@@ -272,7 +279,7 @@ namespace MetroTicketBE.Application.Service
                 station.IsActive = isActive;
                 _unitOfWork.StationRepository.Update(station);
                 await _unitOfWork.SaveAsync();
-
+                await _logService.AddLogAsync(LogType.Update, user.FindFirstValue(ClaimTypes.NameIdentifier), EntityName, $"Trạng thái {station.Name}: {(isActive ? "hoạt động" : "Ngừng hoạt động")}");
                 return new ResponseDTO
                 {
                     IsSuccess = true,

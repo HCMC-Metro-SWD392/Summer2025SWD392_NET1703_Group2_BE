@@ -23,7 +23,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [Authorize(Roles = StaticUserRole.Admin)]
         public async Task<ActionResult<ResponseDTO>> CreateMetroLine([FromBody] CreateMetroLineDTO createMetroLineDTO)
         {
-            var response = await _metroLineService.CreateMetroLine(createMetroLineDTO);
+            var response = await _metroLineService.CreateMetroLine(User, createMetroLineDTO);
             return StatusCode(response.StatusCode, response);
         }
 
@@ -51,7 +51,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         public async Task<ActionResult<ResponseDTO>> UpdateMetroLine(Guid metroLineId,
             [FromBody] UpdateMetroLineDTO updateMetroLineDTO)
         {
-            var response = await _metroLineService.UpdateMetroLine(metroLineId, updateMetroLineDTO);
+            var response = await _metroLineService.UpdateMetroLine(User, metroLineId, updateMetroLineDTO);
             return StatusCode(response.StatusCode, response);
         }
 
@@ -60,7 +60,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [Authorize(Roles = StaticUserRole.Admin)]
         public async Task<ActionResult<ResponseDTO>> SetIsActive(Guid metroLineId, [FromQuery] bool isActive)
         {
-            var response = await _metroLineService.SetIsActiveMetroLine(metroLineId, isActive);
+            var response = await _metroLineService.SetIsActiveMetroLine(User, metroLineId, isActive);
             return StatusCode(response.StatusCode, response);
         }
     }

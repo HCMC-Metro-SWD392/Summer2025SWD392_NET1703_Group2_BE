@@ -17,6 +17,7 @@ using MetroTicketBE.Domain.DTO.Customer;
 using MetroTicketBE.Domain.DTO.TicketProcess;
 using MetroTicketBE.Domain.DTO.DashBoard;
 using System.Text.Json;
+using MetroTicketBE.Domain.DTO.Log;
 using Net.payOS.Types;
 using MetroTicketBE.Domain.Enum;
 
@@ -83,6 +84,12 @@ namespace MetroTicketBE.Application.Mappings
                 .ForMember(dest => dest.DetailTicket, opt => opt.MapFrom(src => ExtractNamesFromDataJson(src.DataJson)))
                 .ForMember(dest => dest.PaymentStatus, opt => opt.MapFrom(src => GetPaymentStatusName(src.Status)))
                 .ForMember(dest => dest.TimeOfPurchase, opt => opt.MapFrom(src => GetRelativeTime(src.CreatedAt))).ReverseMap();
+
+            CreateMap<Log, GetLogDTO>()
+                .ForMember(dest => dest.UserFullname,
+                    opt => opt.MapFrom(src => src.User != null ? src.User.FullName : string.Empty))
+                .ForMember(dest => dest.LogType,
+                    opt => opt.MapFrom(src => src.LogType.ToString()));
 
         }
         private static List<string> ExtractNamesFromDataJson(string json)
