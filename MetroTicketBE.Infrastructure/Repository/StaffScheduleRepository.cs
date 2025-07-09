@@ -13,25 +13,52 @@ public class StaffScheduleRepository: Repository<StaffSchedule>, IStaffScheduleR
         _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
-    public IQueryable<StaffSchedule> GetSchedules(DateOnly startDate, DateOnly endDate)
+    public async Task<List<StaffSchedule>> GetSchedules(DateOnly startDate, DateOnly endDate)
     {
-        var schedules = _context.StaffSchedules
-            .Where(s => s.WorkingDate >= startDate && s.WorkingDate <= endDate);
+        var schedules = await _context.StaffSchedules
+            .Where(s => s.WorkingDate >= startDate && s.WorkingDate <= endDate)
+            .Include(s => s.WorkingStation)
+            .Include(s => s.Staff).ThenInclude(s => s.User)
+            .Include(s => s.Shift).ToListAsync();
+        return schedules;
+    }
+    public async Task<List<StaffSchedule>> GetSchedulesForStaff(Guid staffId, DateOnly? fromDate, DateOnly? toDate)
+    {
+        var query = _context.StaffSchedules
+            .Where(s => s.StaffId == staffId)
+            .Include(s => s.WorkingStation)
+            .Include(s => s.Staff).ThenInclude(s => s.User)
+            .Include(s => s.Shift)
+            .AsQueryable();
+
+        if (fromDate.HasValue)
+        {
+            query = query.Where(s => s.WorkingDate >= fromDate);
+        }
+
+        if (toDate.HasValue)
+        {
+            query = query.Where(s => s.WorkingDate <= toDate);
+        }
+        return await query.OrderBy(s => s.WorkingDate).ToListAsync();
+    }
+    public async Task<List<StaffSchedule>> GetByStationIdAndDate(Guid stationId, DateOnly workingDate)
+    {
+        var schedules = await _context.StaffSchedules
+            .Where(s => s.WorkingStationId == stationId && s.WorkingDate == workingDate)
+            .Include(s => s.WorkingStation)
+            .Include(s => s.Staff).ThenInclude(s => s.User)
+            .Include(s => s.Shift).ToListAsync();;
         return schedules;
     }
     
-    public Task<StaffSchedule?> GetByStaffIdAndDate(Guid staffId, DateOnly workingDate)
+    public async Task<StaffSchedule?> GetByStaffIdAndDate(Guid staffId, DateOnly workingDate)
     {
-        var schedule = _context.StaffSchedules
-            .Include(s => s.Staff)
+        var schedule = await _context.StaffSchedules
+            .Include(s => s.WorkingStation)
+            .Include(s => s.Staff).ThenInclude(s => s.User)
             .Include(s => s.Shift)
             .FirstOrDefaultAsync(s => s.StaffId == staffId && s.WorkingDate == workingDate);
         return schedule;
-    }
-    public IQueryable<StaffSchedule> GetByStationIdAndDate(Guid stationId, DateOnly workingDate)
-    {
-        var schedules = _context.StaffSchedules
-            .Where(s => s.WorkingStationId == stationId && s.WorkingDate == workingDate);
-        return schedules;
-    }
+    } 
 }
