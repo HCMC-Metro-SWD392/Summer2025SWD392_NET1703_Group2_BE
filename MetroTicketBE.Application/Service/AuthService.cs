@@ -626,6 +626,12 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
+                var isCustomer = await _userManager.IsInRoleAsync(user, StaticUserRole.Customer);
+                if (isCustomer)
+                {
+                    await _userManager.RemoveFromRoleAsync(user, StaticUserRole.Customer);
+                }
+
                 var isRoleExist = await _roleManager.RoleExistsAsync(StaticUserRole.Staff);
                 if (isRoleExist is false)
                 {
