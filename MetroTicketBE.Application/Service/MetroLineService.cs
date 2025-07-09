@@ -6,9 +6,11 @@ using MetroTicketBE.Infrastructure.IRepository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
+using MetroTicketBE.Domain.Enum;
 
 namespace MetroTicketBE.Application.Service
 {
@@ -16,14 +18,17 @@ namespace MetroTicketBE.Application.Service
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ILogService _logService;
+        private readonly string EntityName = "Tuyến Metro";
 
-        public MetroLineService(IUnitOfWork unitOfWork, IMapper mapper)
+        public MetroLineService(IUnitOfWork unitOfWork, IMapper mapper, ILogService logService)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _logService = logService ?? throw new ArgumentNullException(nameof(logService));
         }
 
-        public async Task<ResponseDTO> CreateMetroLine(CreateMetroLineDTO createMetroLineDTO)
+        public async Task<ResponseDTO> CreateMetroLine(ClaimsPrincipal user, CreateMetroLineDTO createMetroLineDTO)
         {
             try
             {
@@ -74,7 +79,7 @@ namespace MetroTicketBE.Application.Service
 
                 await _unitOfWork.MetroLineRepository.AddAsync(metroLine);
                 await _unitOfWork.SaveAsync();
-
+                await _logService.AddLogAsync(LogType.Create, user.FindFirstValue(ClaimTypes.NameIdentifier), EntityName, metroLine.MetroName);
                 return new ResponseDTO
                 {
                     IsSuccess = true,
@@ -163,7 +168,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> UpdateMetroLine(Guid metroLineId, UpdateMetroLineDTO updateMetroLineDTO)
+        public async Task<ResponseDTO> UpdateMetroLine(ClaimsPrincipal user, Guid metroLineId, UpdateMetroLineDTO updateMetroLineDTO)
         {
             var metroLine = await _unitOfWork.MetroLineRepository.GetByIdAsync(metroLineId);
             if (metroLine is null)
@@ -213,6 +218,7 @@ namespace MetroTicketBE.Application.Service
                 PatchMetroLine(metroLine, updateMetroLineDTO);
                 _unitOfWork.MetroLineRepository.Update(metroLine);
                 await _unitOfWork.SaveAsync();
+                await _logService.AddLogAsync(LogType.Update, user.FindFirstValue(ClaimTypes.NameIdentifier), EntityName, metroLine.MetroName);
                 return new ResponseDTO()
                 {
                     IsSuccess = true,
@@ -233,7 +239,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
         
-        public async Task<ResponseDTO> SetIsActiveMetroLine(Guid metroLineId, bool isActive)
+        public async Task<ResponseDTO> SetIsActiveMetroLine(ClaimsPrincipal user, Guid metroLineId, bool isActive)
         {
             try
             {
@@ -249,7 +255,7 @@ namespace MetroTicketBE.Application.Service
                 }
                 metroLine.IsActive = isActive;
                 await _unitOfWork.SaveAsync();
-
+                await _logService.AddLogAsync(LogType.Update, user.FindFirstValue(ClaimTypes.NameIdentifier), EntityName, $"Trạng thái {metroLine.MetroName}: {(isActive ? "hoạt động" : "Ngừng hoạt động")}");
                 return new ResponseDTO
                 {
                     IsSuccess = true,

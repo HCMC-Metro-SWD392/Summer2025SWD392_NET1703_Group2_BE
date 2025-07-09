@@ -21,7 +21,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [Authorize(Roles = StaticUserRole.ManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> CreateStation([FromBody] CreateStationDTO createStationDTO)
         {
-            var response = await _stationService.CreateStation(createStationDTO);
+            var response = await _stationService.CreateStation(User, createStationDTO);
             return StatusCode(response.StatusCode, response);
         }
         
@@ -32,7 +32,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         public async Task<ActionResult<ResponseDTO>> UpdateStation(Guid stationId,
             [FromBody] UpdateStationDTO updateStationDTO)
         {
-            var response = await _stationService.UpdateStation(stationId, updateStationDTO);
+            var response = await _stationService.UpdateStation(User, stationId, updateStationDTO);
             return StatusCode(response.StatusCode, response);
         }
 
@@ -68,7 +68,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [Authorize(Roles = StaticUserRole.Admin)]
         public async Task<ActionResult<ResponseDTO>> SetIsActive(Guid stationId, [FromQuery] bool isActive)
         {
-            var response = await _stationService.SetIsActiveStation(stationId, isActive);
+            var response = await _stationService.SetIsActiveStation(User, stationId, isActive);
             return StatusCode(response.StatusCode, response);
         }
 

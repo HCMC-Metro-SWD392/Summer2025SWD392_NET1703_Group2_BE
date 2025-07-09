@@ -9,8 +9,8 @@ namespace MetroTicketBE.Domain.Enum
     // Xác định log
     public enum LogType
     {
-        Update = 0, // Cập nhật
-        Delete = 1, // Xóa
-        Create = 2 // Tạo mới
+        Update, 
+        Delete, 
+        Create 
     }
 }
