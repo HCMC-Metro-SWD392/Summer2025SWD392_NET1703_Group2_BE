@@ -240,7 +240,7 @@ namespace MetroTicketBE.Application.Service
                     {
                         "PAID" => PaymentStatus.Paid,
                         "UNPAID" => PaymentStatus.Unpaid,
-                        "CANCELED" => PaymentStatus.Canceled,
+                        "CANCELLED" => PaymentStatus.Canceled,
                         _ => paymentTransaction.Status
                     };
                 }
