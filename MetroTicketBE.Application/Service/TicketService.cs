@@ -75,20 +75,7 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
                 var tickets = (await _unitOfWork.TicketRepository.GetAllAsync(includeProperties: "TicketRoute,TicketRoute.StartStation,TicketRoute.EndStation,SubscriptionTicket,SubscriptionTicket.StartStation,SubscriptionTicket.EndStation"))
-                        .Where(t => t.CustomerId == customer.Id);
-
-                if (ticketType == TicketStatus.Inactive)
-                {
-                    tickets = tickets.Where(t => t.TicketRtStatus == TicketStatus.InActiveOverStation || t.TicketRtStatus == ticketType);
-                }
-                else if (ticketType == TicketStatus.Active)
-                {
-                    tickets = tickets.Where(t => t.TicketRtStatus == TicketStatus.ActiveOverStation || t.TicketRtStatus == ticketType);
-                }
-                else
-                {
-                    tickets = tickets.Where(t => t.TicketRtStatus == ticketType);
-                }
+                        .Where(t => t.CustomerId == customer.Id && t.TicketRtStatus == ticketType);
 
                 if (!string.IsNullOrEmpty(filterOn) && !string.IsNullOrEmpty(filterQuery))
                 {
@@ -390,7 +377,7 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                else if (ticket.TicketRtStatus == TicketStatus.Active || ticket.TicketRtStatus == TicketStatus.ActiveOverStation)
+                else if (ticket.TicketRtStatus == TicketStatus.Active)
                 {
                     await SendNotifyToUser(customer.UserId, "Vé đã được check-in trước đó.");
                     return new ResponseDTO
@@ -471,7 +458,7 @@ namespace MetroTicketBE.Application.Service
         {
             if (stationPath.Contains(stationId))
             {
-                ticket.TicketRtStatus = TicketStatus.ActiveOverStation;
+                ticket.TicketRtStatus = TicketStatus.Active;
                 _unitOfWork.TicketRepository.Update(ticket);
 
                 await CreateTicketProcess(ticket, stationId, TicketProcessStatus.Checkin);
@@ -562,7 +549,7 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                else if (ticket.TicketRtStatus == TicketStatus.Inactive || ticket.TicketRtStatus == TicketStatus.InActiveOverStation)
+                else if (ticket.TicketRtStatus == TicketStatus.Inactive)
                 {
                     await SendNotifyToUser(customer.UserId, "Vé chưa được check-in trước đó.");
                     return new ResponseDTO
@@ -677,8 +664,6 @@ namespace MetroTicketBE.Application.Service
                 };
 
                 await _unitOfWork.TicketProcessRepository.AddAsync(ticketProcess);
-
-                await CreateTicketProcess(ticket, stationId, TicketProcessStatus.Checkout);
 
                 await _unitOfWork.SaveAsync();
                 await SendNotifyToUser(userId, $"Vé đã được check-out tại {stationName} thành công.");
