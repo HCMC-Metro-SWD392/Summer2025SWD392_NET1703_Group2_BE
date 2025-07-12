@@ -97,8 +97,8 @@ namespace MetroTicketBE.Application.Service
                 var accessToken = await _tokenService.GenerateJwtAccessTokenAsync(user);
                 var refreshToken = await _tokenService.GenerateJwtRefreshTokenAsync(user, loginDTO.RememberMe);
                 
-                CheckAndResetStudentExpiration(user.Id);
-                
+                await CheckAndResetStudentExpiration(user.Id);
+                var isStudent = await IsStudent(user.Id);
                 var responeUser = new UserDTO()
                 {
                     Id = user.Id,
@@ -109,7 +109,8 @@ namespace MetroTicketBE.Application.Service
                     IdentityId = user.IdentityId,
                     Sex = user.Sex,
                     DateOfBirth = user.DateOfBirth,
-                    UserName = user.UserName
+                    UserName = user.UserName,
+                    IsStudent = isStudent
                 };
                 await _tokenService.StoreRefreshToken(user.Id, refreshToken, loginDTO.RememberMe);
 
@@ -197,7 +198,7 @@ namespace MetroTicketBE.Application.Service
                 //        StatusCode = 403
                 //    };
                 //}
-                CheckAndResetStudentExpiration(user.Id);
+                await CheckAndResetStudentExpiration(user.Id);
                 var accessToken = await _tokenService.GenerateJwtAccessTokenAsync(user);
                 var refreshToken = await _tokenService.GenerateJwtRefreshTokenAsync(user, loginByGoogleDTO.RememberMe);
                 var responeUser = new UserDTO()
@@ -210,7 +211,8 @@ namespace MetroTicketBE.Application.Service
                     IdentityId = user.IdentityId,
                     Sex = user.Sex,
                     DateOfBirth = user.DateOfBirth,
-                    UserName = user.UserName
+                    UserName = user.UserName,
+                    IsStudent = await IsStudent(user.Id)
                 };
                 await _tokenService.StoreRefreshToken(user.Id, refreshToken, loginByGoogleDTO.RememberMe);
 
@@ -939,7 +941,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        private async void CheckAndResetStudentExpiration(string userId)
+        private async Task CheckAndResetStudentExpiration(string userId)
         {
             try
             {
@@ -955,7 +957,18 @@ namespace MetroTicketBE.Application.Service
                 Console.WriteLine(ex.Message);
                 return;
             }
-            
+        }
+
+        private async Task<bool> IsStudent(string userId)
+        {
+            var customer = await _unitOfWork.CustomerRepository.GetByUserIdAsync(userId);
+            if (customer is null)
+            {
+                return false;
+            }
+            return customer.CustomerType == CustomerType.Student && 
+                   customer.StudentExpiration != null && 
+                   customer.StudentExpiration > DateTime.UtcNow;
         }
     }
 }
