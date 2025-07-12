@@ -51,5 +51,6 @@ namespace MetroTicketBE.Infrastructure.Repository
             var entityEntry = await _context.Customers.AddAsync(customer);
             return entityEntry.Entity;
         }
+
     }
 }
