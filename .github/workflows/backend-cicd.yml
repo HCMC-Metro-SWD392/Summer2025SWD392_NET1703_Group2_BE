@@ -38,11 +38,12 @@ jobs:
       - name: Create zip artifact
         run: zip -r publish.zip ./publish
 
-      # - name: Upload artifact
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: backend-publish
-      #     path: publish.zip
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-publish
+          path: publish.zip
+          retention-days: 1
 
   deploy:
     name: Deploy to EC2
