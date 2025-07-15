@@ -1066,21 +1066,87 @@ namespace MetroTicketBE.Application.Service
             await _unitOfWork.SaveAsync();
         }
 
-        //private async Task<bool> CheckOutTicket(Ticket ticket, Guid stationId, Guid metroLineId)
-        //{
-        //    var isSuccess = false;
-        //    int orderStart = await _unitOfWork.StationRepository.GetOrderStationById(ticket.TicketRoute.StartStation.Id, metroLineId);
-        //    int orderEnd = await _unitOfWork.StationRepository.GetOrderStationById(ticket.TicketRoute.EndStation.Id, metroLineId);
-        //    int order = await _unitOfWork.StationRepository.GetOrderStationById(stationId, metroLineId);
+        public async Task<ResponseDTO> IsExistTicketRange(ClaimsPrincipal user, Guid startStationId, Guid endStationId)
+        {
+            try
+            {
+                var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Không tìm thấy người dùng.",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
 
-        //    if ((orderStart <= order && order <= orderEnd) || (orderStart >= order && order >= orderEnd))
-        //    {
-        //        ticket.TicketRtStatus = TicketStatus.Used;
-        //        _unitOfWork.TicketRepository.Update(ticket);
-        //        await _unitOfWork.SaveAsync();
-        //        isSuccess = true;
-        //    }
-        //    return isSuccess;
-        //}
+                var customer = await _unitOfWork.CustomerRepository.GetByUserIdAsync(userId);
+                if (customer is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Không tìm thấy khách hàng",
+                        IsSuccess = false,
+                        StatusCode = 403
+                    };
+                }
+
+                var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync(true);
+                var _graph = new StationGraph(allMetroLines);
+
+                var stationPath = new List<Guid>();
+
+                stationPath = _graph.FindShortestPath(startStationId, endStationId);
+
+                var ticketListActive = (await _unitOfWork.TicketRepository.GetAllAsync())
+                    .Where(t => t.TicketRtStatus == TicketStatus.Inactive && t.CustomerId == customer.Id);
+
+                foreach (var t in ticketListActive)
+                {
+                    var activeStationPath = new List<Guid>();
+                    activeStationPath = BuildStationPath(t, _graph);
+                    if (!activeStationPath.Except(stationPath).Any())
+                    {
+                        return new ResponseDTO
+                        {
+                            Message = "Bạn đã có vé lượt trong phạm vi này.",
+                            IsSuccess = false,
+                            StatusCode = 409
+                        };
+                    }
+                }
+
+                return new ResponseDTO
+                {
+                    Message = "Không có vé lượt nào trong phạm vi này.",
+                    IsSuccess = true,
+                    StatusCode = 404
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    Message = "Đã xảy ra lỗi khi kiểm tra vé lượt trong phạm vi: " + ex.Message,
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
+
+        private List<Guid> BuildStationPath(Ticket ticket, StationGraph graph)
+        {
+            var path = new List<Guid>();
+
+            if (ticket.TicketRoute is not null)
+                path.AddRange(graph.FindShortestPath(ticket.TicketRoute.StartStationId, ticket.TicketRoute.EndStationId));
+
+            if (ticket.SubscriptionTicket is not null)
+                path.AddRange(graph.FindShortestPath(ticket.SubscriptionTicket.StartStationId, ticket.SubscriptionTicket.EndStationId));
+
+            return path;
+        }
+
     }
 }

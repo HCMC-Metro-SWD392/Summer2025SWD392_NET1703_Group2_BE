@@ -105,7 +105,25 @@ namespace MetroTicketBE.WebAPI.Controllers
                     Message = "Mã vé không hợp lệ"
                 });
             }
-            var response = await _ticketService.GetORCode(User,ticketId);
+            var response = await _ticketService.GetORCode(User, ticketId);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpGet]
+        [Route("is-exist-ticket-range")]
+        [Authorize]
+        public async Task<ActionResult<ResponseDTO>> IsExistTicketRange([FromQuery] Guid startStaionId, [FromQuery] Guid endStationId)
+        {
+            if (startStaionId == Guid.Empty || endStationId == Guid.Empty)
+            {
+                return BadRequest(new ResponseDTO
+                {
+                    IsSuccess = false,
+                    StatusCode = 400,
+                    Message = "Mã trạm không hợp lệ"
+                });
+            }
+            var response = await _ticketService.IsExistTicketRange(User, startStaionId, endStationId);
             return StatusCode(response.StatusCode, response);
         }
     }

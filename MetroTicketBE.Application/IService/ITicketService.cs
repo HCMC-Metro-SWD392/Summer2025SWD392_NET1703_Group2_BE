@@ -31,5 +31,6 @@ namespace MetroTicketBE.Application.IService
         Task<ResponseDTO> CheckInTicketProcess(string qrCode, Guid stationId);
         Task<ResponseDTO> CheckOutTicketProcess(string qrCode, Guid stationId);
         Task<ResponseDTO> GetORCode(ClaimsPrincipal user, Guid ticketId);
+        Task<ResponseDTO> IsExistTicketRange(ClaimsPrincipal user, Guid startStaionId, Guid endStationId);
     }
 }
