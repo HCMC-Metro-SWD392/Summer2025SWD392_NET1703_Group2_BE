@@ -398,6 +398,7 @@ namespace MetroTicketBE.Application.Service
                     StatusCode = 500
                 };
             }
+        }
         public async Task<bool> IsAllowToSendEmail(string email, string key)
         {
             var isAllowed = true;
