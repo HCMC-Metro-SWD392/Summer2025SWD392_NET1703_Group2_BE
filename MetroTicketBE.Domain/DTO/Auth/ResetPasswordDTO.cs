@@ -19,7 +19,7 @@ namespace MetroTicketBE.Domain.DTO.Auth
         public required string NewPassword { get; set; }
         [Required(ErrorMessage = "Vui lòng xác nhận mật khẩu")]
         [DataType(DataType.Password)]
-        [Compare("Password", ErrorMessage = "Mật khẩu xác nhận không khớp")]
+        [Compare("NewPassword", ErrorMessage = "Mật khẩu xác nhận không khớp")]
         public required string ConfirmPassword { get; set; }
     }
 }
