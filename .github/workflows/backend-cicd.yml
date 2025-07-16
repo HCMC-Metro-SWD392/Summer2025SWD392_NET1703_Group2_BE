@@ -1,4 +1,4 @@
-name: Backend CI/CD
+name: Backend CI/CD (No Artifact)
 
 on:
   push:
@@ -13,9 +13,10 @@ env:
   EC2_USER: ${{ secrets.EC2_USER }}
 
 jobs:
-  build:
-    name: Build ASP.NET Core
+  build-and-deploy:
+    name: Build and Deploy ASP.NET Core
     runs-on: ubuntu-latest
+    environment: Ticket_Metro
 
     steps:
       - name: Checkout source
@@ -35,39 +36,17 @@ jobs:
       - name: Publish project
         run: dotnet publish -c Release -o ./publish
 
-      - name: Create zip artifact
+      - name: Zip publish folder
         run: zip -r publish.zip ./publish
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-publish
-          path: publish.zip
-
-  deploy:
-    name: Deploy to EC2
-    needs: build
-    runs-on: ubuntu-latest
-    environment: Ticket_Metro
-
-    steps:
-      - name: Download published artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-publish
-          
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo "Created ~/.ssh directory"
           echo "${{ env.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          echo "Wrote SSH key to id_ed25519"
           chmod 600 ~/.ssh/id_ed25519
-          echo "Set permissions for id_ed25519"
-          ssh-keyscan -H "${{ env.EC2_HOST }}" >> ~/.ssh/known_hosts || { echo "ssh-keyscan failed"; exit 1; }
-          echo "Added EC2 host to known_hosts"
+          ssh-keyscan -H "${{ env.EC2_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Upload to EC2
+      - name: Upload and deploy to EC2
         run: |
           scp publish.zip ${{ env.EC2_USER }}@${{ env.EC2_HOST }}:/home/${{ env.EC2_USER }}/
           ssh ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "

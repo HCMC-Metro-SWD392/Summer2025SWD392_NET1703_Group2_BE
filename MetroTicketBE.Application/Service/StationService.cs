@@ -1,9 +1,11 @@
-﻿using AutoMapper;
+﻿using System.Security.Claims;
+using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.Station;
 using MetroTicketBE.Domain.Entities;
+using MetroTicketBE.Domain.Enum;
 using MetroTicketBE.Infrastructure.IRepository;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,14 +15,17 @@ namespace MetroTicketBE.Application.Service
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ILogService _logService;
+        private const string EntityName = "Trạm Metro";
 
-        public StationService(IUnitOfWork unitOfWork, IMapper mapper)
+        public StationService(IUnitOfWork unitOfWork, IMapper mapper, ILogService logService)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _logService = logService ?? throw new ArgumentNullException(nameof(logService));
         }
 
-        public async Task<ResponseDTO> CreateStation(CreateStationDTO createStationDTO)
+        public async Task<ResponseDTO> CreateStation(ClaimsPrincipal user,CreateStationDTO createStationDTO)
         {
             try
             {
@@ -40,12 +45,13 @@ namespace MetroTicketBE.Application.Service
                 {
                     Name = createStationDTO.Name,
                     Address = createStationDTO.Address,
-                    Description = createStationDTO.Description
+                    Description = createStationDTO.Description,
                 };
 
                 await _unitOfWork.StationRepository.AddAsync(station);
                 await _unitOfWork.SaveAsync();
-
+                await _logService.AddLogAsync(LogType.Create, user.FindFirstValue(ClaimTypes.NameIdentifier),EntityName, station.Name);
+                
                 return new ResponseDTO
                 {
                     IsSuccess = true,
@@ -65,7 +71,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> UpdateStation(Guid stationId, UpdateStationDTO updateStationDTO)
+        public async Task<ResponseDTO> UpdateStation(ClaimsPrincipal user,Guid stationId, UpdateStationDTO updateStationDTO)
         {
             try
             {
@@ -129,6 +135,7 @@ namespace MetroTicketBE.Application.Service
 
                 _unitOfWork.StationRepository.Update(station);
                 await _unitOfWork.SaveAsync();
+                _logService.AddLogAsync(LogType.Update, user.FindFirstValue(ClaimTypes.NameIdentifier), EntityName, station.Name);
                 return new ResponseDTO
                 {
                     IsSuccess = true,
@@ -149,11 +156,11 @@ namespace MetroTicketBE.Application.Service
             
         }
         public async Task<ResponseDTO> GetAllStations(bool? isAscending,int pageNumber,
-            int pageSize)
+            int pageSize, bool? isActive = null)
         {
             try
             {
-                var stations =  _unitOfWork.StationRepository.GetAllStationDTOAsync(isAscending);
+                var stations =  _unitOfWork.StationRepository.GetAllStationDTOAsync(isAscending, isActive);
                 var stationDTO = await stations.ProjectTo<GetStationDTO>(_mapper.ConfigurationProvider).ToListAsync();
                 if (pageNumber > 0 || pageSize > 0)
                 {
@@ -223,9 +230,9 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> SearchStationsByName(string? name)
+        public async Task<ResponseDTO> SearchStationsByName(string? name, bool? isActive = null)
         {
-            var stations = await _unitOfWork.StationRepository.SearchStationsByName(name);
+            var stations = await _unitOfWork.StationRepository.SearchStationsByName(name, isActive);
             if (stations.Count == 0)
             {
                 return new ResponseDTO
@@ -242,6 +249,54 @@ namespace MetroTicketBE.Application.Service
                 Message = "Tìm kiếm trạm Metro thành công",
                 Result = _mapper.Map<List<GetStationDTO>>(stations)
             };
+        }
+
+        public async Task<ResponseDTO> SetIsActiveStation(ClaimsPrincipal user, Guid stationId, bool isActive)
+        {
+            try
+            {
+                if (stationId == Guid.Empty)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        StatusCode = 400,
+                        Message = "ID trạm không hợp lệ"
+                    };
+                }
+
+                var station = await _unitOfWork.StationRepository.GetAsync(s => s.Id == stationId);
+                if (station == null)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        StatusCode = 404,
+                        Message = "Trạm Metro không tồn tại"
+                    };
+                }
+
+                station.IsActive = isActive;
+                _unitOfWork.StationRepository.Update(station);
+                await _unitOfWork.SaveAsync();
+                await _logService.AddLogAsync(LogType.Update, user.FindFirstValue(ClaimTypes.NameIdentifier), EntityName, $"Trạng thái {station.Name}: {(isActive ? "hoạt động" : "Ngừng hoạt động")}");
+                return new ResponseDTO
+                {
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Message = "Cập nhật trạng thái hoạt động của trạm Metro thành công",
+                    Result = _mapper.Map<GetStationDTO>(station)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Message = "Lỗi khi cập nhật trạng thái hoạt động của trạm Metro: " + ex.Message
+                };
+            }
         }
     }
 }

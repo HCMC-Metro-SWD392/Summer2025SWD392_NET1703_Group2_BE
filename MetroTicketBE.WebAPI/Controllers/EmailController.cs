@@ -27,5 +27,23 @@ namespace MetroTicketBE.WebAPI.Controllers
             return StatusCode(response.StatusCode, response);
 
         }
+
+        [HttpPut]
+        [Route("update-email-template/{templateId}")]
+        [Authorize(Roles = StaticUserRole.Admin)]
+        public async Task<ActionResult<ResponseDTO>> UpdateEmailTemplate([FromRoute] Guid templateId, [FromBody] UpdateEmailTemplateDTO updateEmailTemplateDTO)
+        {
+            var response = await _emailService.UpdateEmailTemplate(User, templateId, updateEmailTemplateDTO);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpGet]
+        [Route("get-all-email-template")]
+        //[Authorize(Roles = StaticUserRole.Admin)]
+        public async Task<ActionResult<ResponseDTO>> GetAllEmailTemplate([FromQuery] string? filterOn, [FromQuery] string? filterQuery, [FromQuery] string? sortBy, [FromQuery] bool? isAcending, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            var response = await _emailService.GetAllEmailTemplate(filterOn, filterQuery, sortBy, isAcending, pageNumber, pageSize);
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }

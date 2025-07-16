@@ -1,9 +1,6 @@
 ﻿using AutoMapper;
 using MetroTicketBE.Domain.DTO.TicketRoute;
 using MetroTicketBE.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using MetroTicket.Domain.Entities;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.MetroLine;
@@ -17,8 +14,13 @@ using MetroTicketBE.Domain.DTO.TrainSchedule;
 using MetroTicketBE.Domain.DTO.FormRequest;
 using MetroTicketBE.Domain.DTO.Staff;
 using MetroTicketBE.Domain.DTO.Customer;
-using MetroTicketBE.Domain.Enums;
 using MetroTicketBE.Domain.DTO.TicketProcess;
+using MetroTicketBE.Domain.DTO.DashBoard;
+using System.Text.Json;
+using MetroTicketBE.Domain.DTO.Log;
+using Net.payOS.Types;
+using MetroTicketBE.Domain.Enum;
+using MetroTicketBE.Domain.DTO.Email;
 
 namespace MetroTicketBE.Application.Mappings
 {
@@ -43,13 +45,15 @@ namespace MetroTicketBE.Application.Mappings
                 .ForMember(dest => dest.MetroLineName, opt => opt.MapFrom(src => src.MetroLine.MetroName))
                 .ForMember(dest => dest.StationName, opt => opt.MapFrom(src => src.Station.Name)).ReverseMap();
             CreateMap<SubscriptionTicket, GetSubscriptionTicketDTO>();
-            CreateMap<StaffShift, ShiftInfoDto>();
-            CreateMap<Station, StationInfoDto>();
             CreateMap<Station, StationMetroLineDTO>();
-            CreateMap<Staff, StaffInfoDto>()
-                .ForMember(dest => dest.FullName,
-                    opt => opt.MapFrom(src => src.User.FullName));
-            CreateMap<StaffSchedule, GetScheduleDTO>();
+            CreateMap<StaffSchedule, GetScheduleDTO>()
+                .ForMember(dest => dest.StaffFullName, opt => opt.MapFrom(src => src.Staff.User.FullName))
+                .ForMember(dest => dest.ShiftName, opt => opt.MapFrom(src => src.Shift.ShiftName))
+                .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => src.Shift.StartTime))
+                .ForMember(dest => dest.EndTime, opt => opt.MapFrom(src => src.Shift.EndTime))
+                .ForMember(dest => dest.StationId, opt => opt.MapFrom(src => src.WorkingStationId))
+                .ForMember(dest => dest.StationName, opt => opt.MapFrom(src => src.WorkingStation.Name))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
             CreateMap<GetFormRequestDTO, FormRequest>().ReverseMap();
             CreateMap<Staff, GetStaffDTO>()
                 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FullName))
@@ -77,6 +81,64 @@ namespace MetroTicketBE.Application.Mappings
 
             CreateMap<TicketProcess, GetTicketProcessDTO>()
                 .ForMember(dest => dest.StationName, opt => opt.MapFrom(src => src.Station.Name)).ReverseMap();
+
+            CreateMap<PaymentTransaction, GetTicketStatisticDTO>()
+                .ForMember(dest => dest.UserFullName, opt => opt.MapFrom(src => src.Customer.User.FullName))
+                .ForMember(dest => dest.DetailTicket, opt => opt.MapFrom(src => ExtractNamesFromDataJson(src.DataJson)))
+                .ForMember(dest => dest.PaymentStatus, opt => opt.MapFrom(src => GetPaymentStatusName(src.Status)))
+                .ForMember(dest => dest.TimeOfPurchase, opt => opt.MapFrom(src => GetRelativeTime(src.CreatedAt))).ReverseMap();
+
+            CreateMap<Log, GetLogDTO>()
+                .ForMember(dest => dest.UserFullname,
+                    opt => opt.MapFrom(src => src.User != null ? src.User.FullName : string.Empty))
+                .ForMember(dest => dest.LogType,
+                    opt => opt.MapFrom(src => src.LogType.ToString()));
+
+            //CreateMap<EmailTemplate, GetEmailTemplateDTO>()
+            //    .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.))
+
         }
+        private static List<string> ExtractNamesFromDataJson(string json)
+        {
+            try
+            {
+                var items = JsonSerializer.Deserialize<List<ItemData>>(json);
+                return items?.Select(i => i.name).ToList() ?? new List<string>();
+            }
+            catch
+            {
+                return new List<string>();
+            }
+        }
+
+        private static string GetRelativeTime(DateTime createdAt)
+        {
+            var timespan = DateTime.UtcNow - createdAt;
+
+            if (timespan.TotalSeconds < 60)
+                return $"{(int)timespan.TotalSeconds} giây trước";
+            if (timespan.TotalMinutes < 60)
+                return $"{(int)timespan.TotalMinutes} phút trước";
+            if (timespan.TotalHours < 24)
+                return $"{(int)timespan.TotalHours} giờ trước";
+            if (timespan.TotalDays < 30)
+                return $"{(int)timespan.TotalDays} ngày trước";
+            if (timespan.TotalDays < 365)
+                return $"{(int)(timespan.TotalDays / 30)} tháng trước";
+
+            return $"{(int)(timespan.TotalDays / 365)} năm trước";
+        }
+
+        private static string GetPaymentStatusName(PaymentStatus status)
+        {
+            return status switch
+            {
+                PaymentStatus.Unpaid => "Chưa thanh toán",
+                PaymentStatus.Paid => "Đã thanh toán",
+                PaymentStatus.Canceled => "Đã hủy",
+                _ => "Không xác định"
+            };
+        }
+
     }
 }

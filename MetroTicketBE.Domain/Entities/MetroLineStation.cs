@@ -13,6 +13,7 @@ namespace MetroTicketBE.Domain.Entities
         public Guid StationId { get; set; }
         public double DistanceFromStart { get; set; }
         public int StationOrder { get; set; }
+        public bool IsActive { get; set; } = true;
 
         public MetroLine MetroLine { get; set; } = null!;
         public Station Station { get; set; } = null!;

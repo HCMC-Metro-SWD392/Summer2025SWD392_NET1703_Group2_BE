@@ -46,7 +46,7 @@ namespace MetroTicketBE.Application.Service
                 }
                 var allSchedules = new List<TrainSchedule>();
                 var orderedStations =
-                    await _unitOfWork.MetroLineStationRepository.GetStationByMetroLineIdAsync(dto.MetroLineId);
+                    await _unitOfWork.MetroLineStationRepository.GetStationByMetroLineIdAsync(dto.MetroLineId, true);
                 var metroLine = await _unitOfWork.MetroLineRepository.GetByIdAsync(dto.MetroLineId);
                 if (metroLine is null)
                 {

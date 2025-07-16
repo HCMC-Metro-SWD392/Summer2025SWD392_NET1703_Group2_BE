@@ -1,6 +1,7 @@
 ﻿using Amazon;
 using Amazon.SimpleEmailV2;
 using Amazon.SimpleEmailV2.Model;
+using AutoMapper;
 using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.Email;
@@ -16,12 +17,14 @@ namespace MetroTicketBE.Application.Service
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _configuration;
+        private readonly IMapper _mapper;
         private readonly IRedisService _redisService;
 
-        public EmailService(IUnitOfWork unitOfWork, IConfiguration configuration, IRedisService redisService)
+        public EmailService(IUnitOfWork unitOfWork, IConfiguration configuration, IRedisService redisService, IMapper mapper)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _redisService = redisService ?? throw new ArgumentNullException(nameof(redisService));
         }
 
@@ -191,6 +194,178 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
+        public async Task<ResponseDTO> UpdateEmailTemplate(ClaimsPrincipal user, Guid templateId, UpdateEmailTemplateDTO updateEmailTemplateDTO)
+        {
+            try
+            {
+                var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        Message = "Không tìm thấy thông tin người dùng.",
+                        StatusCode = 400
+                    };
+                }
+
+                var existingTemplate = await _unitOfWork.EmailTemplateRepository.GetByIdAsync(templateId);
+                if (existingTemplate == null)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        Message = $"Không tìm thấy template với ID: {templateId}",
+                        StatusCode = 404
+                    };
+                }
+
+                if (!string.IsNullOrEmpty(updateEmailTemplateDTO.TemplateName) &&
+                    !string.Equals(existingTemplate.TemplateName, updateEmailTemplateDTO.TemplateName, StringComparison.OrdinalIgnoreCase))
+                {
+                    var isDuplicate = await _unitOfWork.EmailTemplateRepository.IsExistByTemplateName(updateEmailTemplateDTO.TemplateName);
+                    if (isDuplicate)
+                    {
+                        return new ResponseDTO
+                        {
+                            IsSuccess = false,
+                            Message = $"Template [{updateEmailTemplateDTO.TemplateName}] đã tồn tại.",
+                            StatusCode = 409
+                        };
+                    }
+                    existingTemplate.TemplateName = updateEmailTemplateDTO.TemplateName;
+                }
+
+                if (updateEmailTemplateDTO.SubjectLine != null)
+                    existingTemplate.SubjectLine = updateEmailTemplateDTO.SubjectLine;
+
+                if (updateEmailTemplateDTO.BodyContent != null)
+                    existingTemplate.BodyContent = updateEmailTemplateDTO.BodyContent;
+
+                if (updateEmailTemplateDTO.SenderName != null)
+                    existingTemplate.SenderName = updateEmailTemplateDTO.SenderName;
+
+                if (updateEmailTemplateDTO.Category != null)
+                    existingTemplate.Category = updateEmailTemplateDTO.Category;
+
+                if (updateEmailTemplateDTO.PreHeaderText != null)
+                    existingTemplate.PreHeaderText = updateEmailTemplateDTO.PreHeaderText;
+
+                if (updateEmailTemplateDTO.PersonalizationTags != null)
+                    existingTemplate.PersonalizationTags = updateEmailTemplateDTO.PersonalizationTags;
+
+                if (updateEmailTemplateDTO.FooterContent != null)
+                    existingTemplate.FooterContent = updateEmailTemplateDTO.FooterContent;
+
+                if (updateEmailTemplateDTO.CallToAction != null)
+                    existingTemplate.CallToAction = updateEmailTemplateDTO.CallToAction;
+
+                if (updateEmailTemplateDTO.Language != null)
+                    existingTemplate.Language = updateEmailTemplateDTO.Language;
+
+                if (updateEmailTemplateDTO.RecipientType != null)
+                    existingTemplate.RecipientType = updateEmailTemplateDTO.RecipientType;
+
+                existingTemplate.UpdatedAt = DateTime.UtcNow;
+                existingTemplate.UpdatedBy = userId;
+
+                _unitOfWork.EmailTemplateRepository.Update(existingTemplate);
+                await _unitOfWork.SaveAsync();
+
+                return new ResponseDTO
+                {
+                    IsSuccess = true,
+                    Message = "Cập nhật template email thành công.",
+                    StatusCode = 200
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    IsSuccess = false,
+                    Message = $"Lỗi khi cập nhật template email: {ex.Message}",
+                    StatusCode = 500
+                };
+            }
+        }
+
+        public async Task<ResponseDTO> GetAllEmailTemplate(string? filterOn, string? filterQuery, string? sortBy, bool? isAcending, int pageNumber, int pageSize)
+        {
+            try
+            {
+                var emailTemples = (await _unitOfWork.EmailTemplateRepository.GetAllAsync())
+                    .Where(e => e.Status == EmailStatus.Active);
+
+                if (!string.IsNullOrEmpty(filterOn) && !string.IsNullOrEmpty(filterQuery))
+                {
+                    filterOn = filterOn.ToLower().Trim();
+                    filterQuery = filterQuery.ToLower().Trim();
+
+                    emailTemples = filterOn switch
+                    {
+                        "templatename" => emailTemples.Where(t => t.TemplateName.ToLower().Contains(filterQuery)),
+                        "Language" => emailTemples.Where(t => t.Language.ToLower().Contains(filterQuery)),
+                        "category" => emailTemples.Where(t => t.Category.ToLower().Contains(filterQuery)),
+
+                        _ => emailTemples
+                    };
+                }
+
+                if (!string.IsNullOrEmpty(sortBy))
+                {
+                    sortBy = sortBy.ToLower().Trim();
+                    emailTemples = sortBy switch
+                    {
+                        "templatename" => isAcending == true ?
+                            emailTemples.OrderBy(t => t.TemplateName) :
+                            emailTemples.OrderByDescending(t => t.TemplateName),
+                        "language" => isAcending == true ?
+                            emailTemples.OrderBy(t => t.Language) :
+                            emailTemples.OrderByDescending(t => t.Language),
+                        "category" => isAcending == true ?
+                            emailTemples.OrderBy(t => t.Category) :
+                            emailTemples.OrderByDescending(t => t.Category),
+
+                        _ => emailTemples
+                    };
+                }
+
+                if (pageNumber <= 0 || pageSize <= 0)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        Message = "Số trang hoặc kích thước trang không hợp lệ.",
+                        StatusCode = 400
+                    };
+                }
+                else
+                {
+                    emailTemples = emailTemples.Skip(pageNumber - 1).Take(pageSize).ToList();
+                }
+
+                //var getAllEmailTemplate = _mapper.Map<List<GetEmailTemplateDTO>>(emailTemples);
+
+                return new ResponseDTO
+                {
+                    IsSuccess = true,
+                    Result = emailTemples,
+                    Message = "Lấy danh sách template email thành công.",
+                    StatusCode = 200
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    IsSuccess = false,
+                    Message = $"Lỗi khi lấy danh sách template email: {ex.Message}",
+                    StatusCode = 500
+                };
+            }
+        }
+
         public async Task<bool> IsAllowToSendEmail(string email, string key)
         {
             var isAllowed = true;
@@ -225,3 +400,4 @@ namespace MetroTicketBE.Application.Service
         }
     }
 }
+

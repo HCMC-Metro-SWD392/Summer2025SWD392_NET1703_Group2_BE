@@ -135,9 +135,6 @@ public class UserService: IUserService
         }
     }
 
-    
-
-    
     private static void PatchWith(ApplicationUser user, UpdateUserDTO dto)
     {
         if (dto.FullName != null) user.FullName = dto.FullName;

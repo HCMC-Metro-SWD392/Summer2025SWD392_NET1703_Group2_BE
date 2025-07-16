@@ -23,14 +23,12 @@ namespace MetroTicketBE.Application.Service
         private readonly ITokenService _tokenService;
         private readonly IMapper _mapper;
         private readonly IHubContext<NotificationHub> _hubContext;
-        private readonly ILogger<TicketService> _logger; // Add this field
         private readonly ITicketRouteService _ticketRouteService;
         public TicketService(
             IUnitOfWork unitOfWork,
             IMapper mapper,
             ITokenService tokenService,
             IHubContext<NotificationHub> hubContext,
-            ILogger<TicketService> logger,
             ITicketRouteService ticketRouteService)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
@@ -38,7 +36,6 @@ namespace MetroTicketBE.Application.Service
             random = new Random();
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
             _hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _ticketRouteService = new TicketRouteService(_unitOfWork, _mapper);
         }
 
@@ -78,20 +75,7 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
                 var tickets = (await _unitOfWork.TicketRepository.GetAllAsync(includeProperties: "TicketRoute,TicketRoute.StartStation,TicketRoute.EndStation,SubscriptionTicket,SubscriptionTicket.StartStation,SubscriptionTicket.EndStation"))
-                        .Where(t => t.CustomerId == customer.Id);
-
-                if (ticketType == TicketStatus.Inactive)
-                {
-                    tickets = tickets.Where(t => t.TicketRtStatus == TicketStatus.InActiveOverStation || t.TicketRtStatus == ticketType);
-                }
-                else if (ticketType == TicketStatus.Active)
-                {
-                    tickets = tickets.Where(t => t.TicketRtStatus == TicketStatus.ActiveOverStation || t.TicketRtStatus == ticketType);
-                }
-                else
-                {
-                    tickets = tickets.Where(t => t.TicketRtStatus == ticketType);
-                }
+                        .Where(t => t.CustomerId == customer.Id && t.TicketRtStatus == ticketType);
 
                 if (!string.IsNullOrEmpty(filterOn) && !string.IsNullOrEmpty(filterQuery))
                 {
@@ -393,7 +377,7 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                else if (ticket.TicketRtStatus == TicketStatus.Active || ticket.TicketRtStatus == TicketStatus.ActiveOverStation)
+                else if (ticket.TicketRtStatus == TicketStatus.Active)
                 {
                     await SendNotifyToUser(customer.UserId, "Vé đã được check-in trước đó.");
                     return new ResponseDTO
@@ -405,7 +389,7 @@ namespace MetroTicketBE.Application.Service
                 }
                 else if (ticket.TicketRtStatus == TicketStatus.Inactive)
                 {
-                    var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
+                    var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync(null);
 
                     var _graph = new StationGraph(allMetroLines);
 
@@ -433,7 +417,7 @@ namespace MetroTicketBE.Application.Service
                 }
                 else
                 {
-                    var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
+                    var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync(null);
 
                     var _graph = new StationGraph(allMetroLines);
 
@@ -474,7 +458,7 @@ namespace MetroTicketBE.Application.Service
         {
             if (stationPath.Contains(stationId))
             {
-                ticket.TicketRtStatus = TicketStatus.ActiveOverStation;
+                ticket.TicketRtStatus = TicketStatus.Active;
                 _unitOfWork.TicketRepository.Update(ticket);
 
                 await CreateTicketProcess(ticket, stationId, TicketProcessStatus.Checkin);
@@ -565,7 +549,7 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                else if (ticket.TicketRtStatus == TicketStatus.Inactive || ticket.TicketRtStatus == TicketStatus.InActiveOverStation)
+                else if (ticket.TicketRtStatus == TicketStatus.Inactive)
                 {
                     await SendNotifyToUser(customer.UserId, "Vé chưa được check-in trước đó.");
                     return new ResponseDTO
@@ -578,7 +562,7 @@ namespace MetroTicketBE.Application.Service
                 else if (ticket.TicketRtStatus == TicketStatus.Active)
                 {
 
-                    var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
+                    var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync(null);
 
                     var _graph = new StationGraph(allMetroLines);
 
@@ -606,7 +590,7 @@ namespace MetroTicketBE.Application.Service
                 }
                 else
                 {
-                    var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
+                    var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync(null);
 
                     var _graph = new StationGraph(allMetroLines);
 
@@ -616,10 +600,10 @@ namespace MetroTicketBE.Application.Service
 
                     if (ticket.TicketRoute is null)
                     {
-                        await SendNotifyToUser(customer.UserId, "Vé không có hỗ trợ vượt trạm");
+                        await SendNotifyToUser(customer.UserId, "Vé lỗi khi không có hỗ trợ vượt trạm");
                         return new ResponseDTO
                         {
-                            Message = "Vé không có hỗ trợ vượt trạm",
+                            Message = "Vé lỗi khi không có hỗ trợ vượt trạm",
                             IsSuccess = false,
                             StatusCode = 404
                         };
@@ -646,17 +630,19 @@ namespace MetroTicketBE.Application.Service
 
         private async Task<ResponseDTO> CheckOutOverStationSubProcess(Ticket ticket, Guid stationId, List<Guid> stationPath, string userId)
         {
+            var stationName = await _unitOfWork.StationRepository.GetNameById(stationId);
             if (stationPath.Contains(stationId))
             {
                 ticket.TicketRtStatus = TicketStatus.Inactive;
                 var priceTicketRoute = await _unitOfWork.FareRuleRepository.CalculatePriceFromDistance(ticket.TicketRoute?.Distance);
+                var serialTicket = string.Concat(Enumerable.Range(0, 10).Select(_ => random.Next(0, 10).ToString()));
                 Ticket newTicket = new Ticket
                 {
                     CustomerId = ticket.CustomerId,
                     SubscriptionTicketId = null,
                     TicketRouteId = ticket.TicketRouteId,
                     Price = priceTicketRoute,
-                    TicketSerial = $"Serial vé tích hợp: {ticket.TicketSerial}",
+                    TicketSerial = serialTicket,
                     StartDate = ticket.StartDate,
                     EndDate = ticket.EndDate,
                     TicketRtStatus = TicketStatus.Used,
@@ -673,18 +659,17 @@ namespace MetroTicketBE.Application.Service
                     TicketId = ticket.Id,
                     Status = TicketProcessStatus.Checkout,
                     StationId = stationId,
+                    IntegratedTicket = serialTicket,
                     ProcessedAt = DateTime.UtcNow
                 };
 
                 await _unitOfWork.TicketProcessRepository.AddAsync(ticketProcess);
 
-                await CreateTicketProcess(ticket, stationId, TicketProcessStatus.Checkout);
-
                 await _unitOfWork.SaveAsync();
-                await SendNotifyToUser(userId, "Vé đã được check-out thành công.");
+                await SendNotifyToUser(userId, $"Vé đã được check-out tại {stationName} thành công.");
                 return new ResponseDTO
                 {
-                    Message = "Vé đã được check-out thành công.",
+                    Message = $"Vé đã được check-out tại {stationName} thành công.",
                     IsSuccess = true,
                     StatusCode = 200
                 };
@@ -694,7 +679,7 @@ namespace MetroTicketBE.Application.Service
                 await FindTicketRouteForOverStationAndGetPrice(ticket, stationId, userId);
                 return new ResponseDTO
                 {
-                    Message = "Trạm không đúng với phạm vi cho phép kết thúc của vé (nằm ngoài vùng cho phép check-out).",
+                    Message = $"{stationName} không đúng với phạm vi cho phép kết thúc của vé (nằm ngoài vùng cho phép check-out).",
                     IsSuccess = false,
                     StatusCode = 400,
                 };
@@ -702,7 +687,7 @@ namespace MetroTicketBE.Application.Service
         }
         private async Task<ResponseDTO> CheckOutProcessSubscriptionTicket(Ticket ticket, Guid stationId, List<Guid> stationPath, string userId)
         {
-
+            var stationName = await _unitOfWork.StationRepository.GetNameById(stationId);
             if (stationPath.Contains(stationId))
             {
                 ticket.TicketRtStatus = TicketStatus.Inactive;
@@ -711,10 +696,10 @@ namespace MetroTicketBE.Application.Service
                 await CreateTicketProcess(ticket, stationId, TicketProcessStatus.Checkout);
 
                 await _unitOfWork.SaveAsync();
-                await SendNotifyToUser(userId, "Vé đã được check-out thành công.");
+                await SendNotifyToUser(userId, $"Vé đã được check-out tại {stationName} thành công.");
                 return new ResponseDTO
                 {
-                    Message = "Vé đã được check-out thành công.",
+                    Message = $"Vé đã được check-out tại {stationName} thành công.",
                     IsSuccess = true,
                     StatusCode = 200
                 };
@@ -724,7 +709,7 @@ namespace MetroTicketBE.Application.Service
                 await FindTicketRouteForOverStationAndGetPrice(ticket, stationId, userId);
                 return new ResponseDTO
                 {
-                    Message = "Trạm không đúng với phạm vi cho phép kết thúc của vé (nằm ngoài vùng cho phép check-out).",
+                    Message = $"{stationName} không đúng với phạm vi cho phép kết thúc của vé (nằm ngoài vùng cho phép check-out).",
                     IsSuccess = false,
                     StatusCode = 400
                 };
@@ -744,6 +729,8 @@ namespace MetroTicketBE.Application.Service
 
             // Check if the station is within the allowed range for check-out
 
+            var stationName = await _unitOfWork.StationRepository.GetNameById(stationId);
+
             if (stationPath.Contains(stationId))
             {
                 ticket.TicketRtStatus = TicketStatus.Active;
@@ -752,10 +739,10 @@ namespace MetroTicketBE.Application.Service
                 await CreateTicketProcess(ticket, stationId, TicketProcessStatus.Checkin);
 
                 await _unitOfWork.SaveAsync();
-                await SendNotifyToUser(userId, "Vé đã được check-in thành công.");
+                await SendNotifyToUser(userId, $"Vé đã được check-in tại {stationName} thành công.");
                 return new ResponseDTO
                 {
-                    Message = "Vé đã được check-in thành công.",
+                    Message = $"Vé đã được check-in tại {stationName} thành công.",
                     IsSuccess = true,
                     StatusCode = 200
                 };
@@ -765,7 +752,7 @@ namespace MetroTicketBE.Application.Service
                 await FindTicketRouteForOverStationAndGetPrice(ticket, stationId, userId);
                 return new ResponseDTO
                 {
-                    Message = "Trạm không đúng với phạm vi cho phép bắt đầu của vé (nằm ngoài vùng cho phép check-in).",
+                    Message = $"{stationName} không đúng với phạm vi cho phép bắt đầu của vé (nằm ngoài vùng cho phép check-in).",
                     IsSuccess = false,
                     StatusCode = 400,
                     Result = ticket.Id
@@ -775,7 +762,7 @@ namespace MetroTicketBE.Application.Service
 
         private async Task<ResponseDTO> FindTicketRouteForOverStationAndGetPrice(Ticket ticket, Guid stationId, string userId)
         {
-            var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
+            var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync(null);
 
             var _graph = new StationGraph(allMetroLines);
 
@@ -897,11 +884,13 @@ namespace MetroTicketBE.Application.Service
             }
             if (totalPrice == 0)
             {
-                await SendNotifyOverStation(ticket, stationId, $"Bạn đã vượt trạm nhưng nằm trong vùng đổi vé miễn phí, vui lòng xác nhận để chuyển sang vé phù hợp.", userId);
+                var stationName = await _unitOfWork.StationRepository.GetNameById(stationId);
+                await SendNotifyOverStation(ticket, stationId, $"Bạn đã vượt trạm tại {stationName}, nhưng nằm trong vùng đổi vé miễn phí, vui lòng xác nhận để chuyển sang vé phù hợp.", userId);
             }
             else
             {
-                await SendNotifyOverStation(ticket, stationId, $"Bạn đã vượt trạm! Vui lòng thanh toán thêm {totalPrice}VND", userId);
+                var stationName = await _unitOfWork.StationRepository.GetNameById(stationId);
+                await SendNotifyOverStation(ticket, stationId, $"Bạn đã vượt trạm tại {stationName}. Vui lòng thanh toán thêm {totalPrice} đồng", userId);
             }
             return new ResponseDTO
             {
@@ -929,10 +918,11 @@ namespace MetroTicketBE.Application.Service
                 await CreateTicketProcess(ticket, stationId, TicketProcessStatus.Checkout);
 
                 await _unitOfWork.SaveAsync();
-                await SendNotifyToUser(userId, "Vé lượt của bạn đã được check-out thành công.");
+                var stationName = await _unitOfWork.StationRepository.GetNameById(stationId);
+                await SendNotifyToUser(userId, $"Vé lượt của bạn đã được check-out tại {stationName} thành công.");
                 return new ResponseDTO
                 {
-                    Message = "Vé lượt đã được check-out thành công.",
+                    Message = $"Vé lượt đã được check-out tại {stationName} thành công.",
                     IsSuccess = true,
                     StatusCode = 200
                 };
@@ -940,9 +930,10 @@ namespace MetroTicketBE.Application.Service
             else
             {
                 await FindTicketRouteForOverStationAndGetPrice(ticket, stationId, userId);
+                var stationName = await _unitOfWork.StationRepository.GetNameById(stationId);
                 return new ResponseDTO
                 {
-                    Message = "Trạm không đúng với phạm vi cho phép kết thúc của vé lượt (nằm ngoài vùng cho phép check-out).",
+                    Message = $"{stationName} không đúng với phạm vi cho phép kết thúc của vé lượt (nằm ngoài vùng cho phép check-out).",
                     IsSuccess = false,
                     StatusCode = 400,
                     Result = ticket.Id
@@ -1075,21 +1066,87 @@ namespace MetroTicketBE.Application.Service
             await _unitOfWork.SaveAsync();
         }
 
-        //private async Task<bool> CheckOutTicket(Ticket ticket, Guid stationId, Guid metroLineId)
-        //{
-        //    var isSuccess = false;
-        //    int orderStart = await _unitOfWork.StationRepository.GetOrderStationById(ticket.TicketRoute.StartStation.Id, metroLineId);
-        //    int orderEnd = await _unitOfWork.StationRepository.GetOrderStationById(ticket.TicketRoute.EndStation.Id, metroLineId);
-        //    int order = await _unitOfWork.StationRepository.GetOrderStationById(stationId, metroLineId);
+        public async Task<ResponseDTO> IsExistTicketRange(ClaimsPrincipal user, Guid startStationId, Guid endStationId)
+        {
+            try
+            {
+                var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Không tìm thấy người dùng.",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
 
-        //    if ((orderStart <= order && order <= orderEnd) || (orderStart >= order && order >= orderEnd))
-        //    {
-        //        ticket.TicketRtStatus = TicketStatus.Used;
-        //        _unitOfWork.TicketRepository.Update(ticket);
-        //        await _unitOfWork.SaveAsync();
-        //        isSuccess = true;
-        //    }
-        //    return isSuccess;
-        //}
+                var customer = await _unitOfWork.CustomerRepository.GetByUserIdAsync(userId);
+                if (customer is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Không tìm thấy khách hàng",
+                        IsSuccess = false,
+                        StatusCode = 403
+                    };
+                }
+
+                var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync(true);
+                var _graph = new StationGraph(allMetroLines);
+
+                var stationPath = new List<Guid>();
+
+                stationPath = _graph.FindShortestPath(startStationId, endStationId);
+
+                var ticketListActive = (await _unitOfWork.TicketRepository.GetAllAsync())
+                    .Where(t => t.TicketRtStatus == TicketStatus.Inactive && t.CustomerId == customer.Id);
+
+                foreach (var t in ticketListActive)
+                {
+                    var activeStationPath = new List<Guid>();
+                    activeStationPath = BuildStationPath(t, _graph);
+                    if (!activeStationPath.Except(stationPath).Any())
+                    {
+                        return new ResponseDTO
+                        {
+                            Message = "Bạn đã có vé lượt trong phạm vi này.",
+                            IsSuccess = false,
+                            StatusCode = 409
+                        };
+                    }
+                }
+
+                return new ResponseDTO
+                {
+                    Message = "Không có vé lượt nào trong phạm vi này.",
+                    IsSuccess = true,
+                    StatusCode = 404
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    Message = "Đã xảy ra lỗi khi kiểm tra vé lượt trong phạm vi: " + ex.Message,
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
+
+        private List<Guid> BuildStationPath(Ticket ticket, StationGraph graph)
+        {
+            var path = new List<Guid>();
+
+            if (ticket.TicketRoute is not null)
+                path.AddRange(graph.FindShortestPath(ticket.TicketRoute.StartStationId, ticket.TicketRoute.EndStationId));
+
+            if (ticket.SubscriptionTicket is not null)
+                path.AddRange(graph.FindShortestPath(ticket.SubscriptionTicket.StartStationId, ticket.SubscriptionTicket.EndStationId));
+
+            return path;
+        }
+
     }
 }

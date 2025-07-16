@@ -11,4 +11,5 @@ public class UserDTO
     public string Sex { get; set; } = string.Empty;
     public DateOnly? DateOfBirth { get; set; }
     public string UserName { get; set; } = string.Empty;
+    public bool IsStudent { get; set; }
 }

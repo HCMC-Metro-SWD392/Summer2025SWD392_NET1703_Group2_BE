@@ -96,6 +96,9 @@ namespace MetroTicketBE.Application.Service
 
                 var accessToken = await _tokenService.GenerateJwtAccessTokenAsync(user);
                 var refreshToken = await _tokenService.GenerateJwtRefreshTokenAsync(user, loginDTO.RememberMe);
+                
+                await CheckAndResetStudentExpiration(user.Id);
+                var isStudent = await IsStudent(user.Id);
                 var responeUser = new UserDTO()
                 {
                     Id = user.Id,
@@ -106,9 +109,112 @@ namespace MetroTicketBE.Application.Service
                     IdentityId = user.IdentityId,
                     Sex = user.Sex,
                     DateOfBirth = user.DateOfBirth,
-                    UserName = user.UserName
+                    UserName = user.UserName,
+                    IsStudent = isStudent
                 };
                 await _tokenService.StoreRefreshToken(user.Id, refreshToken, loginDTO.RememberMe);
+
+                await _userManager.ResetAccessFailedCountAsync(user);
+
+                return new ResponseDTO
+                {
+                    Message = "Đăng nhập thành công",
+                    Result = new
+                    {
+                        AccessToken = accessToken,
+                        RefreshToken = refreshToken,
+                        User = responeUser
+                    },
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    // Return all exception details in the message
+                    Message = $"Đã xảy ra lỗi: {ex.Message}",
+                    Result = null,
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
+
+        public async Task<ResponseDTO> LoginUserByGoogle(LoginByGoogleDTO loginByGoogleDTO)
+        {
+            try
+            {
+                var isEmailExist = await _unitOfWork.UserManagerRepository.IsEmailExist(loginByGoogleDTO.Email);
+
+                if (!isEmailExist)
+                {
+                    var registerByGoogleDTO = new RegisterCustomerByGoogleDTO
+                    {
+                        Email = loginByGoogleDTO.Email,
+                        FullName = loginByGoogleDTO.FullName,
+                    };
+
+                    await RegisterCustomerByGoogle(registerByGoogleDTO);
+                }
+
+                var user = await _unitOfWork.UserManagerRepository.GetByEmailAsync(loginByGoogleDTO.Email);
+
+                if (user.LockoutEnd > DateTimeOffset.UtcNow)
+                {
+                    var remainingMinutes = (user.LockoutEnd.Value - DateTimeOffset.UtcNow).TotalMinutes;
+                    return new ResponseDTO
+                    {
+                        Message = $"Tài khoản đang bị tạm khóa {Math.Ceiling(remainingMinutes)} phút",
+                        Result = null,
+                        IsSuccess = false,
+                        StatusCode = 403
+                    };
+                }
+
+                //var isPasswordValid = await _userManager.CheckPasswordAsync(user, loginDTO.Password);
+
+                //if (isPasswordValid is false)
+                //{
+                //    await _userManager.AccessFailedAsync(user);
+                //    return new ResponseDTO
+                //    {
+                //        Message =
+                //            $"Mật khẩu không chính xác. Nếu nhập sai {5 - user.AccessFailedCount} lần nữa, tài khoản sẽ bị khóa 5 phút",
+                //        Result = null,
+                //        IsSuccess = false,
+                //        StatusCode = 401
+                //    };
+                //}
+
+                //if (user.EmailConfirmed is false)
+                //{
+                //    return new ResponseDTO
+                //    {
+                //        Message = "Email chưa được xác nhận",
+                //        Result = null,
+                //        IsSuccess = false,
+                //        StatusCode = 403
+                //    };
+                //}
+                await CheckAndResetStudentExpiration(user.Id);
+                var accessToken = await _tokenService.GenerateJwtAccessTokenAsync(user);
+                var refreshToken = await _tokenService.GenerateJwtRefreshTokenAsync(user, loginByGoogleDTO.RememberMe);
+                var responeUser = new UserDTO()
+                {
+                    Id = user.Id,
+                    FullName = user.FullName,
+                    Email = user.Email,
+                    PhoneNumber = user.PhoneNumber,
+                    Address = user.Address,
+                    IdentityId = user.IdentityId,
+                    Sex = user.Sex,
+                    DateOfBirth = user.DateOfBirth,
+                    UserName = user.UserName,
+                    IsStudent = await IsStudent(user.Id)
+                };
+                await _tokenService.StoreRefreshToken(user.Id, refreshToken, loginByGoogleDTO.RememberMe);
 
                 await _userManager.ResetAccessFailedCountAsync(user);
 
@@ -332,6 +438,142 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
+        public async Task<ResponseDTO> RegisterCustomerByGoogle(RegisterCustomerByGoogleDTO registerCustomerByGoogleDTO)
+        {
+            try
+            {
+                //Check if email already exists
+                //var isEmailExist = await _unitOfWork.UserManagerRepository.IsEmailExist(registerCustomerByGoogleDTO.Email);
+
+                //if (isEmailExist is true)
+                //{
+                //    return new ResponseDTO
+                //    {
+                //        Message = "Email đã tồn tại",
+                //        Result = registerCustomerDTO,
+                //        IsSuccess = false,
+                //        StatusCode = 409
+                //    };
+                //}
+
+                //Check if phone number already exists
+                //var isPhoneNumberExist = registerCustomerByGoogleDTO.PhoneNumber is not null &&
+                //                         await _unitOfWork.UserManagerRepository.IsPhoneNumberExist(registerCustomerDTO
+                //                             .PhoneNumber);
+
+                //if (isPhoneNumberExist is true)
+                //{
+                //    return new ResponseDTO
+                //    {
+                //        Message = "Số điện thoại đã tồn tại",
+                //        Result = registerCustomerDTO,
+                //        IsSuccess = false,
+                //        StatusCode = 409
+                //    };
+                //}
+
+                //Create new instance of user
+                ApplicationUser newUser = new ApplicationUser
+                {
+                    Email = registerCustomerByGoogleDTO.Email,
+                    FullName = registerCustomerByGoogleDTO.FullName,
+                    UserName = registerCustomerByGoogleDTO.Email
+                };
+
+                // Create user in the database
+                var randomPassword = "Mt@" + new Guid(Guid.NewGuid().ToString());
+
+                var createUserResult =
+                    await _unitOfWork.UserManagerRepository.CreateAsync(newUser, randomPassword.ToString());
+
+                if (createUserResult.Succeeded is false)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Đăng ký không thành công",
+                        Result = createUserResult,
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
+                Customer newCustomer = new Customer
+                {
+                    UserId = newUser.Id,
+                    CustomerType = CustomerType.Normal,
+                    Points = 0,
+                };
+
+                var isRoleExist = await _roleManager.RoleExistsAsync(StaticUserRole.Customer);
+
+                if (isRoleExist is false)
+                {
+                    await _roleManager.CreateAsync(new IdentityRole(StaticUserRole.Customer));
+                }
+
+                // Add user to role
+                var addToRoleResult =
+                    await _unitOfWork.UserManagerRepository.AddtoRoleAsync(newUser, StaticUserRole.Customer);
+
+                if (addToRoleResult.Succeeded is false)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Thêm vai trò không thành công",
+                        Result = registerCustomerByGoogleDTO,
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
+                // Add customer to the database
+                var addCustomerResult = await _unitOfWork.CustomerRepository.AddAsync(newCustomer);
+                if (addCustomerResult is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Thêm khách hàng không thành công",
+                        Result = registerCustomerByGoogleDTO,
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
+                // Save changes to the database
+                var saveResult = await _unitOfWork.SaveAsync();
+                if (saveResult <= 0)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Lưu thông tin không thành công",
+                        Result = registerCustomerByGoogleDTO,
+                        IsSuccess = false,
+                        StatusCode = 500
+                    };
+                }
+
+                await SendVerifyEmail(newUser.Email);
+                return new ResponseDTO
+                {
+                    Message = "Đăng ký thành công",
+                    Result = newCustomer,
+                    IsSuccess = true,
+                    StatusCode = 201
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    // Return all exception details in the message
+                    Message = $"Đã xảy ra lỗi: {ex.Message}",
+                    Result = null,
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
+
         public async Task<ResponseDTO> SendVerifyEmail(string email)
         {
             try
@@ -387,6 +629,12 @@ namespace MetroTicketBE.Application.Service
                         IsSuccess = false,
                         StatusCode = 404
                     };
+                }
+
+                var isCustomer = await _userManager.IsInRoleAsync(user, StaticUserRole.Customer);
+                if (isCustomer)
+                {
+                    await _userManager.RemoveFromRoleAsync(user, StaticUserRole.Customer);
                 }
 
                 var isRoleExist = await _roleManager.RoleExistsAsync(StaticUserRole.Staff);
@@ -706,6 +954,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
+<<<<<<< HEAD
         public async Task<ResponseDTO> ResetPassword(ResetPasswordDTO resetPasswordDTO)
         {
             try
@@ -755,6 +1004,37 @@ namespace MetroTicketBE.Application.Service
                 };
             }
         }
+=======
+        private async Task CheckAndResetStudentExpiration(string userId)
+        {
+            try
+            {
+                var customer = await _unitOfWork.CustomerRepository.GetByUserIdAsync(userId);
+                var isStudentExpired = customer?.StudentExpiration != null && customer.StudentExpiration < DateTime.UtcNow;
+                if (customer is null || !isStudentExpired) return;
+                customer.StudentExpiration = null;
+                customer.CustomerType = CustomerType.Normal;
+                _unitOfWork.CustomerRepository.Update(customer);
+                await _unitOfWork.SaveAsync();
+            }catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return;
+            }
+        }
+
+        private async Task<bool> IsStudent(string userId)
+        {
+            var customer = await _unitOfWork.CustomerRepository.GetByUserIdAsync(userId);
+            if (customer is null)
+            {
+                return false;
+            }
+            return customer.CustomerType == CustomerType.Student && 
+                   customer.StudentExpiration != null && 
+                   customer.StudentExpiration > DateTime.UtcNow;
+        }
+>>>>>>> 31693c5708361e157e88d9c6610fa972a255f69d
     }
 }
 

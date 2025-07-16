@@ -3,6 +3,7 @@ using MetroTicketBE.Domain.DTO.MetroLine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,9 +11,10 @@ namespace MetroTicketBE.Application.IService
 {
     public interface IMetroLineService
     {
-        Task<ResponseDTO> CreateMetroLine(CreateMetroLineDTO createMetroLineDTO);
-        Task<ResponseDTO> GetAllMetroLines();
+        Task<ResponseDTO> CreateMetroLine(ClaimsPrincipal user, CreateMetroLineDTO createMetroLineDTO);
+        Task<ResponseDTO> GetAllMetroLines(bool? isActive);
         Task<ResponseDTO> GetMetroLineById(Guid metroLineId);
-        Task<ResponseDTO> UpdateMetroLine(Guid metroLineId, UpdateMetroLineDTO updateMetroLineDTO);
+        Task<ResponseDTO> UpdateMetroLine(ClaimsPrincipal user, Guid metroLineId, UpdateMetroLineDTO updateMetroLineDTO);
+        Task<ResponseDTO> SetIsActiveMetroLine(ClaimsPrincipal user, Guid metroLineId, bool isActive);
     }
 }

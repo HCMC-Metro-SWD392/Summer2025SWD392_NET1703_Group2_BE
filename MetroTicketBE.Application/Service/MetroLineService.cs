@@ -6,9 +6,11 @@ using MetroTicketBE.Infrastructure.IRepository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
+using MetroTicketBE.Domain.Enum;
 
 namespace MetroTicketBE.Application.Service
 {
@@ -16,14 +18,17 @@ namespace MetroTicketBE.Application.Service
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ILogService _logService;
+        private readonly string EntityName = "Tuyến Metro";
 
-        public MetroLineService(IUnitOfWork unitOfWork, IMapper mapper)
+        public MetroLineService(IUnitOfWork unitOfWork, IMapper mapper, ILogService logService)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _logService = logService ?? throw new ArgumentNullException(nameof(logService));
         }
 
-        public async Task<ResponseDTO> CreateMetroLine(CreateMetroLineDTO createMetroLineDTO)
+        public async Task<ResponseDTO> CreateMetroLine(ClaimsPrincipal user, CreateMetroLineDTO createMetroLineDTO)
         {
             try
             {
@@ -67,12 +72,14 @@ namespace MetroTicketBE.Application.Service
                     MetroLineNumber = createMetroLineDTO.MetroLineNumber,
                     MetroName = createMetroLineDTO.MetroName,
                     StartStationId = createMetroLineDTO.StartStationId,
-                    EndStationId = createMetroLineDTO.EndStationId
+                    EndStationId = createMetroLineDTO.EndStationId,
+                    StartTime = createMetroLineDTO.StartTime,
+                    EndTime = createMetroLineDTO.EndTime,
                 };
 
                 await _unitOfWork.MetroLineRepository.AddAsync(metroLine);
                 await _unitOfWork.SaveAsync();
-
+                await _logService.AddLogAsync(LogType.Create, user.FindFirstValue(ClaimTypes.NameIdentifier), EntityName, metroLine.MetroName);
                 return new ResponseDTO
                 {
                     IsSuccess = true,
@@ -92,11 +99,11 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> GetAllMetroLines()
+        public async Task<ResponseDTO> GetAllMetroLines(bool? isActive = null)
         {
             try
             {
-                var metroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync();
+                var metroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync(isActive);
                 if (metroLines is null || !metroLines.Any())
                 {
                     return new ResponseDTO
@@ -161,7 +168,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> UpdateMetroLine(Guid metroLineId, UpdateMetroLineDTO updateMetroLineDTO)
+        public async Task<ResponseDTO> UpdateMetroLine(ClaimsPrincipal user, Guid metroLineId, UpdateMetroLineDTO updateMetroLineDTO)
         {
             var metroLine = await _unitOfWork.MetroLineRepository.GetByIdAsync(metroLineId);
             if (metroLine is null)
@@ -211,6 +218,7 @@ namespace MetroTicketBE.Application.Service
                 PatchMetroLine(metroLine, updateMetroLineDTO);
                 _unitOfWork.MetroLineRepository.Update(metroLine);
                 await _unitOfWork.SaveAsync();
+                await _logService.AddLogAsync(LogType.Update, user.FindFirstValue(ClaimTypes.NameIdentifier), EntityName, metroLine.MetroName);
                 return new ResponseDTO()
                 {
                     IsSuccess = true,
@@ -230,6 +238,43 @@ namespace MetroTicketBE.Application.Service
                 };
             }
         }
+        
+        public async Task<ResponseDTO> SetIsActiveMetroLine(ClaimsPrincipal user, Guid metroLineId, bool isActive)
+        {
+            try
+            {
+                var metroLine = await _unitOfWork.MetroLineRepository.GetByIdAsync(metroLineId);
+                if (metroLine is null)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        StatusCode = 404,
+                        Message = "Không tìm thấy tuyến Metro"
+                    };
+                }
+                metroLine.IsActive = isActive;
+                await _unitOfWork.SaveAsync();
+                await _logService.AddLogAsync(LogType.Update, user.FindFirstValue(ClaimTypes.NameIdentifier), EntityName, $"Trạng thái {metroLine.MetroName}: {(isActive ? "hoạt động" : "Ngừng hoạt động")}");
+                return new ResponseDTO
+                {
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Message = "Cập nhật trạng thái tuyến Metro thành công",
+                    Result = _mapper.Map<GetMetroLineDTO>(metroLine)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Message = "Lỗi khi cập nhật trạng thái tuyến Metro: " + ex.InnerException?.Message ?? ex.Message
+                };
+            }
+        }
+        
         private static void  PatchMetroLine(MetroLine metroLine, UpdateMetroLineDTO updateMetroLineDTO)
         {
             if (!string.IsNullOrEmpty(updateMetroLineDTO.MetroLineNumber))

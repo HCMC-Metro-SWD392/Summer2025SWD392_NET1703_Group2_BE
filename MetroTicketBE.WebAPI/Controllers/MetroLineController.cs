@@ -23,16 +23,16 @@ namespace MetroTicketBE.WebAPI.Controllers
         [Authorize(Roles = StaticUserRole.Admin)]
         public async Task<ActionResult<ResponseDTO>> CreateMetroLine([FromBody] CreateMetroLineDTO createMetroLineDTO)
         {
-            var response = await _metroLineService.CreateMetroLine(createMetroLineDTO);
+            var response = await _metroLineService.CreateMetroLine(User, createMetroLineDTO);
             return StatusCode(response.StatusCode, response);
         }
 
         [HttpGet]
         [Route("metro-lines/all")]
         //[Authorize(Roles = StaticUserRole.Admin)]
-        public async Task<ActionResult<ResponseDTO>> GetAllMetroLines()
+        public async Task<ActionResult<ResponseDTO>> GetAllMetroLines([FromQuery]bool? isActive = null)
         {
-            var response = await _metroLineService.GetAllMetroLines();
+            var response = await _metroLineService.GetAllMetroLines(isActive);
             return StatusCode(response.StatusCode, response);
         }
 
@@ -51,7 +51,16 @@ namespace MetroTicketBE.WebAPI.Controllers
         public async Task<ActionResult<ResponseDTO>> UpdateMetroLine(Guid metroLineId,
             [FromBody] UpdateMetroLineDTO updateMetroLineDTO)
         {
-            var response = await _metroLineService.UpdateMetroLine(metroLineId, updateMetroLineDTO);
+            var response = await _metroLineService.UpdateMetroLine(User, metroLineId, updateMetroLineDTO);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpPatch]
+        [Route("set-isActive/{metroLineId:guid}")]
+        [Authorize(Roles = StaticUserRole.Admin)]
+        public async Task<ActionResult<ResponseDTO>> SetIsActive(Guid metroLineId, [FromQuery] bool isActive)
+        {
+            var response = await _metroLineService.SetIsActiveMetroLine(User, metroLineId, isActive);
             return StatusCode(response.StatusCode, response);
         }
     }

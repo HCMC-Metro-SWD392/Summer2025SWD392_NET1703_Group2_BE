@@ -12,6 +12,7 @@ namespace MetroTicketBE.Domain.Entities
         public Guid Id { get; set; }
         public Guid TicketId { get; set; }
         public Guid StationId { get; set; }
+        public string? IntegratedTicket { get; set; }
         public DateTime ProcessedAt { get; set; }
         public TicketProcessStatus Status { get; set; }
 

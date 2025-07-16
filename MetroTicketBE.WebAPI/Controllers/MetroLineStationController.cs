@@ -29,9 +29,28 @@ namespace MetroTicketBE.WebAPI.Controllers
         [HttpGet]
         [Route("get-station-by-metro-line-id/{metroLineId}")]
         //[Authorize(Roles = StaticUserRole.Admin)]
-        public async Task<ActionResult<ResponseDTO>> GetStationByMetroLineIdAsync(Guid metroLineId)
+        public async Task<ActionResult<ResponseDTO>> GetStationByMetroLineIdAsync(Guid metroLineId, [FromQuery] bool? isActive = null)
         {
-            var response = await _metroLineStationService.GetStationByMetroLineIdAsync(metroLineId);
+            var response = await _metroLineStationService.GetStationByMetroLineIdAsync(metroLineId, isActive);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpPatch]
+        [Route("remove-metroline-station/{metroLineStationId}")]
+        [Authorize(Roles = StaticUserRole.Admin)]
+        public async Task<ActionResult<ResponseDTO>> SetActiveMetroLineStation(Guid metroLineStationId)
+        {
+            var response = await _metroLineStationService.RemoveMetroLineStation(metroLineStationId);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpPut]
+        [Route("update-metroline-station/{metroLineStationId}")]
+        [Authorize(Roles = StaticUserRole.Admin)]
+        public async Task<ActionResult<ResponseDTO>> UpdateMetroLineStation(Guid metroLineStationId,
+            [FromBody] UpdateMetroLineStationDTO updateDTO)
+        {
+            var response = await _metroLineStationService.UpdateMetroLineStation(metroLineStationId, updateDTO);
             return StatusCode(response.StatusCode, response);
         }
     }

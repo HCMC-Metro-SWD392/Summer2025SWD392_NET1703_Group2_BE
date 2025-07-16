@@ -4,7 +4,7 @@ namespace MetroTicketBE.Infrastructure.IRepository
 {
     public interface IMetroLineRepository : IRepository<MetroLine>
     {
-        Task<List<MetroLine>> GetAllListAsync();
+        Task<List<MetroLine>> GetAllListAsync(bool? isActive);
         Task<MetroLine?> GetByIdAsync(Guid id);
         Task<bool> IsExistByMetroLineNumber(string metroLineNumber, Guid? currentMetroLineId);
         Task<bool> IsExistById(Guid id);

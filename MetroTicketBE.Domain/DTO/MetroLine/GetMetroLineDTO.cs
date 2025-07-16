@@ -11,5 +11,6 @@ public class GetMetroLineDTO
     public DateTime CreatedAt { get; set; }
     public GetStationDTO? StartStation { get; set; }
     public GetStationDTO? EndStation { get; set; }
+    public bool IsActive { get; set; }
     public List<GetMetroLineStationDTO> MetroLineStations { get; set; } = new List<GetMetroLineStationDTO>();
 }
