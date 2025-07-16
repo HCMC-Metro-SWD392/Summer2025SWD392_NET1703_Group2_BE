@@ -18,12 +18,14 @@ namespace MetroTicketBE.Application.Service
         private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
+        private readonly IRedisService _redisService;
 
-        public EmailService(IUnitOfWork unitOfWork, IConfiguration configuration, IMapper mapper)
+        public EmailService(IUnitOfWork unitOfWork, IConfiguration configuration, IRedisService redisService, IMapper mapper)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _redisService = redisService ?? throw new ArgumentNullException(nameof(redisService));
         }
 
         public async Task<bool> SendEmailAsync(string toEmail, string subject, string body)
@@ -396,6 +398,37 @@ namespace MetroTicketBE.Application.Service
                     StatusCode = 500
                 };
             }
+        public async Task<bool> IsAllowToSendEmail(string email, string key)
+        {
+            var isAllowed = true;
+            var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+            await _redisService.RemoveRangeByScoreAsync(key, double.NegativeInfinity, now - 300);
+
+            var count = await _redisService.SortedSetLengthAsync(key);
+            if (count >= 5)
+            {
+                var last = await _redisService.GetSortedSetDescByScoreAsync(key, false, 1);
+                if (last != null && last.Length > 0)
+                {
+                    var lastSentTime = last[0].Score;
+                    if (now - lastSentTime < 300) // 5 phút
+                    {
+                        isAllowed = false;
+                    }
+                    else
+                    {
+                        await _redisService.DeleteKeyAsync(key);
+                    }
+                }
+            }
+            else
+            {
+                await _redisService.AddToSortedSetAsync(key, now.ToString(), now);
+                await _redisService.ExpireKeyAsync(key, TimeSpan.FromMinutes(5));
+            }
+
+            return isAllowed;
         }
     }
 }

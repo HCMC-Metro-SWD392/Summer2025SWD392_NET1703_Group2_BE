@@ -32,5 +32,48 @@ namespace MetroTicketBE.Application.Service
             var result = await cache.StringGetAsync(key);
             return result;
         }
+
+        public async Task<long> RemoveRangeByScoreAsync(string key, double start, double stop)
+        {
+            var cache = _redis.GetDatabase();
+            return await cache.SortedSetRemoveRangeByScoreAsync(key, start, stop);
+        }
+
+        public async Task<long> SortedSetLengthAsync(string key)
+        {
+            var cache = _redis.GetDatabase();
+            return await cache.SortedSetLengthAsync(key);
+        }
+
+        public async Task<SortedSetEntry[]> GetSortedSetDescByScoreAsync(string key, bool isAccending, int take)
+        {
+            var cache = _redis.GetDatabase();
+            if (isAccending)
+            {
+                return await cache.SortedSetRangeByScoreWithScoresAsync(key, order: Order.Ascending, take: take);
+            }
+            else
+            {
+                return await cache.SortedSetRangeByScoreWithScoresAsync(key, order: Order.Descending, take: take);
+            }
+        }
+
+        public async Task<bool> DeleteKeyAsync(string key)
+        {
+            var cache = _redis.GetDatabase();
+            return await cache.KeyDeleteAsync(key);
+        }
+
+        public Task<bool> AddToSortedSetAsync(string key, string id, double score)
+        {
+            var cache = _redis.GetDatabase();
+            return cache.SortedSetAddAsync(key, id, score);
+        }
+
+        public Task<bool> ExpireKeyAsync(string key, TimeSpan expiry)
+        {
+            var cache = _redis.GetDatabase();
+            return cache.KeyExpireAsync(key, expiry);
+        }
     }
 }

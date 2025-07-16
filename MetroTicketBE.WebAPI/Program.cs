@@ -38,7 +38,7 @@ public class Program
 
         // Set time token
         builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
-            options.TokenLifespan = TimeSpan.FromMinutes(60));
+            options.TokenLifespan = TimeSpan.FromMinutes(10));
 
         // Register AutoMapper 
         builder.Services.AddAutoMapper(typeof(AutoMappingProfile));

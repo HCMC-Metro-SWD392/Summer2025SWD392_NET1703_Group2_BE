@@ -903,7 +903,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> ResetPassword(ResetPasswordDTO resetPasswordDTO)
+        public async Task<ResponseDTO> SendResetPasswordEmail(SendResetPasswordDTO resetPasswordDTO)
         {
             try
             {
@@ -922,7 +922,20 @@ namespace MetroTicketBE.Application.Service
                 var token = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var resetLink = $"{StaticURL.Frontend_Url_Reset_Password}?email={resetPasswordDTO.Email}&token={Uri.EscapeDataString(token)}";
 
+                var key = $"reset-password-email:{resetPasswordDTO.Email}";
+                var isAllowToSendEmail = await _emailService.IsAllowToSendEmail(resetPasswordDTO.Email, key);
+                if (!isAllowToSendEmail)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Bạn đã gửi email đặt lại mật khẩu quá nhiều lần. Vui lòng thử lại sau 5 phút nữa.",
+                        IsSuccess = false,
+                        StatusCode = 429
+                    };
+                }
+
                 await _emailService.SendResetPasswordEmail(resetPasswordDTO.Email, resetLink);
+
                 return new ResponseDTO
                 {
                     Message = "Email đặt lại mật khẩu đã được gửi",
@@ -941,6 +954,55 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
+        public async Task<ResponseDTO> ResetPassword(ResetPasswordDTO resetPasswordDTO)
+        {
+            try
+            {
+                var user = await _unitOfWork.UserManagerRepository.GetByEmailAsync(resetPasswordDTO.Email);
+                if (user is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Người dùng không tồn tại",
+                        Result = null,
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+
+                var decodedToken = Uri.UnescapeDataString(resetPasswordDTO.Token);
+                var resetPasswordResult = await _userManager.ResetPasswordAsync(user, decodedToken, resetPasswordDTO.NewPassword);
+                if (resetPasswordResult.Succeeded is true)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Đặt lại mật khẩu thành công",
+                        IsSuccess = true,
+                        StatusCode = 200
+                    };
+                }
+                else
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Đặt lại mật khẩu không thành công",
+                        Result = resetPasswordResult.Errors,
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    Message = $"Đã xảy ra lỗi khi đặt lại mật khẩu: {ex.Message}",
+                    Result = null,
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
         private async Task CheckAndResetStudentExpiration(string userId)
         {
             try
