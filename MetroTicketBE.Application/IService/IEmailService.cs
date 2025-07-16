@@ -17,5 +17,6 @@ namespace MetroTicketBE.Application.IService
         Task<bool> SendResetPasswordEmail(string toMail, string resetLink, string userName = "", int expirationHours = 24);
         Task<ResponseDTO> CreateEmailTemplate(ClaimsPrincipal user, CreateEmailTemplateDTO createEmailTemplateDTO);
         Task<ResponseDTO> UpdateEmailTemplate(ClaimsPrincipal user, Guid templateId, UpdateEmailTemplateDTO updateEmailTemplateDTO);
+        Task<ResponseDTO> GetAllEmailTemplate(string? filterOn, string? filterQuery, string? sortBy, bool? isAcending, int pageNumber, int pageSize);
     }
 }

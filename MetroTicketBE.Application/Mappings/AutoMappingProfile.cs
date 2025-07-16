@@ -20,6 +20,7 @@ using System.Text.Json;
 using MetroTicketBE.Domain.DTO.Log;
 using Net.payOS.Types;
 using MetroTicketBE.Domain.Enum;
+using MetroTicketBE.Domain.DTO.Email;
 
 namespace MetroTicketBE.Application.Mappings
 {
@@ -92,6 +93,9 @@ namespace MetroTicketBE.Application.Mappings
                     opt => opt.MapFrom(src => src.User != null ? src.User.FullName : string.Empty))
                 .ForMember(dest => dest.LogType,
                     opt => opt.MapFrom(src => src.LogType.ToString()));
+
+            //CreateMap<EmailTemplate, GetEmailTemplateDTO>()
+            //    .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.))
 
         }
         private static List<string> ExtractNamesFromDataJson(string json)

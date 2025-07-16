@@ -9,10 +9,7 @@ namespace MetroTicketBE.Domain.Enum
     // Trạng thái email gửi tự động
     public enum EmailStatus
     {
-        Pending = 0,     // Chưa gửi
-        Sent = 1,        // Đã gửi
-        Failed = 2,       // Gửi thất bại
-        Active = 3,      // Đã kích hoạt
-        Inactive = 4 // Chưa kích hoạt
+        Active = 0,      // Đã kích hoạt
+        Inactive = 1 // Chưa kích hoạt
     }
 }
