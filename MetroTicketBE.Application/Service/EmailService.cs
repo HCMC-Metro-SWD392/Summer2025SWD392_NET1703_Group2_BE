@@ -170,7 +170,8 @@ namespace MetroTicketBE.Application.Service
                     Language = createEmailTemplateDTO.Language,
                     RecipientType = createEmailTemplateDTO.RecipientType,
                     Status = EmailStatus.Active,
-                    CreatedBy = userId
+                    CreatedBy = userId,
+                    CreatedAt = DateTime.UtcNow,
                 };
 
                 await _unitOfWork.EmailTemplateRepository.AddAsync(emailTemplate);
