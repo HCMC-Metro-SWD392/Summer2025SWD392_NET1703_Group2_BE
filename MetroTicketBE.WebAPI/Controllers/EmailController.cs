@@ -45,5 +45,14 @@ namespace MetroTicketBE.WebAPI.Controllers
             var response = await _emailService.GetAllEmailTemplate(filterOn, filterQuery, sortBy, isAcending, pageNumber, pageSize);
             return StatusCode(response.StatusCode, response);
         }
+
+        [HttpGet]
+        [Route("get-email-template-by-id/{templateId}")]
+        [Authorize(Roles = StaticUserRole.Admin)]
+        public async Task<ActionResult<ResponseDTO>> GetEmailTemplateById([FromRoute] Guid templateId)
+        {
+            var response = await _emailService.GetEmailTemplateById(templateId);
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }

@@ -18,6 +18,7 @@ namespace MetroTicketBE.Application.IService
         Task<ResponseDTO> CreateEmailTemplate(ClaimsPrincipal user, CreateEmailTemplateDTO createEmailTemplateDTO);
         Task<ResponseDTO> UpdateEmailTemplate(ClaimsPrincipal user, Guid templateId, UpdateEmailTemplateDTO updateEmailTemplateDTO);
         Task<ResponseDTO> GetAllEmailTemplate(string? filterOn, string? filterQuery, string? sortBy, bool? isAcending, int pageNumber, int pageSize);
+        Task<ResponseDTO> GetEmailTemplateById(Guid templateId);
         Task<bool> IsAllowToSendEmail(string email, string key);
     }
 }

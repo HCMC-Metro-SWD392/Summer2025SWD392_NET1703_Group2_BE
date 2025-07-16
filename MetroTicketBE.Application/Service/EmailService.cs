@@ -366,6 +366,38 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
+        public async Task<ResponseDTO> GetEmailTemplateById(Guid templateId)
+        {
+            try
+            {
+                var emailTemplate = await _unitOfWork.EmailTemplateRepository.GetByIdAsync(templateId);
+                if (emailTemplate == null)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        Message = $"Không tìm thấy template với ID: {templateId}",
+                        StatusCode = 404
+                    };
+                }
+
+                return new ResponseDTO
+                {
+                    IsSuccess = true,
+                    Result = emailTemplate,
+                    Message = "Lấy thông tin template email thành công.",
+                    StatusCode = 200
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    IsSuccess = false,
+                    Message = $"Lỗi khi lấy thông tin template email: {ex.Message}",
+                    StatusCode = 500
+                };
+            }
         public async Task<bool> IsAllowToSendEmail(string email, string key)
         {
             var isAllowed = true;
