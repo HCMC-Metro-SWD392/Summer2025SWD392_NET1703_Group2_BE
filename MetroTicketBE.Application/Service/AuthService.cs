@@ -954,7 +954,6 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-<<<<<<< HEAD
         public async Task<ResponseDTO> ResetPassword(ResetPasswordDTO resetPasswordDTO)
         {
             try
@@ -1004,7 +1003,6 @@ namespace MetroTicketBE.Application.Service
                 };
             }
         }
-=======
         private async Task CheckAndResetStudentExpiration(string userId)
         {
             try
@@ -1034,7 +1032,6 @@ namespace MetroTicketBE.Application.Service
                    customer.StudentExpiration != null && 
                    customer.StudentExpiration > DateTime.UtcNow;
         }
->>>>>>> 31693c5708361e157e88d9c6610fa972a255f69d
     }
 }
 
