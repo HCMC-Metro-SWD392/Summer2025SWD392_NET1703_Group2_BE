@@ -38,6 +38,6 @@ namespace MetroTicketBE.Application.IService
             int pageSize
             );
 
-        public Task<ResponseDTO> ChangeNewsStatus(Guid newsId, NewsStatus status);
+        public Task<ResponseDTO> ChangeNewsStatus(Guid newsId, ChangeStatusDTO changeStatusDTO);
     }
 }
