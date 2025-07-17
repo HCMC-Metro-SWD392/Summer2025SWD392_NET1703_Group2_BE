@@ -314,11 +314,11 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> UpdatePromotion(UpdatePromotionDTO updatePromotionDTO)
+        public async Task<ResponseDTO> UpdatePromotion(Guid promotionId, UpdatePromotionDTO updatePromotionDTO)
         {
             try
             {
-                var promotion = await _unitOfWork.PromotionRepository.GetByIdAsync(updatePromotionDTO.Id);
+                var promotion = await _unitOfWork.PromotionRepository.GetByIdAsync(promotionId);
                 if (promotion is null)
                 {
                     return new ResponseDTO
@@ -437,12 +437,12 @@ namespace MetroTicketBE.Application.Service
                     promotion.PromotionType = updatePromotionDTO.PromotionType;
                 }
 
-                if (updatePromotionDTO.PromotionType == PromotionType.Percentage)
+                if (updatePromotionDTO.PromotionType == PromotionType.Percentage && updatePromotionDTO.Percentage.HasValue)
                 {
                     promotion.Percentage = updatePromotionDTO.Percentage;
                     promotion.FixedAmount = null; // Đặt FixedAmount thành null nếu PromotionType là Percentage
                 }
-                else
+                else if (updatePromotionDTO.FixedAmount.HasValue)
                 {
                     promotion.FixedAmount = updatePromotionDTO.FixedAmount;
                     promotion.Percentage = null; // Đặt Percentage thành null nếu PromotionType là FixedAmount

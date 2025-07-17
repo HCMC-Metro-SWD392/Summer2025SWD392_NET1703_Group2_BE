@@ -18,7 +18,7 @@ namespace MetroTicketBE.Application.IService
             );
         Task<ResponseDTO> GetPromotionById(Guid id);
         Task<ResponseDTO> CreatePromotion(CreatePromotionDTO createPromotionDTO);
-        Task<ResponseDTO> UpdatePromotion(UpdatePromotionDTO updatePromotionDTO);
+        Task<ResponseDTO> UpdatePromotion(Guid promotionId, UpdatePromotionDTO updatePromotionDTO);
         Task<ResponseDTO> DeletePromotion(Guid promotionId);
         Task<ResponseDTO> GetPromotionByCode(string code);
     }
