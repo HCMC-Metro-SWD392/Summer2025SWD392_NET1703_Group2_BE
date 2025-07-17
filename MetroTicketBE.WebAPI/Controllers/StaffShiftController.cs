@@ -48,4 +48,26 @@ public class StaffShiftController: ControllerBase
         }
         return BadRequest(response);
     }
+    [HttpPut]
+    [Route("update/{shiftId}")]
+    [Authorize(Roles = StaticUserRole.ManagerAdmin)]
+    public async Task<IActionResult> UpdateStaffShift(Guid shiftId, [FromBody] UpdateShiftDTO updateShiftDTO)
+    {
+        if (updateShiftDTO == null)
+        {
+            return BadRequest(new ResponseDTO
+            {
+                IsSuccess = false,
+                StatusCode = 400,
+                Message = "Dữ liệu không hợp lệ"
+            });
+        }
+        
+        var response = await _staffShiftService.UpdateStaffShift(shiftId, updateShiftDTO);
+        if (response.IsSuccess)
+        {
+            return Ok(response);
+        }
+        return BadRequest(response);
+    }
 }

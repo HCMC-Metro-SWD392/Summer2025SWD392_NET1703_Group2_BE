@@ -3,6 +3,7 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.DTO.Auth;
+using MetroTicketBE.Domain.DTO.Staff;
 using MetroTicketBE.Domain.DTO.StaffSchedule;
 using MetroTicketBE.Domain.DTO.StaffShift;
 using MetroTicketBE.Domain.Entities;
@@ -27,13 +28,13 @@ public class StaffScheduleService: IStaffScheduleService
         try
         {
             var existingSchedule = await _unitOfWork.StaffScheduleRepository
-                .GetByStaffIdAndDate(dto.StaffId, dto.WorkingDate);
+                .GetByStaffIdDateShift(dto.StaffId, dto.WorkingDate, dto.ShiftId);
             if (existingSchedule is not null)
             {
                 return new ResponseDTO()
                 {
                     IsSuccess = false,
-                    Message = "Nhân viên đã có ca làm việc vào ngày này.",
+                    Message = "Nhân viên đã có ca làm việc này vào ngày này.",
                     Result = null,
                     StatusCode = 400,
                 };
@@ -69,13 +70,15 @@ public class StaffScheduleService: IStaffScheduleService
                     StatusCode = 400,
                 };
             }
-
+            var shift = await _unitOfWork.StaffShiftRepository.GetAsync(s => s.Id == dto.ShiftId);
 
             var schedule = new StaffSchedule()
             {
                 StaffId = dto.StaffId,
                 ShiftId = dto.ShiftId,
                 WorkingDate = dto.WorkingDate,
+                StartTime = shift.StartTime,
+                EndTime = shift.EndTime,
                 WorkingStationId = dto.WorkingStationId,
                 Status = StaffScheduleStatus.Normal
             };
@@ -220,5 +223,87 @@ public class StaffScheduleService: IStaffScheduleService
                 StatusCode = 500,
             };
         }
+    }
+    
+    public async Task<ResponseDTO> GetUnscheduledStaff(Guid shiftId, DateOnly workingDate)
+    {
+        try
+        {
+            var unscheduledStaff = await _unitOfWork.StaffScheduleRepository.GetUnscheduledStaffAsync(shiftId, workingDate);
+            if (unscheduledStaff is null || !unscheduledStaff.Any())
+            {
+                return new ResponseDTO()
+                {
+                    IsSuccess = false,
+                    Message = "Không tìm thấy nhân viên chưa được sắp xếp cho ca làm việc này.",
+                    Result = null,
+                    StatusCode = 404,
+                };
+            }
+            return new ResponseDTO()
+            {
+                IsSuccess = true,
+                Message = "Lấy danh sách nhân viên chưa được sắp xếp thành công.",
+                Result = _mapper.Map<List<GetStaffDTO>>(unscheduledStaff),
+                StatusCode = 200,
+            };
+        }
+        catch (Exception ex)
+        {
+            return new ResponseDTO()
+            {
+                IsSuccess = false,
+                Message = "Đã xảy ra lỗi khi lấy danh sách nhân viên chưa được sắp xếp: " + ex.Message,
+                Result = null,
+                StatusCode = 500,
+            };
+        }
+    }
+
+    public async Task<ResponseDTO> AssignStaffToExistedSchedule(Guid staffId, Guid scheduleId)
+    {
+        var schedule = await _unitOfWork.StaffScheduleRepository.GetAsync(s => s.Id == scheduleId);
+        if (schedule is null)
+        {
+            return new ResponseDTO()
+            {
+                IsSuccess = false,
+                Message = "Ca làm việc không tồn tại.",
+                Result = null,
+                StatusCode = 404,
+            };
+        }
+        var staff = await _unitOfWork.StaffRepository.GetAsync(s => s.Id == staffId);
+        if (staff is null)
+        {
+            return new ResponseDTO()
+            {
+                IsSuccess = false,
+                Message = "Nhân viên không tồn tại.",
+                Result = null,
+                StatusCode = 404,
+            };
+        }
+        var isStaffHasSchedule = await _unitOfWork.StaffScheduleRepository.IsExisted(staffId, schedule.WorkingDate, schedule.ShiftId);
+        if (isStaffHasSchedule)
+        {
+            return new ResponseDTO()
+            {
+                IsSuccess = false,
+                Message = "Nhân viên đã có ca làm việc này vào ngày này.",
+                Result = null,
+                StatusCode = 400,
+            };
+        }
+        schedule.StaffId = staffId;
+        _unitOfWork.StaffScheduleRepository.Update(schedule);
+        await _unitOfWork.SaveAsync();
+        return new ResponseDTO()
+        {
+            IsSuccess = true,
+            Message = "Gán nhân viên vào ca làm việc thành công.",
+            Result = null,
+            StatusCode = 200,
+        };
     }
 }

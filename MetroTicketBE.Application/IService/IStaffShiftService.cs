@@ -8,4 +8,5 @@ public interface IStaffShiftService
 {
     Task<ResponseDTO> GetAllStaffShifts();
     Task<ResponseDTO> CraeteStaffShift(CreateShiftDTO createShiftDTO);
+    Task<ResponseDTO> UpdateStaffShift(Guid id, UpdateShiftDTO dto);
 }

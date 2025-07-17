@@ -59,4 +59,26 @@ public class StaffScheduleController: ControllerBase
         }
         return BadRequest(response);
     }
+    [HttpGet("get-unscheduled-staff")]
+    [Authorize(Roles = StaticUserRole.StaffManagerAdmin)]
+    public async Task<IActionResult> GetUnscheduledStaff([FromQuery] DateOnly workingDate, [FromQuery] Guid shiftId)
+    {
+        var response = await _staffScheduleService.GetUnscheduledStaff(shiftId, workingDate);
+        if (response.IsSuccess)
+        {
+            return Ok(response);
+        }
+        return BadRequest(response);
+    }
+    [HttpPut("assign-staff")]
+    [Authorize(Roles = StaticUserRole.ManagerAdmin)]
+    public async Task<IActionResult> AssignStaffToExistSchedule(Guid staffId, Guid scheduleId)
+    {
+        var response = await _staffScheduleService.AssignStaffToExistedSchedule(staffId, scheduleId);
+        if (response.IsSuccess)
+        {
+            return Ok(response);
+        }
+        return BadRequest(response);
+    }
 }

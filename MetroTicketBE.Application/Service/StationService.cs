@@ -114,17 +114,6 @@ namespace MetroTicketBE.Application.Service
 
                 if (!string.IsNullOrEmpty(updateStationDTO.Address))
                 {
-                    var isExistAddress = await _unitOfWork.StationRepository.IsExistByAddress(updateStationDTO.Address, stationId);
-                    if (isExistAddress)
-                    {
-                        return new ResponseDTO
-                        {
-                            IsSuccess = false,
-                            StatusCode = 400,
-                            Message = "Địa chỉ trạm đã tồn tại"
-                        };
-                    }
-
                     station.Address = updateStationDTO.Address.Trim();
                 }
 
