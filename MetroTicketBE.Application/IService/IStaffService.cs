@@ -10,5 +10,6 @@ namespace MetroTicketBE.Application.IService
     public interface IStaffService
     {
         Task<ResponseDTO> GetAllStaff();
+        Task<ResponseDTO> GetStaffByStaffCode(string staffCode);
     }
 }

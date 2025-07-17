@@ -1,4 +1,5 @@
 ﻿using MetroTicketBE.Domain.Entities;
+using MetroTicketBE.Domain.Enums;
 using MetroTicketBE.Infrastructure.Context;
 using MetroTicketBE.Infrastructure.IRepository;
 using Microsoft.EntityFrameworkCore;
@@ -34,6 +35,14 @@ namespace MetroTicketBE.Infrastructure.Repository
             return await _context.Customers
                 .Include(c => c.User)
                 .FirstOrDefaultAsync(c => c.User.Email == email);
+        }
+
+        public async Task<CustomerType> GetCustomerTypeByUserIdAsync(string userId)
+        {
+            return await _context.Customers.Include(c => c.User)
+                .Where(c => c.UserId == userId)
+                .Select(c => c.CustomerType)
+                .FirstOrDefaultAsync();
         }
 
         public void Update(Customer customer)

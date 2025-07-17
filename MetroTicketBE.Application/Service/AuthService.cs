@@ -653,7 +653,16 @@ namespace MetroTicketBE.Application.Service
                         StatusCode = 400
                     };
                 }
-
+                var lastStaff = await _unitOfWork.StaffRepository.GetLastStaffAsync();
+                var staff = new Staff()
+                {
+                    UserId = user.Id,
+                    StaffCode = lastStaff is null
+                        ? "S00001"
+                        : GenerateStaffCode(lastStaff.StaffCode),
+                };
+                await _unitOfWork.StaffRepository.AddAsync(staff);
+                await _unitOfWork.SaveAsync();
                 return new ResponseDTO
                 {
                     Message = "Thêm vai trò nhân viên thành công",
@@ -803,10 +812,13 @@ namespace MetroTicketBE.Application.Service
                         StatusCode = 400
                     };
                 }
-
+                var lastStaff = await _unitOfWork.StaffRepository.GetLastStaffAsync();
                 var staff = new Staff()
                 {
                     UserId = newUser.Id,
+                    StaffCode = lastStaff is null
+                        ? "S00001"
+                        : GenerateStaffCode(lastStaff.StaffCode),
                 };
                 await _unitOfWork.StaffRepository.AddAsync(staff);
                 await _unitOfWork.SaveAsync();
@@ -830,7 +842,14 @@ namespace MetroTicketBE.Application.Service
                 };
             }
         }
-
+        private string GenerateStaffCode(string lastStaffCode)
+        {
+            string prefix = new string(lastStaffCode.TakeWhile(char.IsLetter).ToArray());
+            int numberPart = int.Parse(new string(lastStaffCode.SkipWhile(char.IsLetter).ToArray()));
+            numberPart++;
+            string newNumberPart = numberPart.ToString().PadLeft(5, '0'); 
+            return prefix + newNumberPart;
+        }
         public async Task<ResponseDTO> ChangPassword(ClaimsPrincipal user, ChangePasswordDTO changePasswordDTO)
         {
             try
