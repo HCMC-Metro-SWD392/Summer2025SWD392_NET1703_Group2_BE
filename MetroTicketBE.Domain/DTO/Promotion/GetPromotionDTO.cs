@@ -14,5 +14,6 @@ namespace MetroTicketBE.Domain.DTO.Promotion
         public string? Description { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+        public Boolean IsActive { get; set; } 
     }
 }
