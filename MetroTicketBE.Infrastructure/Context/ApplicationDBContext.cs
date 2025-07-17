@@ -37,11 +37,19 @@ namespace MetroTicketBE.Infrastructure.Context
         public DbSet<FareRule> FareRules { get; set; }
         public DbSet<TicketRoute> TicketRoutes { get; set; }
         public DbSet<TicketProcess> TicketProcesses { get; set; }
+        public DbSet<News> News { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
             //Seeding
             //ApplicationDBContextSeed.SeedEmailTemplate(modelBuilder);
+
+            //News
+            modelBuilder.Entity<News>()
+                .HasOne(n => n.Staff)
+                .WithMany(u => u.News)
+                .HasForeignKey(n => n.StaffId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             //TicketProcesses
             modelBuilder.Entity<TicketProcess>()

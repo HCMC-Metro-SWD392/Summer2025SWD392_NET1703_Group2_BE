@@ -21,6 +21,7 @@ using MetroTicketBE.Domain.DTO.Log;
 using Net.payOS.Types;
 using MetroTicketBE.Domain.Enum;
 using MetroTicketBE.Domain.DTO.Email;
+using MetroTicketBE.Domain.DTO.News;
 
 namespace MetroTicketBE.Application.Mappings
 {
@@ -85,8 +86,7 @@ namespace MetroTicketBE.Application.Mappings
             CreateMap<PaymentTransaction, GetTicketStatisticDTO>()
                 .ForMember(dest => dest.UserFullName, opt => opt.MapFrom(src => src.Customer.User.FullName))
                 .ForMember(dest => dest.DetailTicket, opt => opt.MapFrom(src => ExtractNamesFromDataJson(src.DataJson)))
-                .ForMember(dest => dest.PaymentStatus, opt => opt.MapFrom(src => GetPaymentStatusName(src.Status)))
-                .ForMember(dest => dest.TimeOfPurchase, opt => opt.MapFrom(src => GetRelativeTime(src.CreatedAt))).ReverseMap();
+                .ForMember(dest => dest.PaymentStatus, opt => opt.MapFrom(src => GetPaymentStatusName(src.Status))).ReverseMap();
 
             CreateMap<Log, GetLogDTO>()
                 .ForMember(dest => dest.UserFullname,
@@ -94,8 +94,8 @@ namespace MetroTicketBE.Application.Mappings
                 .ForMember(dest => dest.LogType,
                     opt => opt.MapFrom(src => src.LogType.ToString()));
 
-            //CreateMap<EmailTemplate, GetEmailTemplateDTO>()
-            //    .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.))
+            CreateMap<News, GetNewsDTO>()
+                .ForMember(dest => dest.StaffName, opt => opt.MapFrom(src => src.Staff.User.FullName)).ReverseMap();
 
         }
         private static List<string> ExtractNamesFromDataJson(string json)
@@ -111,23 +111,23 @@ namespace MetroTicketBE.Application.Mappings
             }
         }
 
-        private static string GetRelativeTime(DateTime createdAt)
-        {
-            var timespan = DateTime.UtcNow - createdAt;
+        //private static string GetRelativeTime(DateTime createdAt)
+        //{
+        //    var timespan = DateTime.UtcNow - createdAt;
 
-            if (timespan.TotalSeconds < 60)
-                return $"{(int)timespan.TotalSeconds} giây trước";
-            if (timespan.TotalMinutes < 60)
-                return $"{(int)timespan.TotalMinutes} phút trước";
-            if (timespan.TotalHours < 24)
-                return $"{(int)timespan.TotalHours} giờ trước";
-            if (timespan.TotalDays < 30)
-                return $"{(int)timespan.TotalDays} ngày trước";
-            if (timespan.TotalDays < 365)
-                return $"{(int)(timespan.TotalDays / 30)} tháng trước";
+        //    if (timespan.TotalSeconds < 60)
+        //        return $"{(int)timespan.TotalSeconds} giây trước";
+        //    if (timespan.TotalMinutes < 60)
+        //        return $"{(int)timespan.TotalMinutes} phút trước";
+        //    if (timespan.TotalHours < 24)
+        //        return $"{(int)timespan.TotalHours} giờ trước";
+        //    if (timespan.TotalDays < 30)
+        //        return $"{(int)timespan.TotalDays} ngày trước";
+        //    if (timespan.TotalDays < 365)
+        //        return $"{(int)(timespan.TotalDays / 30)} tháng trước";
 
-            return $"{(int)(timespan.TotalDays / 365)} năm trước";
-        }
+        //    return $"{(int)(timespan.TotalDays / 365)} năm trước";
+        //}
 
         private static string GetPaymentStatusName(PaymentStatus status)
         {

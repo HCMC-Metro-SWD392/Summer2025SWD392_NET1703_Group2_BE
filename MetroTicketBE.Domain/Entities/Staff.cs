@@ -8,5 +8,6 @@ public class Staff
     public string UserId { get; set; } = null!;
     
     public ApplicationUser User { get; set; } = null!;
-    public ICollection<StaffSchedule> StaffSchedules { get; set; } = null!;
+    public ICollection<StaffSchedule> StaffSchedules { get; set; } = new List<StaffSchedule>();
+    public ICollection<News> News { get; set; } = new List<News>();
 }
