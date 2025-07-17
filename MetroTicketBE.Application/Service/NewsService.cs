@@ -21,7 +21,7 @@ namespace MetroTicketBE.Application.Service
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        public async Task<ResponseDTO> ChangeNewsStatus(Guid newsId, NewsStatus status)
+        public async Task<ResponseDTO> ChangeNewsStatus(Guid newsId, ChangeStatusDTO changeStatusDTO)
         {
             try
             {
@@ -37,7 +37,20 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                news.Status = status;
+                news.Status = changeStatusDTO.Status;
+                if (changeStatusDTO.Status == NewsStatus.Rejected)
+                {
+                    if (string.IsNullOrWhiteSpace(changeStatusDTO.RejectionReason))
+                    {
+                        return new ResponseDTO
+                        {
+                            IsSuccess = false,
+                            Message = "Lý do từ chối không được để trống khi từ chối",
+                            StatusCode = 400
+                        };
+                    }
+                    news.RejectionReason = changeStatusDTO.RejectionReason;
+                }
 
                 _unitOfWork.NewsRepository.Update(news);
                 await _unitOfWork.SaveAsync();
