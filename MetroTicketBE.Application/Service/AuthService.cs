@@ -420,7 +420,7 @@ namespace MetroTicketBE.Application.Service
                 return new ResponseDTO
                 {
                     Message = "Đăng ký thành công",
-                    Result = newCustomer,
+                    //Result = newCustomer,
                     IsSuccess = true,
                     StatusCode = 201
                 };
@@ -775,7 +775,8 @@ namespace MetroTicketBE.Application.Service
                     PhoneNumber = dto.PhoneNumber,
                     Email = dto.Email,
                     FullName = dto.FullName,
-                    UserName = dto.Email
+                    UserName = dto.Email,
+                    EmailConfirmed = true
                 };
                 var createUserResult = await _unitOfWork.UserManagerRepository.CreateAsync(newUser, dto.Password);
 
@@ -808,13 +809,11 @@ namespace MetroTicketBE.Application.Service
                     UserId = newUser.Id,
                 };
                 await _unitOfWork.StaffRepository.AddAsync(staff);
-                var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
-                await _userManager.ConfirmEmailAsync(newUser, token);
                 await _unitOfWork.SaveAsync();
                 return new ResponseDTO()
                 {
                     Message = "Đăng ký thành công",
-                    Result = _mapper.Map<UserDTO>(newUser),
+                    //Result = _mapper.Map<UserDTO>(newUser),
                     IsSuccess = true,
                     StatusCode = 201
                 };
