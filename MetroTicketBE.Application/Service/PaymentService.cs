@@ -81,7 +81,7 @@ namespace MetroTicketBE.Application.Service
                 {
                     // Kiểm tra mã khuyến mãi nếu có
                     promotion = await _unitOfWork.PromotionRepository.GetByCodeAsync(createLinkDTO.CodePromotion);
-                    if (promotion is null)
+                    if (promotion is null || promotion.IsActive == false)
                     {
                         return new ResponseDTO
                         {

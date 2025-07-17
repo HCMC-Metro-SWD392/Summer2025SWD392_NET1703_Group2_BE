@@ -15,6 +15,7 @@ public class Promotion
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public Boolean IsActive { get; set; } = true;
 
     public ICollection<PaymentTransaction> Transactions { get; set; } = new List<PaymentTransaction>();
 }
