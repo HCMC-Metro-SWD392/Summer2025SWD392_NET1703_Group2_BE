@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MetroTicketBE.Domain.Enums;
 
 namespace MetroTicketBE.Infrastructure.IRepository
 {
@@ -16,5 +17,6 @@ namespace MetroTicketBE.Infrastructure.IRepository
         Task<Customer?> GetByEmailAsync(string email);
         Task<Customer> AddAsync(Customer customer);
         Task<Customer?> GetByUserIdAsync(string userId);
+        Task<CustomerType> GetCustomerTypeByUserIdAsync(string userId);
     }
 }

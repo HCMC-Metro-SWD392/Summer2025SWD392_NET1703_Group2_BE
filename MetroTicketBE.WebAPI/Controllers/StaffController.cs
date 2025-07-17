@@ -24,6 +24,15 @@ namespace MetroTicketBE.WebAPI.Controllers
             var response = await _staffService.GetAllStaff();
             return StatusCode(response.StatusCode, response);
         }
+
+        [HttpGet]
+        [Route("GetStaffByStaffCode/{staffCode}")]
+        [Authorize(Roles = StaticUserRole.ManagerAdmin)]
+        public async Task<IActionResult> GetStaffByStaffCode(string staffCode)
+        {
+            var response = await _staffService.GetStaffByStaffCode(staffCode);
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }
 

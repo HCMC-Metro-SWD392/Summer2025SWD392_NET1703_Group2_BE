@@ -8,6 +8,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using MetroTicketBE.Domain.Enums;
 
 namespace MetroTicketBE.Application.Service
 {
@@ -16,12 +17,14 @@ namespace MetroTicketBE.Application.Service
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration _configuration;
         private readonly IRedisService _redisService;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly Random random;
-        public TokenService(UserManager<ApplicationUser> userManager, IConfiguration configuration, IRedisService redisService)
+        public TokenService(UserManager<ApplicationUser> userManager, IConfiguration configuration, IRedisService redisService, IUnitOfWork unitOfWork)
         {
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _redisService = redisService ?? throw new ArgumentNullException(nameof(redisService));
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork)); 
             random = new Random();
         }
 
@@ -35,12 +38,13 @@ namespace MetroTicketBE.Application.Service
         public async Task<string> GenerateJwtAccessTokenAsync(ApplicationUser user)
         {
             var userRole = await _userManager.GetRolesAsync(user);
-
+            var customerType = await _unitOfWork.CustomerRepository.GetCustomerTypeByUserIdAsync(user.Id);
             var authClaims = new List<Claim>()
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim("Email", user.Email ?? string.Empty),
-                new Claim("FullName", user.FullName ?? string.Empty)
+                new Claim("FullName", user.FullName ?? string.Empty),
+                new Claim("CustomerType", customerType.ToString()),
             };
 
             foreach (var role in userRole)
@@ -134,7 +138,7 @@ namespace MetroTicketBE.Application.Service
         public async Task<string?> GetValueByKeyAsync(string key)
         {
             return await _redisService.RetrieveString(key);
-        } 
+        }
     }
 
 }

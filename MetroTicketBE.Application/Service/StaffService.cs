@@ -50,5 +50,41 @@ namespace MetroTicketBE.Application.Service
                 };
             }
         }
+
+        public async Task<ResponseDTO> GetStaffByStaffCode(string staffCode)
+        {
+            try
+            {
+                var staff = await _unitOfWork.StaffRepository.GetStaffByStaffCodeAsync(staffCode);
+                if (staff == null)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        StatusCode = 404,
+                        Message = "Nhân viên không tồn tại."
+                    };
+                }
+
+                var getStaff = _mapper.Map<GetStaffDTO>(staff);
+
+                return new ResponseDTO
+                {
+                    Result = getStaff,
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Message = "Lấy thông tin nhân viên thành công."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Message = $"Lỗi khi lấy thông tin nhân viên: {ex.Message}"
+                };
+            }
+        }
     }
 }

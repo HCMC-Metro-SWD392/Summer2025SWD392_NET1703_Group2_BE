@@ -18,4 +18,14 @@ public class StaffRepository: Repository<Staff>, IStaffRepository
         return await _context.Staffs
             .FirstOrDefaultAsync(s => s.UserId == userId);
     }
+    public async Task<Staff?> GetLastStaffAsync()
+    {
+        return await _context.Staffs.OrderByDescending(s => s.StaffCode)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<Staff?> GetStaffByStaffCodeAsync(string staffCode)
+    {
+        return await _context.Staffs.Include(s => s.User).FirstOrDefaultAsync(s => s.StaffCode == staffCode);
+    } 
 }
