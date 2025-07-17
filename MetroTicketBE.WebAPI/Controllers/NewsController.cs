@@ -19,7 +19,7 @@ namespace MetroTicketBE.WebAPI.Controllers
             this.newsService = newsService ?? throw new ArgumentNullException(nameof(newsService));
         }
 
-        [HttpGet]
+        [HttpPost]
         [Route("create-news")]
         [Authorize(Roles = StaticUserRole.Staff)]
         public async Task<ActionResult<ResponseDTO>> CreateNews([FromForm] CreateNewsDTO createNewsDTO)
