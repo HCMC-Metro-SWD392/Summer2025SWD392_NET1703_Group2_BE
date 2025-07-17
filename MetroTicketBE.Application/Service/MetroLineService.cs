@@ -72,6 +72,7 @@ namespace MetroTicketBE.Application.Service
                 await _logService.AddLogAsync(LogType.Create, user.FindFirstValue(ClaimTypes.NameIdentifier), EntityName, metroLine.MetroName);
                 return new ResponseDTO
                 {
+                    Result = _mapper.Map<GetMetroLineDTO>(metroLine),
                     IsSuccess = true,
                     StatusCode = 201,
                     Message = "Tạo tuyến Metro thành công"
