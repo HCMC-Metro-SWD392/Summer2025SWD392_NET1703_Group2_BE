@@ -1,5 +1,6 @@
 ﻿using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.Constants;
+using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.News;
 using MetroTicketBE.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -21,7 +22,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [HttpGet]
         [Route("create-news")]
         [Authorize(Roles = StaticUserRole.Staff)]
-        public async Task<IActionResult> CreateNews([FromForm] CreateNewsDTO createNewsDTO)
+        public async Task<ActionResult<ResponseDTO>> CreateNews([FromForm] CreateNewsDTO createNewsDTO)
         {
             if (createNewsDTO == null)
             {
@@ -34,7 +35,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [HttpGet]
         [Route("get-all-news-for-manager")]
         [Authorize(Roles = StaticUserRole.Manager)]
-        public async Task<IActionResult> GetAllNewsForManager(
+        public async Task<ActionResult<ResponseDTO>> GetAllNewsForManager(
             [FromQuery] string? filterOn,
             [FromQuery] string? filerQuery,
             [FromQuery] NewsStatus status,
@@ -48,7 +49,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [HttpGet]
         [Route("get-news-by-id/{newsId}")]
         [Authorize(Roles = StaticUserRole.StaffManagerAdmin)]
-        public async Task<IActionResult> GetNewsById(Guid newsId)
+        public async Task<ActionResult<ResponseDTO>> GetNewsById(Guid newsId)
         {
             if (newsId == Guid.Empty)
             {
@@ -61,7 +62,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [HttpPut]
         [Route("update-news/{newsId}")]
         [Authorize(Roles = StaticUserRole.Staff)]
-        public async Task<IActionResult> UpdateNews(Guid newsId, [FromForm] UpdateNewsDTO updateNewsDTO)
+        public async Task<ActionResult<ResponseDTO>> UpdateNews(Guid newsId, [FromForm] UpdateNewsDTO updateNewsDTO)
         {
             if (newsId == Guid.Empty || updateNewsDTO == null)
             {
@@ -74,7 +75,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [HttpDelete]
         [Route("delete-news/{newsId}")]
         [Authorize(Roles = StaticUserRole.ManagerAdmin)]
-        public async Task<IActionResult> DeleteNews(Guid newsId)
+        public async Task<ActionResult<ResponseDTO>> DeleteNews(Guid newsId)
         {
             if (newsId == Guid.Empty)
             {
@@ -87,7 +88,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [HttpGet]
         [Route("get-all-news-for-user")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAllNewsForUser(
+        public async Task<ActionResult<ResponseDTO>> GetAllNewsForUser(
             [FromQuery] string? filterOn,
             [FromQuery] string? filerQuery,
             [FromQuery] int pageNumber = 1,
@@ -100,7 +101,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [HttpGet]
         [Route("get-all-news-for-staff")]
         [Authorize(Roles = StaticUserRole.Staff)]
-        public async Task<IActionResult> GetAllNewsForStaff(
+        public async Task<ActionResult<ResponseDTO>> GetAllNewsForStaff(
             [FromQuery] string? filterOn,
             [FromQuery] string? filerQuery,
             [FromQuery] NewsStatus status,
@@ -114,13 +115,13 @@ namespace MetroTicketBE.WebAPI.Controllers
         [HttpPut]
         [Route("change-news-status/{newsId}")]
         [Authorize(Roles = StaticUserRole.Manager)]
-        public async Task<IActionResult> ChangeNewsStatus(Guid newsId, [FromQuery] NewsStatus status)
+        public async Task<ActionResult<ResponseDTO>> ChangeNewsStatus(Guid newsId, [FromForm] ChangeStatusDTO changeStatusDTO)
         {
-            if (newsId == Guid.Empty)
+            if (newsId == Guid.Empty || changeStatusDTO == null)
             {
-                return BadRequest("Invalid news ID.");
+                return BadRequest("Invalid news ID or data.");
             }
-            var response = await newsService.ChangeNewsStatus(newsId, status);
+            var response = await newsService.ChangeNewsStatus(newsId, changeStatusDTO);
             return StatusCode(response.StatusCode, response);
         }
     }
