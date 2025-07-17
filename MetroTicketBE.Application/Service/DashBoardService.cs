@@ -263,5 +263,29 @@ namespace MetroTicketBE.Application.Service
                 };
             }
         }
+
+        public async Task<ResponseDTO> ViewCustomerStatisticsNumber()
+        {
+            try
+            {
+                var customerCount = (await _unitOfWork.CustomerRepository.GetAllAsync()).Count();
+                return new ResponseDTO
+                {
+                    Result = customerCount,
+                    Message = "Lấy số lượng người dùng thành công.",
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    Message = $"Lỗi khi lấy số lượng người dùng: {ex.Message}",
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
     }
 }
