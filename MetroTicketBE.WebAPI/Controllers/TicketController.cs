@@ -112,7 +112,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [HttpGet]
         [Route("is-exist-ticket-range")]
         [Authorize]
-        public async Task<ActionResult<ResponseDTO>> IsExistTicketRange([FromQuery] Guid startStaionId, [FromQuery] Guid endStationId)
+        public async Task<ActionResult<ResponseDTO>> CheckExistTicketRange([FromQuery] Guid startStaionId, [FromQuery] Guid endStationId)
         {
             if (startStaionId == Guid.Empty || endStationId == Guid.Empty)
             {
@@ -123,7 +123,7 @@ namespace MetroTicketBE.WebAPI.Controllers
                     Message = "Mã trạm không hợp lệ"
                 });
             }
-            var response = await _ticketService.IsExistTicketRange(User, startStaionId, endStationId);
+            var response = await _ticketService.CheckExistTicketRange(User, startStaionId, endStationId);
             return StatusCode(response.StatusCode, response);
         }
     }
