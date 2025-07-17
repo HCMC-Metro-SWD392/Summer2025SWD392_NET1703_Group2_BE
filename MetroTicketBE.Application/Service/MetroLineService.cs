@@ -55,22 +55,11 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                var isExistMetroLine =
-                    await _unitOfWork.MetroLineRepository.IsExistByMetroLineNumber(createMetroLineDTO.MetroLineNumber, null);
-
-                if (isExistMetroLine is true)
-                {
-                    return new ResponseDTO
-                    {
-                        IsSuccess = false,
-                        StatusCode = 400,
-                        Message = "Số tuyến Metro đã tồn tại"
-                    };
-                }
+                var metroCount = (await _unitOfWork.MetroLineRepository.GetAllAsync()).Count().ToString();
 
                 MetroLine metroLine = new MetroLine
                 {
-                    MetroLineNumber = createMetroLineDTO.MetroLineNumber,
+                    MetroLineNumber = metroCount,
                     MetroName = createMetroLineDTO.MetroName,
                     StartStationId = createMetroLineDTO.StartStationId,
                     EndStationId = createMetroLineDTO.EndStationId,
@@ -84,9 +73,8 @@ namespace MetroTicketBE.Application.Service
                 return new ResponseDTO
                 {
                     IsSuccess = true,
-                    StatusCode = 200,
-                    Message = "Tạo tuyến Metro thành công",
-                    Result = metroLine
+                    StatusCode = 201,
+                    Message = "Tạo tuyến Metro thành công"
                 };
             }
             catch (Exception ex)
