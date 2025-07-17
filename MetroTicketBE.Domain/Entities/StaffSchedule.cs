@@ -8,6 +8,8 @@ public class StaffSchedule
     public Guid Id { get; set; }
     public Guid ShiftId { get; set; }
     public Guid StaffId { get; set; }
+    public TimeSpan StartTime { get; set; }
+    public TimeSpan EndTime { get; set; }
     public DateOnly WorkingDate { get; set; }
     public Guid WorkingStationId { get; set; }
     public StaffScheduleStatus Status { get; set; }

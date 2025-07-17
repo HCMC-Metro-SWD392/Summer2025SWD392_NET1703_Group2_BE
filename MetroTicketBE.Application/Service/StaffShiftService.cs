@@ -84,4 +84,61 @@ public class StaffShiftService: IStaffShiftService
             Result = await _unitOfWork.StaffShiftRepository.GetAllAsync()
         };
     }
+    
+    public async Task<ResponseDTO> UpdateStaffShift(Guid id, UpdateShiftDTO dto)
+    {
+        try
+        {
+            var staffShift = await _unitOfWork.StaffShiftRepository.GetAsync(s => s.Id == id);
+            if (staffShift == null)
+            {
+                return new ResponseDTO()
+                {
+                    IsSuccess = false,
+                    StatusCode = 404,
+                    Message = "Ca làm việc không tồn tại"
+                };
+            }
+            if (dto.StartTime >= dto.EndTime)
+            {
+                return new ResponseDTO()
+                {
+                    IsSuccess = false,
+                    StatusCode = 400,
+                    Message = "Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc"
+                };
+            }
+
+            if (dto.ShiftName is not null)
+            { 
+                staffShift.ShiftName = dto.ShiftName;
+            }
+            if (dto.StartTime is not null)
+            {
+                staffShift.StartTime = dto.StartTime.Value;
+
+            }
+            if (dto.EndTime is not null)
+            {
+                staffShift.EndTime = dto.EndTime.Value;
+            }
+            _unitOfWork.StaffShiftRepository.Update(staffShift);
+            await _unitOfWork.SaveAsync();
+            return new ResponseDTO()
+            {
+                IsSuccess = true,
+                StatusCode = 200,
+                Message = "Cập nhật ca làm việc thành công",
+                Result = staffShift
+            };
+        }catch(Exception ex)
+        {
+            return new ResponseDTO()
+            {
+                IsSuccess = false,
+                StatusCode = 500,
+                Message = "Lỗi khi cập nhật ca làm việc: " + ex.Message
+            };
+        }
+    }
 }
