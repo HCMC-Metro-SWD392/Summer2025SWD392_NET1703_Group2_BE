@@ -1099,27 +1099,21 @@ namespace MetroTicketBE.Application.Service
 
                 stationPath = _graph.FindShortestPath(startStationId, endStationId);
 
-                var ticketListActive = (await _unitOfWork.TicketRepository.GetAllAsync(includeProperties: "TicketRoute,SubscriptionTicket"))
+                var ticketListInActive = (await _unitOfWork.TicketRepository.GetAllAsync(includeProperties: "TicketRoute,SubscriptionTicket"))
                     .Where(t => t.TicketRtStatus == TicketStatus.Inactive && t.CustomerId == customer.Id);
 
-                foreach (var t in ticketListActive)
+                foreach (var t in ticketListInActive)
                 {
                     var activeStationPath = new List<Guid>();
                     activeStationPath = BuildStationPath(t, _graph);
-                    if (!activeStationPath.Except(stationPath).Any() && t.SubscriptionTicket is not null)
+                    if (!stationPath.Except(activeStationPath).Any())
                     {
+                        var message = t.SubscriptionTicket is not null
+                                    ? "Bạn đã có vé kỳ trong phạm vi này."
+                                    : "Bạn đã có vé lượt trong phạm vi này.";
                         return new ResponseDTO
                         {
-                            Message = "Bạn đã có vé kỳ trong phạm vi này.",
-                            IsSuccess = false,
-                            StatusCode = 409
-                        };
-                    }
-                    else if (!activeStationPath.Except(stationPath).Any() && t.SubscriptionTicket is null)
-                    {
-                        return new ResponseDTO
-                        {
-                            Message = "Bạn đã có vé kỳ trong phạm vi này.",
+                            Message = message,
                             IsSuccess = false,
                             StatusCode = 409
                         };
