@@ -138,7 +138,8 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                _unitOfWork.PromotionRepository.Remove(promotion);
+                promotion.IsActive = false; // Đánh dấu mã giảm giá là không hoạt động thay vì xóa hoàn toàn
+                _unitOfWork.PromotionRepository.Update(promotion);
                 await _unitOfWork.SaveAsync();
                 return new ResponseDTO
                 {
