@@ -60,7 +60,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpGet]
         [Route("ticket-route-statistics-number")]
-        //[Authorize(Roles = StaticUserRole.ManagerAdmin)]
+        [Authorize(Roles = StaticUserRole.ManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> ViewTicketStatisticsNumber(
             [FromQuery] DateTime dateFrom,
             [FromQuery] DateTime dateTo,
@@ -73,7 +73,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpGet]
         [Route("subscription-ticket-statistics-number")]
-        //[Authorize(Roles = StaticUserRole.ManagerAdmin)]
+        [Authorize(Roles = StaticUserRole.ManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> ViewSubscriptionTicketStatisticsNumber(
             [FromQuery] DateTime dateFrom,
             [FromQuery] DateTime dateTo,
@@ -81,6 +81,15 @@ namespace MetroTicketBE.WebAPI.Controllers
         )
         {
             var response = await _dashBoardService.ViewSubscriptionTicketStatisticsNumber(dateFrom, dateTo, status);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpGet]
+        [Route("customer-statistics-number")]
+        [Authorize(Roles = StaticUserRole.ManagerAdmin)]
+        public async Task<ActionResult<ResponseDTO>> ViewCustomerStatisticsNumber()
+        {
+            var response = await _dashBoardService.ViewCustomerStatisticsNumber();
             return StatusCode(response.StatusCode, response);
         }
     }
