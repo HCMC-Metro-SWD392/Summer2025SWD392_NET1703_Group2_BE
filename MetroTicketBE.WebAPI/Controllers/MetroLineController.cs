@@ -2,6 +2,7 @@
 using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.MetroLine;
+using MetroTicketBE.Domain.Enums;
 using MetroTicketBE.Infrastructure.IRepository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +31,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [HttpGet]
         [Route("metro-lines/all")]
         //[Authorize(Roles = StaticUserRole.Admin)]
-        public async Task<ActionResult<ResponseDTO>> GetAllMetroLines([FromQuery]bool? isActive = null)
+        public async Task<ActionResult<ResponseDTO>> GetAllMetroLines([FromQuery] bool? isActive = null)
         {
             var response = await _metroLineService.GetAllMetroLines(isActive);
             return StatusCode(response.StatusCode, response);
@@ -61,6 +62,15 @@ namespace MetroTicketBE.WebAPI.Controllers
         public async Task<ActionResult<ResponseDTO>> SetIsActive(Guid metroLineId, [FromQuery] bool isActive)
         {
             var response = await _metroLineService.SetIsActiveMetroLine(User, metroLineId, isActive);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpPut]
+        [Route("change-status/{metroLineId:guid}")]
+        [Authorize(Roles = StaticUserRole.Admin)]
+        public async Task<ActionResult<ResponseDTO>> ChangeMetroLineStatus(Guid metroLineId, [FromQuery] MetroLineStatus metroLineStatus)
+        {
+            var response = await _metroLineService.ChangeMetroLineStatus(metroLineId, metroLineStatus);
             return StatusCode(response.StatusCode, response);
         }
     }
