@@ -12,7 +12,7 @@ namespace MetroTicketBE.Application.IService
             (
             string? filterOn,
             string? filerQuery,
-            NewsStatus status,
+            NewsStatus? status,
             int pageNumber,
             int pageSize
             );
@@ -33,7 +33,7 @@ namespace MetroTicketBE.Application.IService
             ClaimsPrincipal user,
             string? filterOn,
             string? filerQuery,
-            NewsStatus status,
+            NewsStatus? status,
             int pageNumber,
             int pageSize
             );

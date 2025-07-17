@@ -170,15 +170,19 @@ namespace MetroTicketBE.Application.Service
             (
             string? filterOn,
             string? filerQuery,
-            NewsStatus status,
+            NewsStatus? status,
             int pageNumber,
             int pageSize
             )
         {
             try
             {
-                var newsList = (await _unitOfWork.NewsRepository.GetAllAsync())
-                    .Where(n => n.Status == status);
+                var newsList = await _unitOfWork.NewsRepository.GetAllAsync();
+
+                if (status.HasValue)
+                {
+                    newsList = newsList.Where(n => n.Status == status.Value);
+                }
 
                 if (!string.IsNullOrEmpty(filterOn) && !string.IsNullOrEmpty(filerQuery))
                 {
@@ -227,7 +231,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> GetAllNewsListForStaff(ClaimsPrincipal user, string? filterOn, string? filerQuery, NewsStatus status, int pageNumber, int pageSize)
+        public async Task<ResponseDTO> GetAllNewsListForStaff(ClaimsPrincipal user, string? filterOn, string? filerQuery, NewsStatus? status, int pageNumber, int pageSize)
         {
             try
             {
@@ -256,9 +260,14 @@ namespace MetroTicketBE.Application.Service
                 }
 
                 var newsList = (await _unitOfWork.NewsRepository.GetAllAsync())
-                    .Where(n => n.Status == status && n.StaffId == staff.Id);
+                    .Where(n => n.StaffId == staff.Id);
 
-                if (!string.IsNullOrEmpty(filterOn) && !string.IsNullOrEmpty(filerQuery))
+                if (status.HasValue)
+                {
+                    newsList = newsList.Where(n => n.Status == status.Value);
+                }
+
+                    if (!string.IsNullOrEmpty(filterOn) && !string.IsNullOrEmpty(filerQuery))
                 {
                     filterOn = filterOn.ToLower().Trim();
                     filerQuery = filerQuery.ToLower().Trim();

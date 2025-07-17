@@ -38,7 +38,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         public async Task<ActionResult<ResponseDTO>> GetAllNewsForManager(
             [FromQuery] string? filterOn,
             [FromQuery] string? filerQuery,
-            [FromQuery] NewsStatus status,
+            [FromQuery] NewsStatus? status,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10)
         {
@@ -104,7 +104,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         public async Task<ActionResult<ResponseDTO>> GetAllNewsForStaff(
             [FromQuery] string? filterOn,
             [FromQuery] string? filerQuery,
-            [FromQuery] NewsStatus status,
+            [FromQuery] NewsStatus? status,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10)
         {
