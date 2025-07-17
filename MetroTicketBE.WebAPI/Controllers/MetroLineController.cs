@@ -30,7 +30,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpGet]
         [Route("metro-lines/all")]
-        //[Authorize(Roles = StaticUserRole.Admin)]
+        [AllowAnonymous]
         public async Task<ActionResult<ResponseDTO>> GetAllMetroLines([FromQuery] bool? isActive = null)
         {
             var response = await _metroLineService.GetAllMetroLines(isActive);
