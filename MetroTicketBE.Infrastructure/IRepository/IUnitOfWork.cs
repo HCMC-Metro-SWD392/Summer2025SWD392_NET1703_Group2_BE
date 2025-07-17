@@ -29,6 +29,7 @@ namespace MetroTicketBE.Infrastructure.IRepository
         IStaffRepository StaffRepository { get; }
         ITicketProcessRepository TicketProcessRepository { get; }
         ILogRepository LogRepository { get; }
+        INewsRepository NewsRepository { get; }
         Task<int> SaveAsync();
     }
 }
