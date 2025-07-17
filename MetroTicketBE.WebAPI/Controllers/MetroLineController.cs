@@ -67,7 +67,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpPut]
         [Route("change-status/{metroLineId:guid}")]
-        [Authorize(Roles = StaticUserRole.Admin)]
+        [Authorize(Roles = StaticUserRole.ManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> ChangeMetroLineStatus(Guid metroLineId, [FromQuery] MetroLineStatus metroLineStatus)
         {
             var response = await _metroLineService.ChangeMetroLineStatus(metroLineId, metroLineStatus);
