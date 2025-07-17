@@ -52,13 +52,13 @@ public class StaffScheduleRepository: Repository<StaffSchedule>, IStaffScheduleR
         return schedules;
     }
     
-    public async Task<StaffSchedule?> GetByStaffIdAndDate(Guid staffId, DateOnly workingDate)
+    public async Task<StaffSchedule?> GetByStaffIdDateShift(Guid staffId, DateOnly workingDate, Guid shiftId)
     {
         var schedule = await _context.StaffSchedules
             .Include(s => s.WorkingStation)
             .Include(s => s.Staff).ThenInclude(s => s.User)
             .Include(s => s.Shift)
-            .FirstOrDefaultAsync(s => s.StaffId == staffId && s.WorkingDate == workingDate);
+            .FirstOrDefaultAsync(s => s.StaffId == staffId && s.WorkingDate == workingDate && s.ShiftId == shiftId);
         return schedule;
-    } 
+    }
 }

@@ -27,13 +27,13 @@ public class StaffScheduleService: IStaffScheduleService
         try
         {
             var existingSchedule = await _unitOfWork.StaffScheduleRepository
-                .GetByStaffIdAndDate(dto.StaffId, dto.WorkingDate);
+                .GetByStaffIdDateShift(dto.StaffId, dto.WorkingDate, dto.ShiftId);
             if (existingSchedule is not null)
             {
                 return new ResponseDTO()
                 {
                     IsSuccess = false,
-                    Message = "Nhân viên đã có ca làm việc vào ngày này.",
+                    Message = "Nhân viên đã có ca làm việc này vào ngày này.",
                     Result = null,
                     StatusCode = 400,
                 };
