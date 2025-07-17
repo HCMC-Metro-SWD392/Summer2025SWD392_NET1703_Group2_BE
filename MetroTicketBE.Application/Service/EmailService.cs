@@ -101,9 +101,9 @@ namespace MetroTicketBE.Application.Service
             return await SendEmailAsync(toMail, subject, body);
         }
 
-        public async Task<bool> SendResetPasswordEmail(string toMail, string resetLink, string userName = "", int expirationHours = 24)
+        public async Task<bool> SendResetPasswordEmail(string toMail, string resetLink, string userName = "", int expirationHours = 10)
         {
-            var expirationTime = $"{expirationHours} giờ";
+            var expirationTime = $"{expirationHours} phút";
             return await SendEmailFromTemplate(toMail, "ResetPasswordEmail", new Dictionary<string, string>
             {
                 { "{ResetLink}", resetLink },

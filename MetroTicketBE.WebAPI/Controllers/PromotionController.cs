@@ -26,11 +26,11 @@ namespace MetroTicketBE.WebAPI.Controllers
         }
 
         [HttpPatch]
-        [Route("update-promotion")]
+        [Route("update-promotion/{promotionId}")]
         [Authorize(Roles = StaticUserRole.ManagerAdmin)]
-        public async Task<ActionResult<ResponseDTO>> UpdatePromotion([FromBody] UpdatePromotionDTO updatePromotionDTO)
+        public async Task<ActionResult<ResponseDTO>> UpdatePromotion(Guid promotionId, [FromBody] UpdatePromotionDTO updatePromotionDTO)
         {
-            var response = await _promotionService.UpdatePromotion(updatePromotionDTO);
+            var response = await _promotionService.UpdatePromotion(promotionId, updatePromotionDTO);
             return StatusCode(response.StatusCode, response);
         }
 
