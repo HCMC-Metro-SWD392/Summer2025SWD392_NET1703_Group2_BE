@@ -212,6 +212,13 @@ namespace MetroTicketBE.Application.Service
                 //        StatusCode = 403
                 //    };
                 //}
+
+                var connectionId = await _redisService.RetrieveString($"checkLogin:{user.Id}");
+                if (!string.IsNullOrEmpty(connectionId))
+                {
+                    await _hubContext.Clients.Client(connectionId).SendAsync("ForceLogout");
+                }
+
                 await CheckAndResetStudentExpiration(user.Id);
                 var accessToken = await _tokenService.GenerateJwtAccessTokenAsync(user);
                 var refreshToken = await _tokenService.GenerateJwtRefreshTokenAsync(user, loginByGoogleDTO.RememberMe);
