@@ -1,6 +1,7 @@
 ﻿using MetroTicketBE.Application.IService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace MetroTicketBE.Domain.Entities
 {
@@ -17,20 +18,24 @@ namespace MetroTicketBE.Domain.Entities
         public override async Task OnConnectedAsync()
         {
             var userId = Context.UserIdentifier;
-            await _redis.AddToSetAsync($"checkLogin:{userId}", Context.ConnectionId);
+            var key = $"checkLogin:{userId}";
+            await _redis.StoreKeyAsync(key, Context.ConnectionId);
             await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             var userId = Context.UserIdentifier;
-            await _redis.RemoveFromSetAsync($"checkLogin:{userId}", Context.ConnectionId);
-            await Task.Delay(500);
-            var remaining = await _redis.GetSetCountAsync($"checkLogin:{userId}");
-            if (remaining == 0)
+            var key = $"checkLogin:{userId}";
+            _ = Task.Run(async () =>
             {
-                await _redis.DeleteKeyAsync($"checkLogin:{userId}");
-            }
+                await Task.Delay(3000); 
+                var value = await _redis.RetrieveString(key);
+                if (value == Context.ConnectionId)
+                {
+                    await _redis.DeleteKeyAsync(key);
+                }
+            });
             await base.OnDisconnectedAsync(exception);
         }
     }
