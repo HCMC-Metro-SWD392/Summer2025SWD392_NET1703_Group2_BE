@@ -18,8 +18,5 @@ namespace MetroTicketBE.Application.IService
         Task<bool> DeleteKeyAsync(string key);
         Task<bool> AddToSortedSetAsync(string key, string id, double score);
         Task<bool> ExpireKeyAsync(string key, TimeSpan expiry);
-        Task<bool> AddToSetAsync(string key, string value);
-        Task<bool> RemoveFromSetAsync(string key, string value);
-        Task<long> GetSetCountAsync(string key);
     }
 }

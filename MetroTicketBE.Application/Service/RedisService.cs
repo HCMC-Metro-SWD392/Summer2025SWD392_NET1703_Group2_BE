@@ -75,23 +75,5 @@ namespace MetroTicketBE.Application.Service
             var cache = _redis.GetDatabase();
             return await cache.KeyExpireAsync(key, expiry);
         }
-
-        public async Task<bool> AddToSetAsync(string key, string value)
-        {
-            var cache = _redis.GetDatabase();
-            return await cache.SetAddAsync(key, value);
-        }
-
-        public async Task<bool> RemoveFromSetAsync(string key, string value)
-        {
-            var cache = _redis.GetDatabase();
-            return await cache.SetRemoveAsync(key, value);
-        }
-
-        public async Task<long> GetSetCountAsync(string key)
-        {
-            var cache = _redis.GetDatabase();
-            return await cache.SetLengthAsync(key);
-        }
     }
 }
