@@ -103,11 +103,57 @@ namespace MetroTicketBE.WebAPI.Controllers
             return StatusCode(response.StatusCode, response);
         }
 
+        [HttpPut]
+        [Route("set-manager-role/{email}")]
+        [Authorize(Roles = StaticUserRole.Admin)]
+        public async Task<ActionResult<ResponseDTO>> SetManagerRole([FromRoute] string email)
+        {
+            var response = await _authService.SetManagerRole(email);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpPut]
+        [Route("set-admin-role/{email}")]
+        [Authorize(Roles = StaticUserRole.Admin)]
+        public async Task<ActionResult<ResponseDTO>> SetAdminRole([FromRoute] string email)
+        {
+            var response = await _authService.SetAdminRole(email);
+            return StatusCode(response.StatusCode, response);
+        }
+
         [HttpPost("create-staff")]
         [Authorize(Roles = StaticUserRole.Manager)]
         public async Task<ActionResult<ResponseDTO>> CreateStaffAsync([FromBody] RegisterCustomerDTO dto)
         {
             ResponseDTO response = await _authService.CreateStaffAsync(dto);
+
+            if (!response.IsSuccess)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpPost("create-manager")]
+        [Authorize(Roles = StaticUserRole.Admin)]
+        public async Task<ActionResult<ResponseDTO>> CreateManagerAsync([FromBody] RegisterCustomerDTO dto)
+        {
+            ResponseDTO response = await _authService.CreateManagerAsync(dto);
+
+            if (!response.IsSuccess)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpPost("create-admin")]
+        [Authorize(Roles = StaticUserRole.Admin)]
+        public async Task<ActionResult<ResponseDTO>> CreateAdminAsync([FromBody] RegisterCustomerDTO dto)
+        {
+            ResponseDTO response = await _authService.CreateAdminAsync(dto);
 
             if (!response.IsSuccess)
             {

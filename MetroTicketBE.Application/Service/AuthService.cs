@@ -96,7 +96,7 @@ namespace MetroTicketBE.Application.Service
 
                 var accessToken = await _tokenService.GenerateJwtAccessTokenAsync(user);
                 var refreshToken = await _tokenService.GenerateJwtRefreshTokenAsync(user, loginDTO.RememberMe);
-                
+
                 await CheckAndResetStudentExpiration(user.Id);
                 var isStudent = await IsStudent(user.Id);
                 var responeUser = new UserDTO()
@@ -847,7 +847,7 @@ namespace MetroTicketBE.Application.Service
             string prefix = new string(lastStaffCode.TakeWhile(char.IsLetter).ToArray());
             int numberPart = int.Parse(new string(lastStaffCode.SkipWhile(char.IsLetter).ToArray()));
             numberPart++;
-            string newNumberPart = numberPart.ToString().PadLeft(5, '0'); 
+            string newNumberPart = numberPart.ToString().PadLeft(5, '0');
             return prefix + newNumberPart;
         }
         public async Task<ResponseDTO> ChangPassword(ClaimsPrincipal user, ChangePasswordDTO changePasswordDTO)
@@ -1032,7 +1032,8 @@ namespace MetroTicketBE.Application.Service
                 customer.CustomerType = CustomerType.Normal;
                 _unitOfWork.CustomerRepository.Update(customer);
                 await _unitOfWork.SaveAsync();
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 return;
@@ -1046,9 +1047,305 @@ namespace MetroTicketBE.Application.Service
             {
                 return false;
             }
-            return customer.CustomerType == CustomerType.Student && 
-                   customer.StudentExpiration != null && 
+            return customer.CustomerType == CustomerType.Student &&
+                   customer.StudentExpiration != null &&
                    customer.StudentExpiration > DateTime.UtcNow;
+        }
+
+        public async Task<ResponseDTO> SetManagerRole(string email)
+        {
+            try
+            {
+                var user = await _unitOfWork.UserManagerRepository.GetByEmailAsync(email);
+                if (user is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Người dùng không tồn tại",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+
+                var isCustomer = await _userManager.IsInRoleAsync(user, StaticUserRole.Customer);
+                if (isCustomer)
+                {
+                    await _userManager.RemoveFromRoleAsync(user, StaticUserRole.Customer);
+                }
+
+                var isStaff = await _userManager.IsInRoleAsync(user, StaticUserRole.Staff);
+                if (isCustomer)
+                {
+                    await _userManager.RemoveFromRoleAsync(user, StaticUserRole.Staff);
+                }
+
+                var isRoleExist = await _roleManager.RoleExistsAsync(StaticUserRole.Manager);
+                if (isRoleExist is false)
+                {
+                    await _roleManager.CreateAsync(new IdentityRole(StaticUserRole.Manager));
+                }
+
+                await _userManager.AddToRoleAsync(user, StaticUserRole.Manager);
+
+                await _unitOfWork.SaveAsync();
+
+                return new ResponseDTO
+                {
+                    Message = "Nâng người dùng lên quản lý thành công",
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    Message = "Đã xảy ra lỗi khi nâng vai trò quản lí " + ex.Message,
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
+
+        public async Task<ResponseDTO> SetAdminRole(string email)
+        {
+            try
+            {
+                var user = await _unitOfWork.UserManagerRepository.GetByEmailAsync(email);
+                if (user is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Người dùng không tồn tại",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+
+                var isCustomer = await _userManager.IsInRoleAsync(user, StaticUserRole.Customer);
+                if (isCustomer)
+                {
+                    await _userManager.RemoveFromRoleAsync(user, StaticUserRole.Customer);
+                }
+
+                var isStaff = await _userManager.IsInRoleAsync(user, StaticUserRole.Staff);
+                if (isCustomer)
+                {
+                    await _userManager.RemoveFromRoleAsync(user, StaticUserRole.Staff);
+                }
+
+                var isManager = await _userManager.IsInRoleAsync(user, StaticUserRole.Manager);
+                if (isManager)
+                {
+                    await _userManager.RemoveFromRoleAsync(user, StaticUserRole.Manager);
+                }
+
+                var isRoleExist = await _roleManager.RoleExistsAsync(StaticUserRole.Admin);
+                if (isRoleExist is false)
+                {
+                    await _roleManager.CreateAsync(new IdentityRole(StaticUserRole.Admin));
+                }
+
+                await _userManager.AddToRoleAsync(user, StaticUserRole.Admin);
+
+                await _unitOfWork.SaveAsync();
+
+                return new ResponseDTO
+                {
+                    Message = "Nâng người dùng lên admin thành công",
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    Message = "Đã xảy ra lỗi khi nâng vai trò admin " + ex.Message,
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
+
+        public async Task<ResponseDTO> CreateManagerAsync(RegisterCustomerDTO dto)
+        {
+            try
+            {
+
+                var isEmailExist = await _unitOfWork.UserManagerRepository.IsEmailExist(dto.Email);
+
+                if (isEmailExist is true)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Email đã tồn tại",
+                        Result = dto,
+                        IsSuccess = false,
+                        StatusCode = 409
+                    };
+                }
+
+                //Check if phone number already exists
+                var isPhoneNumberExist = dto.PhoneNumber is not null &&
+                                         await _unitOfWork.UserManagerRepository.IsPhoneNumberExist(dto.PhoneNumber);
+
+                if (isPhoneNumberExist is true)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Số điện thoại đã tồn tại",
+                        Result = dto,
+                        IsSuccess = false,
+                        StatusCode = 409
+                    };
+                }
+
+                //Create new instance of user
+                ApplicationUser newUser = new ApplicationUser
+                {
+                    PhoneNumber = dto.PhoneNumber,
+                    Email = dto.Email,
+                    FullName = dto.FullName,
+                    UserName = dto.Email,
+                    EmailConfirmed = true
+                };
+                var createUserResult = await _unitOfWork.UserManagerRepository.CreateAsync(newUser, dto.Password);
+
+                if (createUserResult.Succeeded is false)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Đăng ký không thành công",
+                        Result = createUserResult,
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
+                var addToRoleResult =
+                    await _unitOfWork.UserManagerRepository.AddtoRoleAsync(newUser, StaticUserRole.Manager);
+                if (addToRoleResult.Succeeded is false)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Thêm vai trò không thành công",
+                        Result = addToRoleResult,
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
+                await _unitOfWork.SaveAsync();
+                return new ResponseDTO()
+                {
+                    Message = "Đăng ký thành công",
+                    //Result = _mapper.Map<UserDTO>(newUser),
+                    IsSuccess = true,
+                    StatusCode = 201
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO()
+                {
+                    Message = $"Đã xảy ra lỗi: {ex.Message}",
+                    Result = null,
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
+
+        public async Task<ResponseDTO> CreateAdminAsync(RegisterCustomerDTO dto)
+        {
+            try
+            {
+
+                var isEmailExist = await _unitOfWork.UserManagerRepository.IsEmailExist(dto.Email);
+
+                if (isEmailExist is true)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Email đã tồn tại",
+                        Result = dto,
+                        IsSuccess = false,
+                        StatusCode = 409
+                    };
+                }
+
+                //Check if phone number already exists
+                var isPhoneNumberExist = dto.PhoneNumber is not null &&
+                                         await _unitOfWork.UserManagerRepository.IsPhoneNumberExist(dto.PhoneNumber);
+
+                if (isPhoneNumberExist is true)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Số điện thoại đã tồn tại",
+                        Result = dto,
+                        IsSuccess = false,
+                        StatusCode = 409
+                    };
+                }
+
+                //Create new instance of user
+                ApplicationUser newUser = new ApplicationUser
+                {
+                    PhoneNumber = dto.PhoneNumber,
+                    Email = dto.Email,
+                    FullName = dto.FullName,
+                    UserName = dto.Email,
+                    EmailConfirmed = true
+                };
+                var createUserResult = await _unitOfWork.UserManagerRepository.CreateAsync(newUser, dto.Password);
+
+                if (createUserResult.Succeeded is false)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Đăng ký không thành công",
+                        Result = createUserResult,
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
+                var addToRoleResult =
+                    await _unitOfWork.UserManagerRepository.AddtoRoleAsync(newUser, StaticUserRole.Admin);
+                if (addToRoleResult.Succeeded is false)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Thêm vai trò không thành công",
+                        Result = addToRoleResult,
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+
+                await _unitOfWork.SaveAsync();
+                return new ResponseDTO()
+                {
+                    Message = "Đăng ký thành công",
+                    //Result = _mapper.Map<UserDTO>(newUser),
+                    IsSuccess = true,
+                    StatusCode = 201
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO()
+                {
+                    Message = $"Đã xảy ra lỗi: {ex.Message}",
+                    Result = null,
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
         }
     }
 }
