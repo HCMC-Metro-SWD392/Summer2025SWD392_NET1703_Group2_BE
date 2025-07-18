@@ -18,9 +18,30 @@ namespace MetroTicketBE.Infrastructure.Repository
                 AnyAsync(mls => mls.MetroLineId == metroLineId && mls.StationId == stationId && mls.StationOrder == stationOrder);;
         }
         
-        public async Task<List<Station>> GetStationByMetroLineIdAsync(Guid metroLineId, bool? isActive = null)
+        public async Task<List<MetroLineStation>> GetStationByMetroLineIdAsync(Guid metroLineId, bool? isActive = null)
         {
-            IQueryable<MetroLineStation> query = _context.MetroLineStations
+            var query =  _context.MetroLineStations
+                .Where(mls => mls.MetroLineId == metroLineId);
+
+            if (isActive.HasValue)
+            {
+                query = query.Where(mls => mls.IsActive == isActive.Value);
+            }
+            
+            query = query.Include(mls => mls.Station);
+            query = query.Include(mls => mls.MetroLine);
+            
+            var stationsInMetroLine = await query
+                .OrderBy(mls => mls.StationOrder) // nếu muốn theo thứ tự đi
+                .Select(mls => mls.Station)
+                .ToListAsync();
+
+            return await query.OrderBy(mls => mls.StationOrder).ToListAsync();
+        }
+        
+        public async Task<List<Station>> GetOrderedStationsByMetroLineIdAsync(Guid metroLineId, bool? isActive = null)
+        {
+            var query = _context.MetroLineStations
                 .Where(mls => mls.MetroLineId == metroLineId);
 
             if (isActive.HasValue)
@@ -28,12 +49,13 @@ namespace MetroTicketBE.Infrastructure.Repository
                 query = query.Where(mls => mls.IsActive == isActive.Value);
             }
 
-            var stationsInMetroLine = await query
-                .OrderBy(mls => mls.StationOrder) // nếu muốn theo thứ tự đi
+            query = query.Include(mls => mls.Station);
+            query = query.Include(mls => mls.MetroLine);
+
+            return await query
+                .OrderBy(mls => mls.StationOrder)
                 .Select(mls => mls.Station)
                 .ToListAsync();
-
-            return stationsInMetroLine;
         }
     }
 }
