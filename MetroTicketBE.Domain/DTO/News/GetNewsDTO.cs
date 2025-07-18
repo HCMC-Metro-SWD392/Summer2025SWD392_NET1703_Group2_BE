@@ -16,6 +16,7 @@ namespace MetroTicketBE.Domain.DTO.News
         public string? ImageUrl { get; set; }
         public string? Category { get; set; }
         public string StaffName { get; set; } = null!;
+        public string? RejectionReason { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public NewsStatus Status { get; set; }
