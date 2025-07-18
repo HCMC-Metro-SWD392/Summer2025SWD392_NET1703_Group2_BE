@@ -19,7 +19,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         }
 
         [HttpGet]
-        [Route("get-all-ticket-routes")]
+        [Route("get-all-tickets")]
         [Authorize]
         public async Task<ActionResult<ResponseDTO>> GetAllTicketRoutesAsync(
             [FromQuery] string? filterOn,
@@ -32,7 +32,7 @@ namespace MetroTicketBE.WebAPI.Controllers
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10)
         {
-            var response = await _ticketService.GetAllTicketRoutes(User, filterOn, filterQuery, fromPrice, toPrice, sortBy, isAcsending, status, pageNumber, pageSize);
+            var response = await _ticketService.GetAllTickets(User, filterOn, filterQuery, fromPrice, toPrice, sortBy, isAcsending, status, pageNumber, pageSize);
             return StatusCode(response.StatusCode, response);
         }
 
@@ -110,7 +110,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         }
 
         [HttpGet]
-        [Route("is-exist-ticket-range")]
+        [Route("check-exist-ticket-range")]
         [Authorize]
         public async Task<ActionResult<ResponseDTO>> CheckExistTicketRange([FromQuery] Guid startStaionId, [FromQuery] Guid endStationId)
         {

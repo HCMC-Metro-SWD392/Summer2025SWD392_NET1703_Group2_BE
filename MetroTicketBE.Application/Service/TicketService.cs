@@ -39,7 +39,7 @@ namespace MetroTicketBE.Application.Service
             _ticketRouteService = new TicketRouteService(_unitOfWork, _mapper);
         }
 
-        public async Task<ResponseDTO> GetAllTicketRoutes(
+        public async Task<ResponseDTO> GetAllTickets(
             ClaimsPrincipal user,
             string? filterOn,
             string? filterQuery,
@@ -99,7 +99,7 @@ namespace MetroTicketBE.Application.Service
                     {
                         "ticketname" => isAcsending is true ? tickets.OrderBy(t => t.TicketRoute.TicketName) : tickets.OrderByDescending(t => t.TicketRoute.TicketName),
                         "startstation" => isAcsending is true ? tickets.OrderBy(t => t.TicketRoute.StartStation.Name) : tickets.OrderByDescending(t => t.TicketRoute.StartStation.Name),
-                        "endstation" => isAcsending is true ? tickets.OrderBy(t => t.TicketRoute.EndStation.Name) : tickets.OrderByDescending(t => t.TicketRoute.EndStation.Name)
+                        "endstation" => isAcsending is true ? tickets.OrderBy(t => t.TicketRoute.EndStation.Name) : tickets.OrderByDescending(t => t.TicketRoute.EndStation.Name),
 
                         _ => tickets
                     };
