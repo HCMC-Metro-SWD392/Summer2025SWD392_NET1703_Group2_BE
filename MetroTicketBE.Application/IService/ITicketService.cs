@@ -14,7 +14,7 @@ namespace MetroTicketBE.Application.IService
     {
         Task<ResponseDTO> GetTicketBySerial(string serial);
         Task<ResponseDTO> ChangeTicketRouteStatus(Guid ticketId);
-        Task<ResponseDTO> GetAllTicketRoutes
+        Task<ResponseDTO> GetAllTickets
             (
                 ClaimsPrincipal user,
                 string? filterOn,
