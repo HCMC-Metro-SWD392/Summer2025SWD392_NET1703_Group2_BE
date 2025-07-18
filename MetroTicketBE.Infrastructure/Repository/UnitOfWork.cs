@@ -36,12 +36,12 @@ namespace MetroTicketBE.Infrastructure.Repository
         public ILogRepository LogRepository { get; private set; }
         public INewsRepository NewsRepository { get; private set; }
 
-        public UnitOfWork(ApplicationDBContext context, UserManager<ApplicationUser> userManager)
+        public UnitOfWork(ApplicationDBContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
 
             CustomerRepository = new CustomerRepository(_context);
-            UserManagerRepository = new UserManagerRepository(userManager);
+            UserManagerRepository = new UserManagerRepository(userManager, roleManager, context);
             EmailTemplateRepository = new EmailTemplateRepository(_context);
             PaymentMethodRepository = new PaymentMethodRepository(_context);
             PaymentTransactionRepository = new PaymentTransactionRepository(_context);
