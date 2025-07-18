@@ -187,5 +187,15 @@ namespace MetroTicketBE.WebAPI.Controllers
             var response = await _authService.ResetPassword(resetPasswordDTO);
             return StatusCode(response.StatusCode, response);
         }
+
+        [HttpPut]
+        [Route("set-active-staff/{isActive}/{email}")]
+        [Authorize(Roles = StaticUserRole.ManagerAdmin)]
+        public async Task<ActionResult<ResponseDTO>> SetActiveStaff([FromRoute] bool isActive,
+            [FromRoute] string email)
+        {
+            var response = await _authService.SetActiveStaff(isActive, email);
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }

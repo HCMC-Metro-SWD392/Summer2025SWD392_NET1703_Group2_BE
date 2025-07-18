@@ -15,11 +15,11 @@ namespace MetroTicketBE.Application.Service
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
-        public async Task<ResponseDTO> GetAllStaff()
+        public async Task<ResponseDTO> GetAllStaff(bool? isActive = null)
         {
             try
             {
-                var staffList = await _unitOfWork.StaffRepository.GetAllAsync(includeProperties: "User");
+                var staffList = await _unitOfWork.StaffRepository.GetAllAsync(includeProperties: "User", filter: s => isActive == null || s.IsActive == isActive.Value);
                 if (staffList == null || !staffList.Any())
                 {
                     return new ResponseDTO

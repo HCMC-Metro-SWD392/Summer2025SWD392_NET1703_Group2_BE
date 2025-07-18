@@ -1347,7 +1347,64 @@ namespace MetroTicketBE.Application.Service
                 };
             }
         }
-        
+
+        public async Task<ResponseDTO> SetActiveStaff(bool isActive, string email)
+        {
+            try
+            {
+                var user = await _unitOfWork.UserManagerRepository.GetByEmailAsync(email);
+                if (user is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Người dùng không tồn tại",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+                var existStaff = await _unitOfWork.StaffRepository.GetByUserIdAsync(user.Id);
+                if (existStaff is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Nhân viên không tồn tại",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+
+                existStaff.IsActive = isActive;
+                if (isActive)
+                {
+                    await _userManager.AddToRoleAsync(await _unitOfWork.UserManagerRepository.GetByIdAsync(user.Id),
+                        StaticUserRole.Staff);
+                }
+                else
+                {
+                    await _userManager.RemoveFromRoleAsync(await _unitOfWork.UserManagerRepository.GetByIdAsync(user.Id),
+                        StaticUserRole.Staff);
+                }
+
+                _unitOfWork.StaffRepository.Update(existStaff);
+                await _unitOfWork.SaveAsync();
+                return new ResponseDTO
+                {
+                    Message = isActive ? "Nhân viên đã được kích hoạt" : "Nhân viên đã bị vô hiệu hóa",
+                    Result = null,
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    Message = $"Đã xảy ra lỗi khi cập nhật trạng thái nhân viên: {ex.Message}",
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
     }
 }
 

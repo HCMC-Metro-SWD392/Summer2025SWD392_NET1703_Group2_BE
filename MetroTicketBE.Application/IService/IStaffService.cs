@@ -9,7 +9,7 @@ namespace MetroTicketBE.Application.IService
 {
     public interface IStaffService
     {
-        Task<ResponseDTO> GetAllStaff();
+        Task<ResponseDTO> GetAllStaff(bool? isActive);
         Task<ResponseDTO> GetStaffByStaffCode(string staffCode);
     }
 }
