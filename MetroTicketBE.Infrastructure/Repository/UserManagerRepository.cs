@@ -1,4 +1,5 @@
 ﻿using MetroTicket.Domain.Entities;
+using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Infrastructure.IRepository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -30,7 +31,7 @@ namespace MetroTicketBE.Infrastructure.Repository
             return await _userManager.FindByEmailAsync(email)
                    ?? throw new KeyNotFoundException($"Không tìm thấy email: {email}");
         }
-        
+
         public async Task<ApplicationUser> GetByIdAsync(string id)
         {
             return await _userManager.FindByIdAsync(id)
@@ -56,6 +57,22 @@ namespace MetroTicketBE.Infrastructure.Repository
         public async Task<bool> IsPhoneNumberExist(string phoneNumber)
         {
             return await _userManager.Users.AnyAsync(u => u.PhoneNumber == phoneNumber);
+        }
+
+        public async Task<List<ApplicationUser>> GetAllManagerAsync()
+        {
+            var managers = await _userManager.Users
+                .Where(u => _userManager.IsInRoleAsync(u, StaticUserRole.Manager).Result)
+                .ToListAsync();
+            return managers;
+        }
+
+        public async Task<List<ApplicationUser>> GetAllAdminAsync()
+        {
+            var admins = await _userManager.Users
+                .Where(u => _userManager.IsInRoleAsync(u, StaticUserRole.Admin).Result)
+                .ToListAsync();
+            return admins;
         }
     }
 }

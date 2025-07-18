@@ -21,6 +21,9 @@ namespace MetroTicketBE.Application.IService
         Task<ResponseDTO> ChangPassword(ClaimsPrincipal user, ChangePasswordDTO changePasswordDTO);
         Task<ResponseDTO> SendResetPasswordEmail(SendResetPasswordDTO sendResetPasswordDTO);
         Task<ResponseDTO> ResetPassword(ResetPasswordDTO resetPasswordDTO);
-        Task<ResponseDTO> RemoveStaff(string email);
+        Task<ResponseDTO> DemoteStaff(string email);
+        Task<ResponseDTO> DemoteRoleToUser(string email);
+        Task<ResponseDTO> GetAllManager(string? filterOn, string? filterQuery, string? sortBy, bool? isAcensding, int pageNumber, int pageSize);
+        Task<ResponseDTO> GetAllAdmin(string? filterOn, string? filterQuery, string? sortBy, bool? isAcensding, int pageNumber, int pageSize);
     }
 }

@@ -13,12 +13,10 @@ namespace MetroTicketBE.WebAPI.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-        private readonly UserManager<ApplicationUser> _userManager;
 
-        public AuthController(IAuthService authService, UserManager<ApplicationUser> userManager)
+        public AuthController(IAuthService authService)
         {
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
-            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         }
 
         [HttpPost("customer/register")]
@@ -189,11 +187,50 @@ namespace MetroTicketBE.WebAPI.Controllers
         }
 
         [HttpPut]
-        [Route("remove-staff/")]
+        [Route("demote-role-to-user-for-admin/{email}")]
+        [Authorize(Roles = StaticUserRole.Admin)]
+        public async Task<ActionResult<ResponseDTO>> DemoteRole([FromRoute] string email)
+        {
+            var response = await _authService.DemoteRoleToUser(email);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpGet]
+        [Route("get-all-manager")]
+        [Authorize(Roles = StaticUserRole.Admin)]
+        public async Task<ActionResult<ResponseDTO>> GetAllManager(
+            [FromQuery] string? filterOn = null,
+            [FromQuery] string? filterQuery = null,
+            [FromQuery] string? sortBy = null,
+            [FromQuery] bool? isAcensding = null,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var response = await _authService.GetAllManager(filterOn, filterQuery, sortBy, isAcensding, pageNumber, pageSize);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpGet]
+        [Route("get-all-admin")]
+        [Authorize(Roles = StaticUserRole.Admin)]
+        public async Task<ActionResult<ResponseDTO>> GetAllAdmin(
+            [FromQuery] string? filterOn = null,
+            [FromQuery] string? filterQuery = null,
+            [FromQuery] string? sortBy = null,
+            [FromQuery] bool? isAcensding = null,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var response = await _authService.GetAllAdmin(filterOn, filterQuery, sortBy, isAcensding, pageNumber, pageSize);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpPut]
+        [Route("demote-staff/")]
         [Authorize(Roles = StaticUserRole.ManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> RemoveStaff([FromQuery]string email)
         {
-            var response = await _authService.RemoveStaff(email);
+            var response = await _authService.DemoteStaff(email);
             return StatusCode(response.StatusCode, response);
         }
     }
