@@ -8,6 +8,7 @@ using MetroTicketBE.Infrastructure.IRepository;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using AutoMapper;
+using MetroTicketBE.Domain.DTO.Customer;
 
 namespace MetroTicketBE.Application.Service
 {
@@ -1386,8 +1387,173 @@ namespace MetroTicketBE.Application.Service
             {
                 return new ResponseDTO()
                 {
-                    Message = 
+                    Message = "Đã xảy ra lỗi khi hạ vai trò người dùng: " + ex.Message,
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
+
+        public async Task<ResponseDTO> GetAllManager(string? filterOn, string? filterQuery, string? sortBy, bool? isAcensding, int pageNumber, int pageSize)
+        {
+            try
+            {
+                var managerList = await _unitOfWork.UserManagerRepository.GetAllManagerAsync();
+
+                if (!string.IsNullOrEmpty(filterOn) && !string.IsNullOrEmpty(filterQuery))
+                {
+                    filterOn = filterOn.ToLower().Trim();
+                    filterQuery = filterQuery.ToLower().Trim();
+
+                    managerList = filterOn switch
+                    {
+                        "email" => managerList.Where(u => u.Email.ToLower().Contains(filterQuery)).ToList(),
+                        "fullname" => managerList.Where(u => u.Email.ToLower().Contains(filterQuery)).ToList(),
+                        "phonenumber" => managerList.Where(u => u.PhoneNumber != null && u.PhoneNumber.ToLower().Contains(filterQuery)).ToList(),
+
+                        _ => managerList
+                    };
                 }
+
+                if (!string.IsNullOrEmpty(sortBy))
+                {
+                    sortBy = sortBy.ToLower().Trim();
+                    managerList = sortBy switch
+                    {
+                        "email" => isAcensding.HasValue && isAcensding.Value ? managerList.OrderBy(u => u.Email).ToList() : managerList.OrderByDescending(u => u.Email).ToList(),
+                        "fullname" => isAcensding.HasValue && isAcensding.Value ? managerList.OrderBy(u => u.FullName).ToList() : managerList.OrderByDescending(u => u.FullName).ToList(),
+                        "phonenumber" => isAcensding.HasValue && isAcensding.Value ? managerList.OrderBy(u => u.PhoneNumber).ToList() : managerList.OrderByDescending(u => u.PhoneNumber).ToList(),
+
+                        _ => managerList
+                    };
+                }
+
+                if (pageNumber < 1 || pageSize < 1)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Số trang hoặc kích thước trang không hợp lệ",
+                        Result = null,
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+                else
+                {
+                    managerList = managerList.Skip(pageSize * (pageNumber - 1))
+                                              .Take(pageSize)
+                                              .ToList();
+                }
+                if (managerList.Count == 0)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Không tìm thấy người quản lý nào",
+                        IsSuccess = true,
+                        StatusCode = 404
+                    };
+                }
+
+                var getAllManager = _mapper.Map<List<CustomerResponseDTO>>(managerList);
+
+                return new ResponseDTO
+                {
+                    Message = "Lấy danh sách người quản lý thành công",
+                    Result = getAllManager,
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    Message = $"Đã xảy ra lỗi khi lấy danh sách người quản lý: {ex.Message}",
+                    Result = null,
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
+
+        public async Task<ResponseDTO> GetAllAdmin(string? filterOn, string? filterQuery, string? sortBy, bool? isAcensding, int pageNumber, int pageSize)
+        {
+            try
+            {
+                var adminList = await _unitOfWork.UserManagerRepository.GetAllAdminAsync();
+
+                if (!string.IsNullOrEmpty(filterOn) && !string.IsNullOrEmpty(filterQuery))
+                {
+                    filterOn = filterOn.ToLower().Trim();
+                    filterQuery = filterQuery.ToLower().Trim();
+
+                    adminList = filterOn switch
+                    {
+                        "email" => adminList.Where(u => u.Email.ToLower().Contains(filterQuery)).ToList(),
+                        "fullname" => adminList.Where(u => u.Email.ToLower().Contains(filterQuery)).ToList(),
+                        "phonenumber" => adminList.Where(u => u.PhoneNumber != null && u.PhoneNumber.ToLower().Contains(filterQuery)).ToList(),
+
+                        _ => adminList
+                    };
+                }
+
+                if (!string.IsNullOrEmpty(sortBy))
+                {
+                    sortBy = sortBy.ToLower().Trim();
+                    adminList = sortBy switch
+                    {
+                        "email" => isAcensding.HasValue && isAcensding.Value ? adminList.OrderBy(u => u.Email).ToList() : adminList.OrderByDescending(u => u.Email).ToList(),
+                        "fullname" => isAcensding.HasValue && isAcensding.Value ? adminList.OrderBy(u => u.FullName).ToList() : adminList.OrderByDescending(u => u.FullName).ToList(),
+                        "phonenumber" => isAcensding.HasValue && isAcensding.Value ? adminList.OrderBy(u => u.PhoneNumber).ToList() : adminList.OrderByDescending(u => u.PhoneNumber).ToList(),
+
+                        _ => adminList
+                    };
+                }
+
+                if (pageNumber < 1 || pageSize < 1)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Số trang hoặc kích thước trang không hợp lệ",
+                        Result = null,
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
+                else
+                {
+                    adminList = adminList.Skip(pageSize * (pageNumber - 1))
+                                              .Take(pageSize)
+                                              .ToList();
+                }
+                if (adminList.Count == 0)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Không tìm thấy người admin nào",
+                        IsSuccess = true,
+                        StatusCode = 404
+                    };
+                }
+
+                var getAllManager = _mapper.Map<List<CustomerResponseDTO>>(adminList);
+
+                return new ResponseDTO
+                {
+                    Message = "Lấy danh sách người admin thành công",
+                    Result = getAllManager,
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    Message = $"Đã xảy ra lỗi khi lấy danh sách admin: {ex.Message}",
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
             }
         }
     }

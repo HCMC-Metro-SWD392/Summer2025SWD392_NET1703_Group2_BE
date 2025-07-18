@@ -1,4 +1,5 @@
-﻿using MetroTicketBE.Domain.DTO.Auth;
+﻿using Amazon.S3.Model;
+using MetroTicketBE.Domain.DTO.Auth;
 using System.Security.Claims;
 
 namespace MetroTicketBE.Application.IService
@@ -21,6 +22,8 @@ namespace MetroTicketBE.Application.IService
         Task<ResponseDTO> ChangPassword(ClaimsPrincipal user, ChangePasswordDTO changePasswordDTO);
         Task<ResponseDTO> SendResetPasswordEmail(SendResetPasswordDTO sendResetPasswordDTO);
         Task<ResponseDTO> ResetPassword(ResetPasswordDTO resetPasswordDTO);
-        Task<ResponseDTO> DemoteRole(string email);
+        Task<ResponseDTO> DemoteRoleToUser(string email);
+        Task<ResponseDTO> GetAllManager(string? filterOn, string? filterQuery, string? sortBy, bool? isAcensding, int pageNumber, int pageSize);
+        Task<ResponseDTO> GetAllAdmin(string? filterOn, string? filterQuery, string? sortBy, bool? isAcensding, int pageNumber, int pageSize);
     }
 }
