@@ -1,5 +1,6 @@
 ﻿using MetroTicket.Domain.Entities;
 using MetroTicketBE.Domain.Constants;
+using MetroTicketBE.Infrastructure.Context;
 using MetroTicketBE.Infrastructure.IRepository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -9,10 +10,14 @@ namespace MetroTicketBE.Infrastructure.Repository
     public class UserManagerRepository : IUserManagerRepository
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly ApplicationDBContext _context;
 
-        public UserManagerRepository(UserManager<ApplicationUser> userManager)
+        public UserManagerRepository(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ApplicationDBContext context)
         {
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+            _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         public async Task<IdentityResult> AddtoRoleAsync(ApplicationUser user, string role)
@@ -61,17 +66,39 @@ namespace MetroTicketBE.Infrastructure.Repository
 
         public async Task<List<ApplicationUser>> GetAllManagerAsync()
         {
-            var managers = await _userManager.Users
-                .Where(u => _userManager.IsInRoleAsync(u, StaticUserRole.Manager).Result)
+            var adminRole = await _roleManager.Roles.Where(r => r.Name == StaticUserRole.Manager).FirstOrDefaultAsync();
+
+            if (adminRole == null)
+            {
+                return new List<ApplicationUser>();
+            }
+
+            var adminIds = await _context.Set<IdentityUserRole<string>>()
+                .Where(ur => ur.RoleId == adminRole.Id)
+                .Select(ur => ur.UserId)
                 .ToListAsync();
-            return managers;
+
+            var admins = await _userManager.Users.Where(u => adminIds.Contains(u.Id)).ToListAsync();
+
+            return admins;
         }
 
         public async Task<List<ApplicationUser>> GetAllAdminAsync()
         {
-            var admins = await _userManager.Users
-                .Where(u => _userManager.IsInRoleAsync(u, StaticUserRole.Admin).Result)
+            var adminRole = await _roleManager.Roles.Where(r => r.Name == StaticUserRole.Admin).FirstOrDefaultAsync();
+
+            if (adminRole == null)
+            {
+                return new List<ApplicationUser>();
+            }
+
+            var adminIds = await _context.Set<IdentityUserRole<string>>()
+                .Where(ur => ur.RoleId == adminRole.Id)
+                .Select(ur => ur.UserId)
                 .ToListAsync();
+
+            var admins = await _userManager.Users.Where(u => adminIds.Contains(u.Id)).ToListAsync();
+
             return admins;
         }
     }

@@ -1441,8 +1441,7 @@ namespace MetroTicketBE.Application.Service
                 else
                 {
                     managerList = managerList.Skip(pageSize * (pageNumber - 1))
-                                              .Take(pageSize)
-                                              .ToList();
+                                              .Take(pageSize).ToList();
                 }
                 if (managerList.Count == 0)
                 {
@@ -1454,7 +1453,7 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                var getAllManager = _mapper.Map<List<CustomerResponseDTO>>(managerList);
+                var getAllManager = _mapper.Map<List<GetAdminMangerDTO>>(managerList);
 
                 return new ResponseDTO
                 {
@@ -1523,8 +1522,7 @@ namespace MetroTicketBE.Application.Service
                 else
                 {
                     adminList = adminList.Skip(pageSize * (pageNumber - 1))
-                                              .Take(pageSize)
-                                              .ToList();
+                                              .Take(pageSize).ToList();
                 }
                 if (adminList.Count == 0)
                 {
@@ -1536,7 +1534,7 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                var getAllManager = _mapper.Map<List<CustomerResponseDTO>>(adminList);
+                var getAllManager = _mapper.Map<List<GetAdminMangerDTO>>(adminList);
 
                 return new ResponseDTO
                 {

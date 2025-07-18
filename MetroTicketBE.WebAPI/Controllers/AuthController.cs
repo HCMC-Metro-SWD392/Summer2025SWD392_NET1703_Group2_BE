@@ -197,7 +197,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpGet]
         [Route("get-all-manager")]
-        [Authorize(Roles = StaticUserRole.Admin)]
+        //[Authorize(Roles = StaticUserRole.Admin)]
         public async Task<ActionResult<ResponseDTO>> GetAllManager(
             [FromQuery] string? filterOn = null,
             [FromQuery] string? filterQuery = null,
@@ -212,7 +212,7 @@ namespace MetroTicketBE.WebAPI.Controllers
 
         [HttpGet]
         [Route("get-all-admin")]
-        [Authorize(Roles = StaticUserRole.Admin)]
+        //[Authorize(Roles = StaticUserRole.Admin)]
         public async Task<ActionResult<ResponseDTO>> GetAllAdmin(
             [FromQuery] string? filterOn = null,
             [FromQuery] string? filterQuery = null,
