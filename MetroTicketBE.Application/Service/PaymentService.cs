@@ -110,18 +110,30 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                var isStudent = customer.CustomerType == CustomerType.Student;
+                var notStudent = customer.CustomerType != CustomerType.Student;
                 bool isExpired = customer.StudentExpiration.HasValue &&
                                  customer.StudentExpiration.Value < DateTime.UtcNow;
-                if (!isStudent && isExpired && subscriptionTicket is not null &&
+                if (subscriptionTicket is not null &&
                     subscriptionTicket.TicketType.Name is "student")
                 {
-                    return new ResponseDTO
+                    if (notStudent)
                     {
-                        Message = "Khách hàng không đủ điều kiện để mua vé sinh viên",
-                        IsSuccess = false,
-                        StatusCode = 403
-                    };
+                        return new ResponseDTO
+                        {
+                            Message = "Khách hàng không phải sinh viên",
+                            IsSuccess = false,
+                            StatusCode = 403
+                        };
+                    }
+                    if (isExpired)
+                    {
+                        return new ResponseDTO
+                        {
+                            Message = "Thẻ sinh viên đã hết hạn",
+                            IsSuccess = false,
+                            StatusCode = 403
+                        };
+                    }
                 }
 
                 int ticketRoutePrice = ticketRoute?.Distance is not null
