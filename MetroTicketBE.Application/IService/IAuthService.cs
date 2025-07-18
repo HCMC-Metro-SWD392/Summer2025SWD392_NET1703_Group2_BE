@@ -13,7 +13,11 @@ namespace MetroTicketBE.Application.IService
         Task<ResponseDTO> VerifyEmail(string userId, string token);
         Task<ResponseDTO> Logout(ClaimsPrincipal user);
         Task<ResponseDTO> SetStaffRole(string email);
+        Task<ResponseDTO> SetManagerRole(string email);
+        Task<ResponseDTO> SetAdminRole(string email);
         Task<ResponseDTO> CreateStaffAsync(RegisterCustomerDTO dto);
+        Task<ResponseDTO> CreateManagerAsync(RegisterCustomerDTO dto);
+        Task<ResponseDTO> CreateAdminAsync(RegisterCustomerDTO dto);
         Task<ResponseDTO> ChangPassword(ClaimsPrincipal user, ChangePasswordDTO changePasswordDTO);
         Task<ResponseDTO> SendResetPasswordEmail(SendResetPasswordDTO sendResetPasswordDTO);
         Task<ResponseDTO> ResetPassword(ResetPasswordDTO resetPasswordDTO);
