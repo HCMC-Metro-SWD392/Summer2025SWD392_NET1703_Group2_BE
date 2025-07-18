@@ -1066,7 +1066,7 @@ namespace MetroTicketBE.Application.Service
             await _unitOfWork.SaveAsync();
         }
 
-        public async Task<ResponseDTO> IsExistTicketRange(ClaimsPrincipal user, Guid startStationId, Guid endStationId)
+        public async Task<ResponseDTO> CheckExistTicketRange(ClaimsPrincipal user, Guid startStationId, Guid endStationId)
         {
             try
             {
@@ -1099,18 +1099,21 @@ namespace MetroTicketBE.Application.Service
 
                 stationPath = _graph.FindShortestPath(startStationId, endStationId);
 
-                var ticketListActive = (await _unitOfWork.TicketRepository.GetAllAsync())
+                var ticketListInActive = (await _unitOfWork.TicketRepository.GetAllAsync(includeProperties: "TicketRoute,SubscriptionTicket"))
                     .Where(t => t.TicketRtStatus == TicketStatus.Inactive && t.CustomerId == customer.Id);
 
-                foreach (var t in ticketListActive)
+                foreach (var t in ticketListInActive)
                 {
                     var activeStationPath = new List<Guid>();
                     activeStationPath = BuildStationPath(t, _graph);
-                    if (!activeStationPath.Except(stationPath).Any())
+                    if (!stationPath.Except(activeStationPath).Any())
                     {
+                        var message = t.SubscriptionTicket is not null
+                                    ? "Bạn đã có vé kỳ trong phạm vi này."
+                                    : "Bạn đã có vé lượt trong phạm vi này.";
                         return new ResponseDTO
                         {
-                            Message = "Bạn đã có vé lượt trong phạm vi này.",
+                            Message = message,
                             IsSuccess = false,
                             StatusCode = 409
                         };
@@ -1119,9 +1122,9 @@ namespace MetroTicketBE.Application.Service
 
                 return new ResponseDTO
                 {
-                    Message = "Không có vé lượt nào trong phạm vi này.",
+                    Message = "Không có vé nào trong phạm vi này.",
                     IsSuccess = true,
-                    StatusCode = 404
+                    StatusCode = 200
                 };
             }
             catch (Exception ex)

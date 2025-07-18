@@ -10,7 +10,6 @@ namespace MetroTicketBE.Domain.DTO.Promotion
 {
     public class UpdatePromotionDTO
     {
-        public Guid Id { get; set; }
         public string? Code { get; set; } = null!;
         [Range(0, 100)]
         public decimal? Percentage { get; set; }
