@@ -1,4 +1,5 @@
-﻿using MetroTicketBE.Application.IService;
+﻿using AutoMapper;
+using MetroTicketBE.Application.IService;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.MetroLineStation;
 using MetroTicketBE.Domain.Entities;
@@ -9,9 +10,11 @@ namespace MetroTicketBE.Application.Service
     public class MetroLineStationService : IMetroLineStationService
     {
         private readonly IUnitOfWork _unitOfWork;
-        public MetroLineStationService(IUnitOfWork unitOfWork)
+        private readonly IMapper _mapper;
+        public MetroLineStationService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
         public async Task<ResponseDTO> CreateMetroLineStation(CreateMetroLineStationDTO createMetroLineStationDTO)
         {
@@ -119,7 +122,7 @@ namespace MetroTicketBE.Application.Service
                     StatusCode = 200,
                     Message = "Lấy trạm metro thành công",
                     IsSuccess = true,
-                    Result = station
+                    Result = _mapper.Map<List<GetMetroLineStationDTO>>(station)
                 };
             }
             catch (Exception ex)
