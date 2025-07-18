@@ -64,16 +64,34 @@ namespace MetroTicketBE.Application.Service
             return await cache.KeyDeleteAsync(key);
         }
 
-        public Task<bool> AddToSortedSetAsync(string key, string id, double score)
+        public async Task<bool> AddToSortedSetAsync(string key, string id, double score)
         {
             var cache = _redis.GetDatabase();
-            return cache.SortedSetAddAsync(key, id, score);
+            return await cache.SortedSetAddAsync(key, id, score);
         }
 
-        public Task<bool> ExpireKeyAsync(string key, TimeSpan expiry)
+        public async Task<bool> ExpireKeyAsync(string key, TimeSpan expiry)
         {
             var cache = _redis.GetDatabase();
-            return cache.KeyExpireAsync(key, expiry);
+            return await cache.KeyExpireAsync(key, expiry);
+        }
+
+        public async Task<bool> AddToSetAsync(string key, string value)
+        {
+            var cache = _redis.GetDatabase();
+            return await cache.SetAddAsync(key, value);
+        }
+
+        public async Task<bool> RemoveFromSetAsync(string key, string value)
+        {
+            var cache = _redis.GetDatabase();
+            return await cache.SetRemoveAsync(key, value);
+        }
+
+        public async Task<long> GetSetCountAsync(string key)
+        {
+            var cache = _redis.GetDatabase();
+            return await cache.SetLengthAsync(key);
         }
     }
 }
