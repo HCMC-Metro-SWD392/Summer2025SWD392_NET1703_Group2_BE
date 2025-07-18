@@ -40,7 +40,7 @@ public static class WebApplicationBuilderExtensions
 
                     // Nếu có access_token và request đang đi đến hub của bạn
                     if (!string.IsNullOrEmpty(accessToken) &&
-                        (path.StartsWithSegments("/lobbyhub") || path.StartsWithSegments("/chatroomhub")))
+                        (path.StartsWithSegments("/notificationHub")))
                     {
                         // Gán token này cho context để middleware có thể xác thực
                         context.Token = accessToken;
