@@ -1109,8 +1109,8 @@ namespace MetroTicketBE.Application.Service
                     if (!stationPath.Except(activeStationPath).Any())
                     {
                         var message = t.SubscriptionTicket is not null
-                                    ? "Bạn đã có vé kỳ trong phạm vi này."
-                                    : "Bạn đã có vé lượt trong phạm vi này.";
+                                    ? $"Bạn đã có {t.SubscriptionTicket.TicketName} trong phạm vi này."
+                                    : $"Bạn đã có {t.TicketRoute?.TicketName} trong phạm vi này.";
                         return new ResponseDTO
                         {
                             Message = message,
