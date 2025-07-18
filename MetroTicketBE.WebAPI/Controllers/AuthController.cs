@@ -189,12 +189,11 @@ namespace MetroTicketBE.WebAPI.Controllers
         }
 
         [HttpPut]
-        [Route("set-active-staff/{isActive}/{email}")]
+        [Route("set-active-staff/")]
         [Authorize(Roles = StaticUserRole.ManagerAdmin)]
-        public async Task<ActionResult<ResponseDTO>> SetActiveStaff([FromRoute] bool isActive,
-            [FromRoute] string email)
+        public async Task<ActionResult<ResponseDTO>> RemoveStaff([FromQuery]string email)
         {
-            var response = await _authService.SetActiveStaff(isActive, email);
+            var response = await _authService.RemoveStaff(email);
             return StatusCode(response.StatusCode, response);
         }
     }

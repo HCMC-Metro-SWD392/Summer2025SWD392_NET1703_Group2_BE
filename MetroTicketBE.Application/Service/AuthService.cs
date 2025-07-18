@@ -1348,7 +1348,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> SetActiveStaff(bool isActive, string email)
+        public async Task<ResponseDTO> RemoveStaff(string email)
         {
             try
             {
@@ -1372,24 +1372,16 @@ namespace MetroTicketBE.Application.Service
                         StatusCode = 404
                     };
                 }
-
-                existStaff.IsActive = isActive;
-                if (isActive)
-                {
-                    await _userManager.AddToRoleAsync(await _unitOfWork.UserManagerRepository.GetByIdAsync(user.Id),
+                await _userManager.RemoveFromRoleAsync(await _unitOfWork.UserManagerRepository.GetByIdAsync(user.Id),
                         StaticUserRole.Staff);
-                }
-                else
-                {
-                    await _userManager.RemoveFromRoleAsync(await _unitOfWork.UserManagerRepository.GetByIdAsync(user.Id),
-                        StaticUserRole.Staff);
-                }
-
+                await _userManager.AddToRoleAsync(await _unitOfWork.UserManagerRepository.GetByIdAsync(user.Id),
+                        StaticUserRole.Customer);
+                existStaff.IsActive = false;
                 _unitOfWork.StaffRepository.Update(existStaff);
                 await _unitOfWork.SaveAsync();
                 return new ResponseDTO
                 {
-                    Message = isActive ? "Nhân viên đã được kích hoạt" : "Nhân viên đã bị vô hiệu hóa",
+                    Message = "Nhân viên đã bị vô hiệu hóa",
                     Result = null,
                     IsSuccess = true,
                     StatusCode = 200
