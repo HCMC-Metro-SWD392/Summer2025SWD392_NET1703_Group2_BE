@@ -189,7 +189,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         }
 
         [HttpPut]
-        [Route("set-active-staff/")]
+        [Route("remove-staff/")]
         [Authorize(Roles = StaticUserRole.ManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> RemoveStaff([FromQuery]string email)
         {
