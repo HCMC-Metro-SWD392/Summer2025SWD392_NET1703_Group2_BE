@@ -163,7 +163,8 @@ namespace MetroTicketBE.Application.Service
         {
             try
             {
-                var promotions = await _unitOfWork.PromotionRepository.GetAllAsync();
+                var promotions = (await _unitOfWork.PromotionRepository.GetAllAsync())
+                    .Where(p => p.IsActive == true);
 
                 if (!string.IsNullOrEmpty(filterOn) && !string.IsNullOrEmpty(filterQuery))
                 {

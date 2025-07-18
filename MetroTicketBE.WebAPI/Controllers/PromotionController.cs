@@ -58,7 +58,7 @@ namespace MetroTicketBE.WebAPI.Controllers
             return StatusCode(response.StatusCode, response);
         }
 
-        [HttpDelete]
+        [HttpPut]
         [Route("delete-promotion/{promotionId}")]
         [Authorize(Roles = StaticUserRole.ManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> DeletePromotion([FromRoute] Guid promotionId)
