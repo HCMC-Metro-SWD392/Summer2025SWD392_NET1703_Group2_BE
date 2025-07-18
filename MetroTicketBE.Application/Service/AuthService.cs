@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using AutoMapper;
 using MetroTicketBE.Domain.DTO.Customer;
+using Microsoft.AspNetCore.SignalR;
 
 namespace MetroTicketBE.Application.Service
 {
@@ -20,6 +21,8 @@ namespace MetroTicketBE.Application.Service
         private readonly ITokenService _tokenService;
         private readonly IEmailService _emailService;
         private readonly IMapper _mapper;
+        private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly IRedisService _redisService;
 
         public AuthService
         (
@@ -28,7 +31,9 @@ namespace MetroTicketBE.Application.Service
             UserManager<ApplicationUser> userManager,
             ITokenService tokenService,
             IEmailService emailService,
-            IMapper mapper
+            IMapper mapper,
+            IHubContext<NotificationHub> hubContext,
+            IRedisService redisService
         )
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
@@ -37,6 +42,8 @@ namespace MetroTicketBE.Application.Service
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
             _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
+            _redisService = redisService ?? throw new ArgumentNullException(nameof(redisService));
         }
 
         public async Task<ResponseDTO> LoginUser(LoginDTO loginDTO)
@@ -93,6 +100,12 @@ namespace MetroTicketBE.Application.Service
                         IsSuccess = false,
                         StatusCode = 403
                     };
+                }
+
+                var connectionId = await _redisService.RetrieveString($"checkLogin:{user.Id}");
+                if(!string.IsNullOrEmpty(connectionId))
+                {
+                    await _hubContext.Clients.Client(connectionId).SendAsync("ForceLogout");
                 }
 
                 var accessToken = await _tokenService.GenerateJwtAccessTokenAsync(user);
