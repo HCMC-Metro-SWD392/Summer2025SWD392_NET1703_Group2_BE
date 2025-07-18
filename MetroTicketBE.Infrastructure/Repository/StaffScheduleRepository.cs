@@ -76,6 +76,15 @@ public class StaffScheduleRepository: Repository<StaffSchedule>, IStaffScheduleR
         return unscheduledStaff;
     }
 
+    public async Task<List<StaffSchedule>> GetByStaffAndWorkingDate(Guid staffId, DateOnly workingDate)
+    {
+        var schedules = await _context.StaffSchedules
+            .Where(s => s.StaffId == staffId && s.WorkingDate == workingDate)
+            .Include(s => s.WorkingStation)
+            .Include(s => s.Staff).ThenInclude(s => s.User)
+            .Include(s => s.Shift).ToListAsync();
+        return schedules;
+    }
     public async Task<bool> IsExisted(Guid staffId, DateOnly workingDate, Guid shiftId)
     {
         return await _context.StaffSchedules

@@ -71,7 +71,7 @@ public class StaffScheduleService: IStaffScheduleService
                 };
             }
             var shift = await _unitOfWork.StaffShiftRepository.GetAsync(s => s.Id == dto.ShiftId);
-
+            var sheduleWithDate = await _unitOfWork.StaffScheduleRepository.GetByStaffAndWorkingDate(dto.StaffId, dto.WorkingDate);
             var schedule = new StaffSchedule()
             {
                 StaffId = dto.StaffId,
