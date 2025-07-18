@@ -1347,6 +1347,49 @@ namespace MetroTicketBE.Application.Service
                 };
             }
         }
+
+        public async Task<ResponseDTO> DemoteRoleToUser(string email)
+        {
+            try
+            {
+                var user = await _unitOfWork.UserManagerRepository.GetByEmailAsync(email);
+                if (user is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Người dùng không tồn tại",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+
+                var isAdmin = await _userManager.IsInRoleAsync(user, StaticUserRole.Admin);
+                if (isAdmin)
+                {
+                    await _userManager.RemoveFromRoleAsync(user, StaticUserRole.Admin);
+                }
+
+                var isManager = await _userManager.IsInRoleAsync(user, StaticUserRole.Manager);
+                if (isManager)
+                {
+                    await _userManager.RemoveFromRoleAsync(user, StaticUserRole.Manager);
+                }
+
+                return new ResponseDTO()
+                {
+                    Message = "Hạ vai trò người dùng thành công",
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO()
+                {
+                    Message = 
+                }
+            }
+        }
     }
 }
 
