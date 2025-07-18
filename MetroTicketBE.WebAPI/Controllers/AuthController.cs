@@ -187,5 +187,14 @@ namespace MetroTicketBE.WebAPI.Controllers
             var response = await _authService.ResetPassword(resetPasswordDTO);
             return StatusCode(response.StatusCode, response);
         }
+
+        [HttpPut]
+        [Route("demote-role-to-user/{email}")]
+        [Authorize(Roles = StaticUserRole.Admin)]
+        public async Task<ActionResult<ResponseDTO>> DemoteRole([FromRoute] string email)
+        {
+            var response = await _authService.DemoteRole(email);
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }
