@@ -75,7 +75,9 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
                 var tickets = (await _unitOfWork.TicketRepository.GetAllAsync(includeProperties: "TicketRoute,TicketRoute.StartStation,TicketRoute.EndStation,SubscriptionTicket,SubscriptionTicket.StartStation,SubscriptionTicket.EndStation"))
-                        .Where(t => t.CustomerId == customer.Id && t.TicketRtStatus == ticketType);
+                        .OrderByDescending(t => t.StartDate).Where(t => t.CustomerId == customer.Id && t.TicketRtStatus == ticketType);
+
+                var ticketCount = tickets.Count();
 
                 if (!string.IsNullOrEmpty(filterOn) && !string.IsNullOrEmpty(filterQuery))
                 {
@@ -97,7 +99,7 @@ namespace MetroTicketBE.Application.Service
                     {
                         "ticketname" => isAcsending is true ? tickets.OrderBy(t => t.TicketRoute.TicketName) : tickets.OrderByDescending(t => t.TicketRoute.TicketName),
                         "startstation" => isAcsending is true ? tickets.OrderBy(t => t.TicketRoute.StartStation.Name) : tickets.OrderByDescending(t => t.TicketRoute.StartStation.Name),
-                        "endstation" => isAcsending is true ? tickets.OrderBy(t => t.TicketRoute.EndStation.Name) : tickets.OrderByDescending(t => t.TicketRoute.EndStation.Name),
+                        "endstation" => isAcsending is true ? tickets.OrderBy(t => t.TicketRoute.EndStation.Name) : tickets.OrderByDescending(t => t.TicketRoute.EndStation.Name)
 
                         _ => tickets
                     };
@@ -126,7 +128,11 @@ namespace MetroTicketBE.Application.Service
                     Message = "Lấy danh sách vé lượt thành công",
                     IsSuccess = true,
                     StatusCode = 200,
-                    Result = getTickets
+                    Result = new
+                    {
+                        getTickets = getTickets,
+                        TotalCount = ticketCount,
+                    }
                 };
             }
             catch (Exception ex)
