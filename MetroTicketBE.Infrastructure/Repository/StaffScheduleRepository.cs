@@ -76,6 +76,16 @@ public class StaffScheduleRepository: Repository<StaffSchedule>, IStaffScheduleR
         return unscheduledStaff;
     }
 
+    public async Task<bool> HasTimeConflictAsync(Guid staffId, DateOnly workingDate, TimeSpan newStartTime, TimeSpan newEndTime)
+    {
+        return await _context.StaffSchedules
+            .AnyAsync(existingSchedule =>
+                    existingSchedule.StaffId == staffId &&
+                    existingSchedule.WorkingDate == workingDate &&
+                    newStartTime < existingSchedule.EndTime && 
+                    newEndTime > existingSchedule.StartTime
+            );
+    }
     public async Task<bool> IsExisted(Guid staffId, DateOnly workingDate, Guid shiftId)
     {
         return await _context.StaffSchedules

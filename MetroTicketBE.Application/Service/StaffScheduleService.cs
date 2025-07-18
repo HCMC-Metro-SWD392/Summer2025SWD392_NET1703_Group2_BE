@@ -49,7 +49,8 @@ public class StaffScheduleService: IStaffScheduleService
                     StatusCode = 400,
                 };
             }
-            if (dto.ShiftId == Guid.Empty)
+            var shift = await _unitOfWork.StaffShiftRepository.GetAsync(s => s.Id == dto.ShiftId);
+            if (shift is null)
             {
                 return new ResponseDTO()
                 {
@@ -70,8 +71,17 @@ public class StaffScheduleService: IStaffScheduleService
                     StatusCode = 400,
                 };
             }
-            var shift = await _unitOfWork.StaffShiftRepository.GetAsync(s => s.Id == dto.ShiftId);
-
+            var isConflictTime = await _unitOfWork.StaffScheduleRepository.HasTimeConflictAsync(dto.StaffId, dto.WorkingDate, shift.StartTime, shift.EndTime);
+            if (isConflictTime)
+            {
+                return new ResponseDTO()
+                {
+                    IsSuccess = false,
+                    Message = "Nhân viên đã có ca làm việc trùng thời gian với ca làm việc này.",
+                    Result = null,
+                    StatusCode = 400,
+                };
+            }
             var schedule = new StaffSchedule()
             {
                 StaffId = dto.StaffId,

@@ -224,5 +224,14 @@ namespace MetroTicketBE.WebAPI.Controllers
             var response = await _authService.GetAllAdmin(filterOn, filterQuery, sortBy, isAcensding, pageNumber, pageSize);
             return StatusCode(response.StatusCode, response);
         }
+
+        [HttpPut]
+        [Route("demote-staff/")]
+        [Authorize(Roles = StaticUserRole.ManagerAdmin)]
+        public async Task<ActionResult<ResponseDTO>> RemoveStaff([FromQuery]string email)
+        {
+            var response = await _authService.DemoteStaff(email);
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }

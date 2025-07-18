@@ -654,15 +654,25 @@ namespace MetroTicketBE.Application.Service
                         StatusCode = 400
                     };
                 }
-                var lastStaff = await _unitOfWork.StaffRepository.GetLastStaffAsync();
-                var staff = new Staff()
+                var existedStaff = await _unitOfWork.StaffRepository.GetByUserIdAsync(user.Id);
+                if (existedStaff is not null)
                 {
-                    UserId = user.Id,
-                    StaffCode = lastStaff is null
-                        ? "S00001"
-                        : GenerateStaffCode(lastStaff.StaffCode),
-                };
-                await _unitOfWork.StaffRepository.AddAsync(staff);
+                    existedStaff.IsActive = true;
+                    _unitOfWork.StaffRepository.Update(existedStaff);
+                }
+                else
+                {
+                    var lastStaff = await _unitOfWork.StaffRepository.GetLastStaffAsync();
+                    var staff = new Staff()
+                    {
+                        UserId = user.Id,
+                        StaffCode = lastStaff is null
+                            ? "S00001"
+                            : GenerateStaffCode(lastStaff.StaffCode),
+                    };
+                    await _unitOfWork.StaffRepository.AddAsync(staff);
+                }
+                
                 await _unitOfWork.SaveAsync();
                 return new ResponseDTO
                 {
@@ -1549,6 +1559,56 @@ namespace MetroTicketBE.Application.Service
                 return new ResponseDTO
                 {
                     Message = $"Đã xảy ra lỗi khi lấy danh sách admin: {ex.Message}",
+                    IsSuccess = false,
+                    StatusCode = 500
+                };
+            }
+        }
+
+        public async Task<ResponseDTO> DemoteStaff(string email)
+        {
+            try
+            {
+                var user = await _unitOfWork.UserManagerRepository.GetByEmailAsync(email);
+                if (user is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Người dùng không tồn tại",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+                var existStaff = await _unitOfWork.StaffRepository.GetByUserIdAsync(user.Id);
+                if (existStaff is null)
+                {
+                    return new ResponseDTO
+                    {
+                        Message = "Nhân viên không tồn tại",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+                await _userManager.RemoveFromRoleAsync(await _unitOfWork.UserManagerRepository.GetByIdAsync(user.Id),
+                        StaticUserRole.Staff);
+                await _userManager.AddToRoleAsync(await _unitOfWork.UserManagerRepository.GetByIdAsync(user.Id),
+                        StaticUserRole.Customer);
+                existStaff.IsActive = false;
+                _unitOfWork.StaffRepository.Update(existStaff);
+                await _unitOfWork.SaveAsync();
+                return new ResponseDTO
+                {
+                    Message = "Nhân viên đã bị vô hiệu hóa",
+                    Result = null,
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    Message = $"Đã xảy ra lỗi khi cập nhật trạng thái nhân viên: {ex.Message}",
                     IsSuccess = false,
                     StatusCode = 500
                 };

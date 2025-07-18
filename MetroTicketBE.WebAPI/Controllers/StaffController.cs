@@ -19,9 +19,9 @@ namespace MetroTicketBE.WebAPI.Controllers
         [HttpGet]
         [Route("GetAllStaff")]
         [Authorize(Roles = StaticUserRole.ManagerAdmin)]
-        public async Task<IActionResult> GetAllStaff()
+        public async Task<IActionResult> GetAllStaff([FromQuery] bool? isActive = null)
         {
-            var response = await _staffService.GetAllStaff();
+            var response = await _staffService.GetAllStaff(isActive);
             return StatusCode(response.StatusCode, response);
         }
 
