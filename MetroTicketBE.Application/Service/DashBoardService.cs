@@ -156,7 +156,7 @@ namespace MetroTicketBE.Application.Service
             try
             {
                 var transactions = (await _unitOfWork.PaymentTransactionRepository.GetAllAsync(includeProperties: "Customer.User"))
-                    .Where(pt => pt.CreatedAt >= dateFrom && pt.CreatedAt <= dateTo);
+                    .Where(pt => pt.CreatedAt >= dateFrom && pt.CreatedAt <= dateTo && pt.Status == PaymentStatus.Paid);
 
                 if (!transactions.Any())
                 {
