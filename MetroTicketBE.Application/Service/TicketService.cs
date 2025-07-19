@@ -574,54 +574,51 @@ namespace MetroTicketBE.Application.Service
 
                     var stationPath = new List<Guid>();
 
-                    if (ticket.TicketRoute is not null)
+                    if (ticket.TicketRoute is not null && ticket.SubscriptionTicket is null)
                     {
                         stationPath = _graph.FindShortestPath(ticket.TicketRoute.StartStation.Id, ticket.TicketRoute.EndStationId);
                         return await CheckOutTicketRouteProcess(ticket, stationId, stationPath, customer.UserId);
                     }
-                    else if (ticket.SubscriptionTicket is not null)
+                    else if (ticket.SubscriptionTicket is not null && ticket.TicketRoute is null)
                     {
                         stationPath = _graph.FindShortestPath(ticket.SubscriptionTicket.StartStationId, ticket.SubscriptionTicket.EndStationId);
                         return await CheckOutProcessSubscriptionTicket(ticket, stationId, stationPath, customer.UserId);
                     }
                     else
                     {
-                        return new ResponseDTO
+                        var stationOverPath = new List<Guid>();
+                        var totalPath = new List<Guid>();
+
+                        if (ticket.TicketRoute is null)
                         {
-                            Message = "Vé lỗi định dạng không thể xác định vé lượt hay vé kỳ",
-                            IsSuccess = false,
-                            StatusCode = 404
-                        };
+                            await SendNotifyToUser(customer.UserId, "Vé lỗi khi không có hỗ trợ vượt trạm");
+                            return new ResponseDTO
+                            {
+                                Message = "Vé lỗi khi không có hỗ trợ vượt trạm",
+                                IsSuccess = false,
+                                StatusCode = 404
+                            };
+                        }
+
+                        stationOverPath = _graph.FindShortestPath(ticket.TicketRoute.StartStation.Id, ticket.TicketRoute.EndStationId);
+                        stationPath = _graph.FindShortestPath(ticket.SubscriptionTicket.StartStationId, ticket.SubscriptionTicket.EndStationId);
+
+                        totalPath = stationOverPath.Concat(stationPath).ToList();
+
+                        return await CheckOutOverStationSubProcess(ticket, stationId, totalPath, customer.UserId);
                     }
                 }
+
                 else
                 {
-                    var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync(null);
-
-                    var _graph = new StationGraph(allMetroLines);
-
-                    var stationPath = new List<Guid>();
-                    var stationOverPath = new List<Guid>();
-                    var totalPath = new List<Guid>();
-
-                    if (ticket.TicketRoute is null)
+                    return new ResponseDTO
                     {
-                        await SendNotifyToUser(customer.UserId, "Vé lỗi khi không có hỗ trợ vượt trạm");
-                        return new ResponseDTO
-                        {
-                            Message = "Vé lỗi khi không có hỗ trợ vượt trạm",
-                            IsSuccess = false,
-                            StatusCode = 404
-                        };
-                    }
-
-                    stationOverPath = _graph.FindShortestPath(ticket.TicketRoute.StartStation.Id, ticket.TicketRoute.EndStationId);
-                    stationPath = _graph.FindShortestPath(ticket.SubscriptionTicket.StartStationId, ticket.SubscriptionTicket.EndStationId);
-
-                    totalPath = stationOverPath.Concat(stationPath).ToList();
-
-                    return await CheckOutOverStationSubProcess(ticket, stationId, totalPath, customer.UserId);
+                        Message = "Vé lỗi định dạng không thể xác định vé lượt hay vé kỳ",
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
                 }
+
             }
             catch (Exception ex)
             {
