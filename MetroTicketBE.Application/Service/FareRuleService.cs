@@ -204,8 +204,7 @@ namespace MetroTicketBE.Application.Service
                 throw new Exception("Khoảng cách tối thiểu phải nhỏ hơn khoảng cách tối đa");
             }
 
-            var isOverlap = await _unitOfWork.FareRuleRepository
-                 .GetAsync(f => f.MaxDistance > minDistance && f.Id != currentFareRuleId);
+            var isOverlap = await _unitOfWork.FareRuleRepository.GetAsync(f => f.Id != currentFareRuleId && f.MinDistance < maxDistance && minDistance < f.MaxDistance);
 
             if (isOverlap is not null)
             {
