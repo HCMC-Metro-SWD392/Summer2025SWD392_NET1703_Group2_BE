@@ -41,7 +41,7 @@ namespace MetroTicketBE.Application.Service
                 }
 
                 var revenue = (await _unitOfWork.PaymentTransactionRepository.GetAllAsync())
-                    .Where(pt => pt.CreatedAt.Month == month && pt.CreatedAt.Year == DateTime.Now.Year);
+                    .Where(pt => pt.CreatedAt.Month == month && pt.CreatedAt.Year == DateTime.Now.Year && pt.Status == PaymentStatus.Paid);
 
                 if (!revenue.Any())
                 {
@@ -79,7 +79,7 @@ namespace MetroTicketBE.Application.Service
             try
             {
                 var revenue = (await _unitOfWork.PaymentTransactionRepository.GetAllAsync())
-                    .Where(pt => pt.CreatedAt >= dateFrom && pt.CreatedAt <= dateTo);
+                    .Where(pt => pt.CreatedAt >= dateFrom && pt.CreatedAt <= dateTo && pt.Status == PaymentStatus.Paid);
 
                 if (!revenue.Any())
                 {
@@ -118,7 +118,7 @@ namespace MetroTicketBE.Application.Service
             try
             {
                 var revenue = (await _unitOfWork.PaymentTransactionRepository.GetAllAsync())
-                    .Where(pt => pt.CreatedAt.Year == year);
+                    .Where(pt => pt.CreatedAt.Year == year && pt.Status == PaymentStatus.Paid);
 
                 if (!revenue.Any())
                 {
@@ -156,7 +156,7 @@ namespace MetroTicketBE.Application.Service
             try
             {
                 var transactions = (await _unitOfWork.PaymentTransactionRepository.GetAllAsync(includeProperties: "Customer.User"))
-                    .Where(pt => pt.CreatedAt >= dateFrom && pt.CreatedAt <= dateTo);
+                    .Where(pt => pt.CreatedAt >= dateFrom && pt.CreatedAt <= dateTo && pt.Status == PaymentStatus.Paid);
 
                 if (!transactions.Any())
                 {
