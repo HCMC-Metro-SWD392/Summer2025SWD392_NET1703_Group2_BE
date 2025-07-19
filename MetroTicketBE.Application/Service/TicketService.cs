@@ -1098,31 +1098,35 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync(true);
-                var _graph = new StationGraph(allMetroLines);
-
-                var stationPath = new List<Guid>();
-
-                stationPath = _graph.FindShortestPath(startStationId, endStationId);
-
                 var ticketListInActive = (await _unitOfWork.TicketRepository.GetAllAsync(includeProperties: "TicketRoute,SubscriptionTicket"))
                     .Where(t => t.TicketRtStatus == TicketStatus.Inactive && t.CustomerId == customer.Id);
 
                 foreach (var t in ticketListInActive)
                 {
-                    var activeStationPath = new List<Guid>();
-                    activeStationPath = BuildStationPath(t, _graph);
-                    if (!stationPath.Except(activeStationPath).Any())
+                    if (t.TicketRoute is not null)
                     {
-                        var message = t.SubscriptionTicket is not null
-                                    ? $"Bạn đã có {t.SubscriptionTicket.TicketName} trong phạm vi này."
-                                    : $"Bạn đã có {t.TicketRoute?.TicketName} trong phạm vi này.";
-                        return new ResponseDTO
+                        if (IsRouteOverlap(startStationId, endStationId, t.TicketRoute.StartStationId, t.TicketRoute.EndStationId))
                         {
-                            Message = message,
-                            IsSuccess = false,
-                            StatusCode = 409
-                        };
+                            return new ResponseDTO
+                            {
+                                Message = $"Bạn đã có {t.TicketRoute.TicketName} trong phạm vi này.",
+                                IsSuccess = false,
+                                StatusCode = 409
+                            };
+                        }
+                    }
+
+                    if (t.SubscriptionTicket is not null)
+                    {
+                        if (IsRouteOverlap(startStationId, endStationId, t.SubscriptionTicket.StartStationId, t.SubscriptionTicket.EndStationId))
+                        {
+                            return new ResponseDTO
+                            {
+                                Message = $"Bạn đã có {t.SubscriptionTicket.TicketName} trong phạm vi này.",
+                                IsSuccess = false,
+                                StatusCode = 409
+                            };
+                        }
                     }
                 }
 
@@ -1144,17 +1148,29 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        private List<Guid> BuildStationPath(Ticket ticket, StationGraph graph)
+        private bool IsRouteOverlap(Guid newStartId, Guid newEndId, Guid existingStartId, Guid existingEndId)
         {
-            var path = new List<Guid>();
 
-            if (ticket.TicketRoute is not null)
-                path.AddRange(graph.FindShortestPath(ticket.TicketRoute.StartStationId, ticket.TicketRoute.EndStationId));
+            // Trường hợp 1: Hành trình mới giống hệt vé cũ
+            if ((newStartId == existingStartId && newEndId == existingEndId) ||
+                (newStartId == existingEndId && newEndId == existingStartId))
+            {
+                return true;
+            }
 
-            if (ticket.SubscriptionTicket is not null)
-                path.AddRange(graph.FindShortestPath(ticket.SubscriptionTicket.StartStationId, ticket.SubscriptionTicket.EndStationId));
+            // Trường hợp 2: Hành trình mới nằm trong vé cũ (cùng chiều)
+            if (newStartId == existingStartId || newEndId == existingEndId)
+            {
+                return true;
+            }
 
-            return path;
+            // Trường hợp 3: Hành trình mới nằm trong vé cũ (ngược chiều)
+            if (newStartId == existingEndId || newEndId == existingStartId)
+            {
+                return true;
+            }
+
+            return false;
         }
 
     }
