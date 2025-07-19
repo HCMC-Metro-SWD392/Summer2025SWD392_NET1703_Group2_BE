@@ -64,12 +64,31 @@ public class StaffScheduleRepository: Repository<StaffSchedule>, IStaffScheduleR
     
     public async Task<List<Staff>> GetUnscheduledStaffAsync(Guid shiftId, DateOnly workingDate)
     {
+        var currentShift = await _context.StaffShifts
+            .Where(s => s.Id == shiftId)
+            .Select(s => new { s.StartTime, s.EndTime })
+            .FirstOrDefaultAsync();
+
+        if (currentShift == null)
+            return new List<Staff>();
+
         var scheduledStaffIds = _context.StaffSchedules
             .Where(s => s.ShiftId == shiftId && s.WorkingDate == workingDate)
             .Select(s => s.StaffId);
 
         var unscheduledStaff = await _context.Staffs
             .Where(staff => !scheduledStaffIds.Contains(staff.Id))
+            .Where(staff => !_context.StaffSchedules
+                .Any(s => s.StaffId == staff.Id
+                          && s.WorkingDate == workingDate
+                          && s.ShiftId != shiftId
+                          && _context.StaffShifts.Any(shift =>
+                              shift.Id == s.ShiftId &&
+                              (
+                                  (shift.StartTime < currentShift.EndTime && shift.EndTime > currentShift.StartTime)
+                              )
+                          )
+                ))
             .Include(s => s.User)
             .ToListAsync();
 
