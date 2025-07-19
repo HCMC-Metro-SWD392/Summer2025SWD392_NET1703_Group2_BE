@@ -21,7 +21,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [Authorize(Roles = StaticUserRole.ManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> CreatePromotion([FromBody] CreatePromotionDTO createPromotionDTO)
         {
-            var response = await _promotionService.CreatePromotion(createPromotionDTO);
+            var response = await _promotionService.CreatePromotion(User, createPromotionDTO);
             return StatusCode(response.StatusCode, response);
         }
 
@@ -30,7 +30,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [Authorize(Roles = StaticUserRole.ManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> UpdatePromotion(Guid promotionId, [FromBody] UpdatePromotionDTO updatePromotionDTO)
         {
-            var response = await _promotionService.UpdatePromotion(promotionId, updatePromotionDTO);
+            var response = await _promotionService.UpdatePromotion(User, promotionId, updatePromotionDTO);
             return StatusCode(response.StatusCode, response);
         }
 
@@ -63,7 +63,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [Authorize(Roles = StaticUserRole.ManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> DeletePromotion([FromRoute] Guid promotionId)
         {
-            var response = await _promotionService.DeletePromotion(promotionId);
+            var response = await _promotionService.DeletePromotion(User, promotionId);
             return StatusCode(response.StatusCode, response);
         }
 

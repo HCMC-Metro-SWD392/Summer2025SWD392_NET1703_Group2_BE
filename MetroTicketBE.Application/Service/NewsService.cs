@@ -7,6 +7,7 @@ using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Domain.Enums;
 using MetroTicketBE.Infrastructure.IRepository;
 using System.Security.Claims;
+using MetroTicketBE.Domain.Enum;
 
 namespace MetroTicketBE.Application.Service
 {
@@ -14,14 +15,17 @@ namespace MetroTicketBE.Application.Service
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ILogService _logService;
+        private const string EntityName = "Tin tức";
 
-        public NewsService(IUnitOfWork unitOfWork, IMapper mapper)
+        public NewsService(IUnitOfWork unitOfWork, IMapper mapper, ILogService logService)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _logService = logService ?? throw new ArgumentNullException(nameof(logService));
         }
 
-        public async Task<ResponseDTO> ChangeNewsStatus(Guid newsId, ChangeStatusDTO changeStatusDTO)
+        public async Task<ResponseDTO> ChangeNewsStatus(ClaimsPrincipal user, Guid newsId, ChangeStatusDTO changeStatusDTO)
         {
             try
             {
@@ -51,7 +55,8 @@ namespace MetroTicketBE.Application.Service
                     }
                     news.RejectionReason = changeStatusDTO.RejectionReason;
                 }
-
+            
+                await _logService.AddLogAsync(LogType.Update, user.FindFirstValue(ClaimTypes.NameIdentifier), EntityName, $"Thay đổi trạng thái tin tức: {news.Title} thành {changeStatusDTO.Status}");
                 _unitOfWork.NewsRepository.Update(news);
                 await _unitOfWork.SaveAsync();
 
@@ -109,6 +114,7 @@ namespace MetroTicketBE.Application.Service
                     StaffId = staff.Id
                 };
 
+                await _logService.AddLogAsync(LogType.Create, user.FindFirstValue(ClaimTypes.NameIdentifier), EntityName, $"Tin tức: {news.Title}");
                 await _unitOfWork.NewsRepository.AddAsync(news);
                 await _unitOfWork.SaveAsync();
 
@@ -130,7 +136,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> DeleteNews(Guid newsId)
+        public async Task<ResponseDTO> DeleteNews(ClaimsPrincipal user, Guid newsId)
         {
             try
             {
@@ -144,7 +150,8 @@ namespace MetroTicketBE.Application.Service
                         StatusCode = 404
                     };
                 }
-
+                
+                await _logService.AddLogAsync(LogType.Delete, user.FindFirstValue(ClaimTypes.NameIdentifier), EntityName, $"Tin tức: {news.Title}");
                 _unitOfWork.NewsRepository.Remove(news);
                 await _unitOfWork.SaveAsync();
 

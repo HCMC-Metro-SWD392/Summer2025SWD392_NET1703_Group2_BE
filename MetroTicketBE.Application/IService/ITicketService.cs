@@ -13,7 +13,7 @@ namespace MetroTicketBE.Application.IService
     public interface ITicketService
     {
         Task<ResponseDTO> GetTicketBySerial(string serial);
-        Task<ResponseDTO> ChangeTicketRouteStatus(Guid ticketId);
+        Task<ResponseDTO> ChangeTicketRouteStatus(ClaimsPrincipal user, Guid ticketId);
         Task<ResponseDTO> GetAllTickets
             (
                 ClaimsPrincipal user,

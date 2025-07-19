@@ -23,7 +23,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [Authorize(Roles = StaticUserRole.Admin)]
         public async Task<ActionResult<ResponseDTO>> CreateFareRule([FromBody] CreateFareRuleDTO createFareRuleDTO)
         {
-            var response = await _fareRuleService.CreateFareRule(createFareRuleDTO);
+            var response = await _fareRuleService.CreateFareRule(User, createFareRuleDTO);
             return StatusCode(response.StatusCode, response);
         }
 
@@ -47,7 +47,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [Authorize(Roles = StaticUserRole.Admin)]
         public async Task<ActionResult<ResponseDTO>> UpdateFareRule([FromBody] UpdateFareRuleDTO updateFareRuleDTO)
         {
-            var response = await _fareRuleService.UpdateFareRule(updateFareRuleDTO);
+            var response = await _fareRuleService.UpdateFareRule(User, updateFareRuleDTO);
             return StatusCode(response.StatusCode, response);
 
         }

@@ -6,6 +6,7 @@ using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Domain.Enums;
 using MetroTicketBE.Infrastructure.IRepository;
 using System.Security.Claims;
+using MetroTicketBE.Domain.Enum;
 
 namespace MetroTicketBE.Application.Service
 {
@@ -13,12 +14,15 @@ namespace MetroTicketBE.Application.Service
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public PromotionService(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly ILogService _logService;
+        private const string EntityName = "Mã giảm giá";
+        public PromotionService(IUnitOfWork unitOfWork, IMapper mapper, ILogService logService)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _logService = logService ?? throw new ArgumentNullException(nameof(logService));
         }
-        public async Task<ResponseDTO> CreatePromotion(CreatePromotionDTO createPromotionDTO)
+        public async Task<ResponseDTO> CreatePromotion(ClaimsPrincipal user, CreatePromotionDTO createPromotionDTO)
         {
             try
             {
@@ -100,6 +104,9 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
+                var result = promotion.Percentage.HasValue ? $"Phần trăm: {promotion.Percentage}%" :
+                    promotion.FixedAmount.HasValue ? $"Số tiền cố định: {promotion.FixedAmount}" : "";
+                await _logService.AddLogAsync(LogType.Create, user.FindFirstValue(ClaimTypes.NameIdentifier), EntityName, $"Mã giảm giá: {promotion.Code}, Loại khuyến mãi: {promotion.PromotionType}, {result}, Ngày bắt đầu: {promotion.StartDate}, Ngày kết thúc: {promotion.EndDate}");
                 await _unitOfWork.PromotionRepository.AddAsync(promotion);
                 await _unitOfWork.SaveAsync();
 
@@ -123,7 +130,7 @@ namespace MetroTicketBE.Application.Service
 
         }
 
-        public async Task<ResponseDTO> DeletePromotion(Guid promotionId)
+        public async Task<ResponseDTO> DeletePromotion(ClaimsPrincipal user, Guid promotionId)
         {
             try
             {
@@ -139,6 +146,7 @@ namespace MetroTicketBE.Application.Service
                 }
 
                 promotion.IsActive = false; // Đánh dấu mã giảm giá là không hoạt động thay vì xóa hoàn toàn
+                await _logService.AddLogAsync(LogType.Delete, user.FindFirstValue(ClaimTypes.NameIdentifier), EntityName, $"Mã giảm giá: {promotion.Code} đã bị xóa");
                 _unitOfWork.PromotionRepository.Update(promotion);
                 await _unitOfWork.SaveAsync();
                 return new ResponseDTO
@@ -315,7 +323,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> UpdatePromotion(Guid promotionId, UpdatePromotionDTO updatePromotionDTO)
+        public async Task<ResponseDTO> UpdatePromotion(ClaimsPrincipal user, Guid promotionId, UpdatePromotionDTO updatePromotionDTO)
         {
             try
             {
@@ -449,6 +457,8 @@ namespace MetroTicketBE.Application.Service
                     promotion.Percentage = null; // Đặt Percentage thành null nếu PromotionType là FixedAmount
                 }
 
+                await _logService.AddLogAsync(LogType.Update, user.FindFirstValue(ClaimTypes.NameIdentifier),
+                    EntityName, $"Mã gia giá: {promotion.Code}");
                 _unitOfWork.PromotionRepository.Update(promotion);
                 await _unitOfWork.SaveAsync();
 

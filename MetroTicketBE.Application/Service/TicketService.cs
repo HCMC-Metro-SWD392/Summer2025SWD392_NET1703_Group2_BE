@@ -24,12 +24,15 @@ namespace MetroTicketBE.Application.Service
         private readonly IMapper _mapper;
         private readonly IHubContext<NotificationHub> _hubContext;
         private readonly ITicketRouteService _ticketRouteService;
+        private readonly ILogService _logService;
+        private static string EntityName = "Vé";
         public TicketService(
             IUnitOfWork unitOfWork,
             IMapper mapper,
             ITokenService tokenService,
             IHubContext<NotificationHub> hubContext,
-            ITicketRouteService ticketRouteService)
+            ITicketRouteService ticketRouteService,
+            ILogService logService)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -37,8 +40,8 @@ namespace MetroTicketBE.Application.Service
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
             _hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
             _ticketRouteService = new TicketRouteService(_unitOfWork, _mapper);
-        }
-
+            _logService = logService ?? throw new ArgumentNullException(nameof(logService));
+        } 
         public async Task<ResponseDTO> GetAllTickets(
             ClaimsPrincipal user,
             string? filterOn,
@@ -270,7 +273,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> ChangeTicketRouteStatus(Guid ticketRouteId)
+        public async Task<ResponseDTO> ChangeTicketRouteStatus(ClaimsPrincipal user, Guid ticketRouteId)
         {
             try
             {
@@ -298,6 +301,7 @@ namespace MetroTicketBE.Application.Service
 
                 ticket.TicketRtStatus = ticket.TicketRtStatus == TicketStatus.Active ? TicketStatus.Inactive : TicketStatus.Active;
 
+                await _logService.AddLogAsync(LogType.Update, user.FindFirstValue(ClaimTypes.NameIdentifier), EntityName, $"{ticket.TicketSerial} - Trạng thái vé lượt: {ticket.TicketRtStatus.ToString()}");
                 _unitOfWork.TicketRepository.Update(ticket);
                 await _unitOfWork.SaveAsync();
 
@@ -468,7 +472,7 @@ namespace MetroTicketBE.Application.Service
                 _unitOfWork.TicketRepository.Update(ticket);
 
                 await CreateTicketProcess(ticket, stationId, TicketProcessStatus.Checkin);
-
+                await _logService.AddLogAsync(LogType.Create, userId, EntityName, $"Vé vượt trạm {ticket.TicketSerial} đã được check-in tại trạm {stationId}");
                 await _unitOfWork.SaveAsync();
                 return new ResponseDTO
                 {
@@ -672,6 +676,7 @@ namespace MetroTicketBE.Application.Service
                 await _unitOfWork.TicketProcessRepository.AddAsync(ticketProcess);
 
                 await _unitOfWork.SaveAsync();
+                await _logService.AddLogAsync(LogType.Create, userId, EntityName, $"Vé vượt trạm {ticket.TicketSerial} đã được check-out tại trạm {stationName} thành công.");
                 await SendNotifyToUser(userId, $"Vé đã được check-out tại {stationName} thành công.");
                 return new ResponseDTO
                 {
@@ -702,6 +707,7 @@ namespace MetroTicketBE.Application.Service
                 await CreateTicketProcess(ticket, stationId, TicketProcessStatus.Checkout);
 
                 await _unitOfWork.SaveAsync();
+                await _logService.AddLogAsync(LogType.Create, userId, EntityName, $"Vé tháng{ticket.TicketSerial} đã được check-out tại trạm {stationName} thành công.");
                 await SendNotifyToUser(userId, $"Vé đã được check-out tại {stationName} thành công.");
                 return new ResponseDTO
                 {
@@ -721,10 +727,6 @@ namespace MetroTicketBE.Application.Service
                 };
             }
         }
-
-
-
-
         private async Task<ResponseDTO> CheckInTicketRouteAndSubProcess(Ticket ticket, Guid stationId, List<Guid> stationPath, string userId)
         {
             // Check log stations path
@@ -745,6 +747,7 @@ namespace MetroTicketBE.Application.Service
                 await CreateTicketProcess(ticket, stationId, TicketProcessStatus.Checkin);
 
                 await _unitOfWork.SaveAsync();
+                await _logService.AddLogAsync(LogType.Create, userId, EntityName, $"Vé luợt {ticket.TicketSerial} đã được check-in tại trạm {stationName}");
                 await SendNotifyToUser(userId, $"Vé đã được check-in tại {stationName} thành công.");
                 return new ResponseDTO
                 {

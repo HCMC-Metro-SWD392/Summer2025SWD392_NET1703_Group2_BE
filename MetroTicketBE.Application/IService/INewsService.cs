@@ -18,7 +18,7 @@ namespace MetroTicketBE.Application.IService
             );
         public Task<ResponseDTO> GetNewsById(Guid newsId);
         public Task<ResponseDTO> UpdateNews(ClaimsPrincipal user, Guid newsId, UpdateNewsDTO updateNewsDTO);
-        public Task<ResponseDTO> DeleteNews(Guid newsId);
+        public Task<ResponseDTO> DeleteNews(ClaimsPrincipal user, Guid newsId);
 
         public Task<ResponseDTO> GetAllNewsListForUser
             (
@@ -38,6 +38,6 @@ namespace MetroTicketBE.Application.IService
             int pageSize
             );
 
-        public Task<ResponseDTO> ChangeNewsStatus(Guid newsId, ChangeStatusDTO changeStatusDTO);
+        public Task<ResponseDTO> ChangeNewsStatus(ClaimsPrincipal user,Guid newsId, ChangeStatusDTO changeStatusDTO);
     }
 }

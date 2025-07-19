@@ -50,7 +50,7 @@ namespace MetroTicketBE.WebAPI.Controllers
         [Authorize(Roles = StaticUserRole.StaffManagerAdmin)]
         public async Task<ActionResult<ResponseDTO>> ChangeTicketRouteStatus([FromRoute] Guid ticketId)
         {
-            var response = await _ticketService.ChangeTicketRouteStatus(ticketId);
+            var response = await _ticketService.ChangeTicketRouteStatus(User, ticketId);
             return StatusCode(response.StatusCode, response);
         }
 

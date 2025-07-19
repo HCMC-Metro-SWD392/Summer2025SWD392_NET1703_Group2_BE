@@ -7,7 +7,7 @@ namespace MetroTicketBE.Application.IService
     public interface IFareRuleService
     {
         Task<ResponseDTO> GetAll(ClaimsPrincipal user, string? sortBy, bool? isAcsending, int pageNumber, int pageSize);
-        Task<ResponseDTO> CreateFareRule(CreateFareRuleDTO createFareRuleDTO);
-        Task<ResponseDTO> UpdateFareRule(UpdateFareRuleDTO updareFareRuleDTO);
+        Task<ResponseDTO> CreateFareRule(ClaimsPrincipal user, CreateFareRuleDTO createFareRuleDTO);
+        Task<ResponseDTO> UpdateFareRule(ClaimsPrincipal user,UpdateFareRuleDTO updareFareRuleDTO);
     }
 }

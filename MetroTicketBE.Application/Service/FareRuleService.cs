@@ -6,18 +6,22 @@ using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Infrastructure.IRepository;
 using System.Globalization;
 using System.Security.Claims;
+using MetroTicketBE.Domain.Enum;
 
 namespace MetroTicketBE.Application.Service
 {
     public class FareRuleService : IFareRuleService
     {
         private readonly IUnitOfWork _unitOfWork;
-        public FareRuleService(IUnitOfWork unitOfWork)
+        private readonly ILogService _logService;
+        private const string EntityName = "Quy tắc vé";
+        public FareRuleService(IUnitOfWork unitOfWork, ILogService logService)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _logService = logService ?? throw new ArgumentNullException(nameof(logService));
         }
 
-        public async Task<ResponseDTO> CreateFareRule(CreateFareRuleDTO createFareRuleDTO)
+        public async Task<ResponseDTO> CreateFareRule(ClaimsPrincipal user, CreateFareRuleDTO createFareRuleDTO)
         {
             try
             {
@@ -41,6 +45,7 @@ namespace MetroTicketBE.Application.Service
                 }
 
                 await _unitOfWork.FareRuleRepository.AddAsync(fareRule);
+                await _logService.AddLogAsync(LogType.Create, user.FindFirstValue(ClaimTypes.NameIdentifier), EntityName, $"Khoảng cách: {fareRule.MinDistance} - {fareRule.MaxDistance}, Giá vé: {fareRule.Fare.ToString("C", CultureInfo.CurrentCulture)}");
                 await _unitOfWork.SaveAsync();
 
                 return new ResponseDTO
@@ -121,7 +126,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> UpdateFareRule(UpdateFareRuleDTO updareFareRuleDTO)
+        public async Task<ResponseDTO> UpdateFareRule(ClaimsPrincipal user, UpdateFareRuleDTO updareFareRuleDTO)
         {
             try
             {
@@ -158,6 +163,7 @@ namespace MetroTicketBE.Application.Service
                 }
 
                 await CheckValidDistance(fareRule.MinDistance, fareRule.MaxDistance, fareRule.Id);
+                await _logService.AddLogAsync(LogType.Update, user.FindFirstValue(ClaimTypes.NameIdentifier), EntityName, $"Khoảng cách: {fareRule.MinDistance} - {fareRule.MaxDistance}, Giá vé: {fareRule.Fare.ToString("C", CultureInfo.CurrentCulture)}");
                 await _unitOfWork.SaveAsync();
 
                 return new ResponseDTO

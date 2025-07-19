@@ -81,7 +81,7 @@ namespace MetroTicketBE.WebAPI.Controllers
             {
                 return BadRequest("Invalid news ID.");
             }
-            var response = await newsService.DeleteNews(newsId);
+            var response = await newsService.DeleteNews(User, newsId);
             return StatusCode(response.StatusCode, response);
         }
 
@@ -121,7 +121,7 @@ namespace MetroTicketBE.WebAPI.Controllers
             {
                 return BadRequest("Invalid news ID or data.");
             }
-            var response = await newsService.ChangeNewsStatus(newsId, changeStatusDTO);
+            var response = await newsService.ChangeNewsStatus(User, newsId, changeStatusDTO);
             return StatusCode(response.StatusCode, response);
         }
     }
