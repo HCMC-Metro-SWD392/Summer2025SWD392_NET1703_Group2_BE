@@ -311,7 +311,7 @@ namespace MetroTicketBE.Application.Service
                 }
 
                 metroLine.Status = metroLineStatus;
-                _unitOfWork.MetroLineRepository.Update(metroLine);
+                // _unitOfWork.MetroLineRepository.Update(metroLine);
                 _unitOfWork.SaveAsync().Wait();
 
                 return new ResponseDTO
