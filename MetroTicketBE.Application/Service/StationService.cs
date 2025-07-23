@@ -7,6 +7,7 @@ using MetroTicketBE.Domain.DTO.Station;
 using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Domain.Enum;
 using MetroTicketBE.Infrastructure.IRepository;
+using MetroTicketBE.WebAPI.Extentions;
 using Microsoft.EntityFrameworkCore;
 
 namespace MetroTicketBE.Application.Service
@@ -25,7 +26,7 @@ namespace MetroTicketBE.Application.Service
             _logService = logService ?? throw new ArgumentNullException(nameof(logService));
         }
 
-        public async Task<ResponseDTO> CreateStation(ClaimsPrincipal user,CreateStationDTO createStationDTO)
+        public async Task<ResponseDTO> CreateStation(ClaimsPrincipal user, CreateStationDTO createStationDTO)
         {
             try
             {
@@ -50,8 +51,8 @@ namespace MetroTicketBE.Application.Service
 
                 await _unitOfWork.StationRepository.AddAsync(station);
                 await _unitOfWork.SaveAsync();
-                await _logService.AddLogAsync(LogType.Create, user.FindFirstValue(ClaimTypes.NameIdentifier),EntityName, station.Name);
-                
+                await _logService.AddLogAsync(LogType.Create, user.FindFirstValue(ClaimTypes.NameIdentifier), EntityName, station.Name);
+
                 return new ResponseDTO
                 {
                     IsSuccess = true,
@@ -71,7 +72,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> UpdateStation(ClaimsPrincipal user,Guid stationId, UpdateStationDTO updateStationDTO)
+        public async Task<ResponseDTO> UpdateStation(ClaimsPrincipal user, Guid stationId, UpdateStationDTO updateStationDTO)
         {
             try
             {
@@ -142,20 +143,20 @@ namespace MetroTicketBE.Application.Service
                     Message = "Lỗi khi cập nhật trạm Metro: " + exception.Message
                 };
             }
-            
+
         }
-        public async Task<ResponseDTO> GetAllStations(bool? isAscending,int pageNumber,
+        public async Task<ResponseDTO> GetAllStations(bool? isAscending, int pageNumber,
             int pageSize, bool? isActive = null)
         {
             try
             {
-                var stations =  _unitOfWork.StationRepository.GetAllStationDTOAsync(isAscending, isActive);
+                var stations = _unitOfWork.StationRepository.GetAllStationDTOAsync(isAscending, isActive);
                 var stationDTO = await stations.ProjectTo<GetStationDTO>(_mapper.ConfigurationProvider).ToListAsync();
                 if (pageNumber > 0 || pageSize > 0)
                 {
                     stationDTO = stationDTO.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
                 }
-                
+
                 return new ResponseDTO
                 {
                     IsSuccess = true,
@@ -284,6 +285,50 @@ namespace MetroTicketBE.Application.Service
                     IsSuccess = false,
                     StatusCode = 500,
                     Message = "Lỗi khi cập nhật trạng thái hoạt động của trạm Metro: " + ex.Message
+                };
+            }
+        }
+
+        public async Task<ResponseDTO> SearchTicketRoad(Guid stationStart, Guid stationEnd)
+        {
+            try
+            {
+                var allMetroline = await _unitOfWork.MetroLineRepository.GetAllListAsync(true);
+
+                var _graph = new StationGraph(allMetroline);
+
+                var stationPath = _graph.FindShortestPath(stationStart, stationEnd);
+
+                if (stationPath == null || stationPath.Count == 0)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        StatusCode = 404,
+                        Message = "Không tìm thấy đường đi giữa hai trạm"
+                    };
+                }
+
+                var ticketRoad = stationPath.Select(id =>
+                    allMetroline.SelectMany(l => l.MetroLineStations)
+                        .FirstOrDefault(s => s.StationId == id)?.Station.Name ?? id.ToString()).ToList();
+
+
+                return new ResponseDTO
+                {
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Message = "Tìm kiếm đường đi thành công",
+                    Result = ticketRoad
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Message = "Lỗi khi tìm kiếm đường đi: " + ex.Message
                 };
             }
         }

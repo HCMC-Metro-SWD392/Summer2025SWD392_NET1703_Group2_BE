@@ -24,7 +24,7 @@ namespace MetroTicketBE.WebAPI.Controllers
             var response = await _stationService.CreateStation(User, createStationDTO);
             return StatusCode(response.StatusCode, response);
         }
-        
+
 
         [HttpPut]
         [Route("update-station/{stationId}")]
@@ -44,7 +44,7 @@ namespace MetroTicketBE.WebAPI.Controllers
             var response = await _stationService.GetAllStations(isAscending, pageNumber, pageSize, isActive);
             return StatusCode(response.StatusCode, response);
         }
-        
+
         [HttpGet]
         [Route("get-station-by-id/{stationId}")]
         [Authorize(Roles = StaticUserRole.StaffManagerAdmin)]
@@ -72,5 +72,13 @@ namespace MetroTicketBE.WebAPI.Controllers
             return StatusCode(response.StatusCode, response);
         }
 
+        [HttpGet]
+        [Route("search-ticket-road")]
+        [AllowAnonymous]
+        public async Task<ActionResult<ResponseDTO>> SearchTicketRoad([FromQuery] Guid stationStart, [FromQuery] Guid stationEnd)
+        {
+            var response = await _stationService.SearchTicketRoad(stationStart, stationEnd);
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }
