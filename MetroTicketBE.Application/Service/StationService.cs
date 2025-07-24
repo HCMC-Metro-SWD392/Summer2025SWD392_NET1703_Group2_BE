@@ -293,7 +293,8 @@ namespace MetroTicketBE.Application.Service
         {
             try
             {
-                var allMetroline = await _unitOfWork.MetroLineRepository.GetAllListAsync(true);
+                var isActiveMetro = true;
+                var allMetroline = await _unitOfWork.MetroLineRepository.GetAllListAsync(isActiveMetro);
 
                 var _graph = new StationGraph(allMetroline);
 
@@ -309,9 +310,53 @@ namespace MetroTicketBE.Application.Service
                     };
                 }
 
-                var ticketRoad = stationPath.Select(id =>
-                    allMetroline.SelectMany(l => l.MetroLineStations)
-                        .FirstOrDefault(s => s.StationId == id)?.Station.Name ?? id.ToString()).ToList();
+                var ticketRoad = new List<object>();
+                int i = 0;
+
+                while (i < stationPath.Count - 1)
+                {
+                    var currentStationId = stationPath[i];
+                    var nextStationId = stationPath[i + 1];
+
+                    var metro = allMetroline.FirstOrDefault(l =>
+                        l.MetroLineStations.Any(s => s.StationId == currentStationId) &&
+                        l.MetroLineStations.Any(s => s.StationId == nextStationId));
+
+                    if (metro != null)
+                    {
+                        var segmentStations = new List<object>();
+                        segmentStations.Add(new
+                        {
+                            stationId = currentStationId,
+                            stationName = metro.MetroLineStations
+                                .First(s => s.StationId == currentStationId).Station.Name
+                        });
+
+                        while (i < stationPath.Count - 1 && metro.MetroLineStations.Any(s => s.StationId == stationPath[i + 1]))
+                        {
+                            i++;
+                            var stationId = stationPath[i];
+                            segmentStations.Add(new
+                            {
+                                stationId = stationId,
+                                stationName = metro.MetroLineStations
+                                    .First(s => s.StationId == stationId).Station.Name
+                            });
+                        }
+
+                        ticketRoad.Add(new
+                        {
+                            id = metro.Id,
+                            metroName = metro.MetroName,
+                            stations = segmentStations,
+                            status = metro.Status
+                        });
+                    }
+                    else
+                    {
+                        i++; // Nếu không tìm thấy meto thi bỏ qua
+                    }
+                }
 
 
                 return new ResponseDTO
