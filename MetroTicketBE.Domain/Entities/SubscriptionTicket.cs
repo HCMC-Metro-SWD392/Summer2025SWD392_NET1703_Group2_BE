@@ -12,6 +12,7 @@ public class SubscriptionTicket
     public int Price { get; set; }
     public Guid StartStationId { get; set; }
     public Guid EndStationId { get; set; }
+    public double Distance { get; set; }
     
     public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
     public SubscriptionTicketType TicketType { get; set; }

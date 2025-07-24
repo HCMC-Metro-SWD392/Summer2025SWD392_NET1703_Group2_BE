@@ -718,10 +718,7 @@ namespace MetroTicketBE.Application.Service
                 };
             }
         }
-
-
-
-
+        
         private async Task<ResponseDTO> CheckInTicketRouteAndSubProcess(Ticket ticket, Guid stationId, List<Guid> stationPath, string userId)
         {
             // Check log stations path

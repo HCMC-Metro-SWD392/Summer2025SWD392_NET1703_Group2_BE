@@ -155,6 +155,7 @@ public SubscriptionService(IUnitOfWork unitOfWork, IMapper mapper, ITicketRouteS
             Expiration = ticketType.Expiration,
             Price = price,
             TicketTypeId = createSubscriptionDTO.TicketTypeId,
+            Distance = distance
         };
         
         await _unitOfWork.SubscriptionRepository.AddAsync(saveSubscriptionTicket);
@@ -272,12 +273,17 @@ public SubscriptionService(IUnitOfWork unitOfWork, IMapper mapper, ITicketRouteS
                     Message = "Không tìm thấy vé cho tuyến đường này"
                 };
             }
+            var price = await _unitOfWork.FareRuleRepository.CalculatePriceFromDistance(subscription.Distance);
             return new ResponseDTO()
             {
                 IsSuccess = true,
                 StatusCode = 200,
                 Message = "Lấy vé thành công",
-                Result = subscription
+                Result = new
+                {
+                    SubscriptionTicketId = subscription.Id,
+                    Price = price * subscription.TicketType.FareCoefficient,
+                }
             };
         }
         catch (Exception ex)

@@ -40,7 +40,7 @@ public class SubscriptionRepository: Repository<SubscriptionTicket>, ISubscripti
 
     public Task<SubscriptionTicket?> GetByStartAndEndStationAsync(Guid startStationId, Guid endStationId, Guid TicketTypeId)
     {
-        return _context.SubscriptionTickets
+        return _context.SubscriptionTickets.Include(st => st.TicketType)
             .FirstOrDefaultAsync(st => st.StartStationId == startStationId && 
                                        st.EndStationId == endStationId && 
                                        st.TicketTypeId == TicketTypeId);
