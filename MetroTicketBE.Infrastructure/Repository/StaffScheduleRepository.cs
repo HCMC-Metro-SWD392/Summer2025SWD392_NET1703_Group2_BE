@@ -61,6 +61,12 @@ public class StaffScheduleRepository: Repository<StaffSchedule>, IStaffScheduleR
             .FirstOrDefaultAsync(s => s.StaffId == staffId && s.WorkingDate == workingDate && s.ShiftId == shiftId);
         return schedule;
     }
+
+    public async Task<bool> DoesStaffHaveSchedule(Guid staffId, DateOnly workingDate)
+    {
+        return await _context.StaffSchedules
+            .AnyAsync(s => s.StaffId == staffId && s.WorkingDate == workingDate);
+    }
     
     public async Task<List<Staff>> GetUnscheduledStaffAsync(Guid shiftId, DateOnly workingDate)
     {

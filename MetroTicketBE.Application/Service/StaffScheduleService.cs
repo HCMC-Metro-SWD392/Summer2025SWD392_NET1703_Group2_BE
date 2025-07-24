@@ -27,14 +27,26 @@ public class StaffScheduleService: IStaffScheduleService
     {
         try
         {
-            var existingSchedule = await _unitOfWork.StaffScheduleRepository
-                .GetByStaffIdDateShift(dto.StaffId, dto.WorkingDate, dto.ShiftId);
-            if (existingSchedule is not null)
+            // var existingSchedule = await _unitOfWork.StaffScheduleRepository
+            //     .GetByStaffIdDateShift(dto.StaffId, dto.WorkingDate, dto.ShiftId);
+            // if (existingSchedule is not null)
+            // {
+            //     return new ResponseDTO()
+            //     {
+            //         IsSuccess = false,
+            //         Message = "Nhân viên đã có ca làm việc này vào ngày này.",
+            //         Result = null,
+            //         StatusCode = 400,
+            //     };
+            // }
+            var isExistSchedule =
+                await _unitOfWork.StaffScheduleRepository.DoesStaffHaveSchedule(dto.StaffId, dto.WorkingDate);
+            if (isExistSchedule)
             {
                 return new ResponseDTO()
                 {
                     IsSuccess = false,
-                    Message = "Nhân viên đã có ca làm việc này vào ngày này.",
+                    Message = "Nhân viên đã có ca làm việc vào ngày này.",
                     Result = null,
                     StatusCode = 400,
                 };
@@ -71,17 +83,17 @@ public class StaffScheduleService: IStaffScheduleService
                     StatusCode = 400,
                 };
             }
-            var isConflictTime = await _unitOfWork.StaffScheduleRepository.HasTimeConflictAsync(dto.StaffId, dto.WorkingDate, shift.StartTime, shift.EndTime);
-            if (isConflictTime)
-            {
-                return new ResponseDTO()
-                {
-                    IsSuccess = false,
-                    Message = "Nhân viên đã có ca làm việc trùng thời gian với ca làm việc này.",
-                    Result = null,
-                    StatusCode = 400,
-                };
-            }
+            // var isConflictTime = await _unitOfWork.StaffScheduleRepository.HasTimeConflictAsync(dto.StaffId, dto.WorkingDate, shift.StartTime, shift.EndTime);
+            // if (isConflictTime)
+            // {
+            //     return new ResponseDTO()
+            //     {
+            //         IsSuccess = false,
+            //         Message = "Nhân viên đã có ca làm việc trùng thời gian với ca làm việc này.",
+            //         Result = null,
+            //         StatusCode = 400,
+            //     };
+            // }
             var schedule = new StaffSchedule()
             {
                 StaffId = dto.StaffId,
