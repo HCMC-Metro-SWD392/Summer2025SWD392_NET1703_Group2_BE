@@ -395,7 +395,7 @@ namespace MetroTicketBE.Application.Service
                 }
                 else if (ticket.TicketRtStatus == TicketStatus.Inactive)
                 {
-                    var allMetroLines = (await _unitOfWork.MetroLineRepository.GetAllListAsync(true)).Where(ml => ml.Status != MetroLineStatus.Faulty);
+                    var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync(true);
 
                     var _graph = new StationGraph(allMetroLines);
 
@@ -423,7 +423,7 @@ namespace MetroTicketBE.Application.Service
                 }
                 else
                 {
-                    var allMetroLines = (await _unitOfWork.MetroLineRepository.GetAllListAsync(true)).Where(ml => ml.Status != MetroLineStatus.Faulty);
+                    var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync(true);
 
                     var _graph = new StationGraph(allMetroLines);
 
@@ -568,7 +568,7 @@ namespace MetroTicketBE.Application.Service
                 else if (ticket.TicketRtStatus == TicketStatus.Active)
                 {
 
-                    var allMetroLines = (await _unitOfWork.MetroLineRepository.GetAllListAsync(true)).Where(ml => ml.Status != MetroLineStatus.Faulty);
+                    var allMetroLines = await _unitOfWork.MetroLineRepository.GetAllListAsync(true);
 
                     var _graph = new StationGraph(allMetroLines);
 
