@@ -61,6 +61,12 @@ public class StaffScheduleRepository: Repository<StaffSchedule>, IStaffScheduleR
             .FirstOrDefaultAsync(s => s.StaffId == staffId && s.WorkingDate == workingDate && s.ShiftId == shiftId);
         return schedule;
     }
+
+    public async Task<bool> DoesStaffHaveSchedule(Guid staffId, DateOnly workingDate)
+    {
+        return await _context.StaffSchedules
+            .AnyAsync(s => s.StaffId == staffId && s.WorkingDate == workingDate);
+    }
     
     public async Task<List<Staff>> GetUnscheduledStaffAsync(Guid shiftId, DateOnly workingDate)
     {
@@ -95,6 +101,17 @@ public class StaffScheduleRepository: Repository<StaffSchedule>, IStaffScheduleR
         return unscheduledStaff;
     }
 
+    public async Task<bool> IsWorkingStationAvailableAsync(Guid workingStationId, DateOnly workingDate, TimeSpan startTime, TimeSpan endTime)
+    {
+        return !await _context.StaffSchedules
+            .AnyAsync(schedule =>
+                schedule.WorkingStationId == workingStationId &&
+                schedule.WorkingDate == workingDate &&
+                startTime < schedule.EndTime && 
+                endTime > schedule.StartTime
+            );
+    }
+    
     public async Task<bool> HasTimeConflictAsync(Guid staffId, DateOnly workingDate, TimeSpan newStartTime, TimeSpan newEndTime)
     {
         return await _context.StaffSchedules

@@ -11,4 +11,8 @@ public interface IStaffScheduleRepository : IRepository<StaffSchedule>
     Task<List<Staff>> GetUnscheduledStaffAsync(Guid shiftId, DateOnly workingDate);
     Task<bool> IsExisted(Guid staffId, DateOnly workingDate, Guid shiftId);
     Task<bool> HasTimeConflictAsync(Guid staffId, DateOnly workingDate, TimeSpan newStartTime, TimeSpan newEndTime);
+    Task<bool> DoesStaffHaveSchedule(Guid staffId, DateOnly workingDate);
+
+    Task<bool> IsWorkingStationAvailableAsync(Guid workingStationId, DateOnly workingDate, TimeSpan startTime,
+        TimeSpan endTime);
 }
