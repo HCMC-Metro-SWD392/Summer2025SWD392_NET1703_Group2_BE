@@ -38,7 +38,11 @@ namespace MetroTicketBE.Application.Mappings
             .ForMember(dest => dest.FromStationRoute, opt => opt.MapFrom(src => src.TicketRoute.StartStation.Name))
             .ForMember(dest => dest.ToStationRoute, opt => opt.MapFrom(src => src.TicketRoute.EndStation.Name))
             .ForMember(dest => dest.FromStationSub, opt => opt.MapFrom(src => src.SubscriptionTicket.StartStation.Name))
-            .ForMember(dest => dest.ToStationSub, opt => opt.MapFrom(src => src.SubscriptionTicket.EndStation.Name)).ReverseMap();
+            .ForMember(dest => dest.ToStationSub, opt => opt.MapFrom(src => src.SubscriptionTicket.EndStation.Name))
+            .ForMember(dest => dest.FromStationRouteId, opt => opt.MapFrom(src => src.TicketRoute.StartStation.Id))
+            .ForMember(dest => dest.ToStationRouteId, opt => opt.MapFrom(src => src.TicketRoute.EndStation.Id))
+            .ForMember(dest => dest.FromStationSubId, opt => opt.MapFrom(src => src.SubscriptionTicket.StartStation.Id))
+            .ForMember(dest => dest.ToStationSubId, opt => opt.MapFrom(src => src.SubscriptionTicket.EndStation.Id)).ReverseMap();
 
             CreateMap<ApplicationUser, UserDTO>();
             CreateMap<Promotion, GetPromotionDTO>();
