@@ -6,6 +6,7 @@ using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.Station;
 using MetroTicketBE.Domain.Entities;
 using MetroTicketBE.Domain.Enum;
+using MetroTicketBE.Domain.Enums;
 using MetroTicketBE.Infrastructure.IRepository;
 using MetroTicketBE.WebAPI.Extentions;
 using Microsoft.EntityFrameworkCore;
@@ -289,12 +290,18 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> SearchTicketRoad(Guid stationStartId, Guid stationEndId)
+        public async Task<ResponseDTO> SearchTicketRoad(Guid stationStartId, Guid stationEndId, bool? isSideRoad)
         {
             try
             {
                 var isActiveMetro = true;
+
                 var allMetroline = await _unitOfWork.MetroLineRepository.GetAllListAsync(isActiveMetro);
+
+                if (isSideRoad is true)
+                {
+                    allMetroline = allMetroline.Where(ml => ml.Status != MetroLineStatus.Faulty).ToList();
+                }
 
                 var _graph = new StationGraph(allMetroline);
 
@@ -358,7 +365,6 @@ namespace MetroTicketBE.Application.Service
                     }
                 }
 
-
                 return new ResponseDTO
                 {
                     IsSuccess = true,
@@ -378,7 +384,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> SearchTicketRoadV2(Guid ticketId)
+        public async Task<ResponseDTO> SearchTicketRoadV2(Guid ticketId, bool? isSideRoad)
         {
             try
             {
@@ -396,21 +402,21 @@ namespace MetroTicketBE.Application.Service
 
                 if (ticket.SubscriptionTicket is null && ticket.TicketRoute is not null)
                 {
-                    return await SearchTicketRoad(ticket.TicketRoute.StartStationId, ticket.TicketRoute.EndStationId);
+                    return await SearchTicketRoad(ticket.TicketRoute.StartStationId, ticket.TicketRoute.EndStationId, isSideRoad);
                 }
                 else if (ticket.SubscriptionTicket is not null && ticket.TicketRoute is null)
                 {
-                    return await SearchTicketRoad(ticket.SubscriptionTicket.StartStationId, ticket.SubscriptionTicket.EndStationId);
+                    return await SearchTicketRoad(ticket.SubscriptionTicket.StartStationId, ticket.SubscriptionTicket.EndStationId, isSideRoad);
                 }
                 else if (ticket.SubscriptionTicket is not null && ticket.TicketRoute is not null)
                 {
                     if (ticket.TicketRoute.EndStationId == ticket.SubscriptionTicket.StartStationId)
                     {
-                        return await SearchTicketRoad(ticket.TicketRoute.StartStationId, ticket.SubscriptionTicket.EndStationId);
+                        return await SearchTicketRoad(ticket.TicketRoute.StartStationId, ticket.SubscriptionTicket.EndStationId, isSideRoad);
                     }
                     else
                     {
-                        return await SearchTicketRoad(ticket.TicketRoute.EndStationId, ticket.SubscriptionTicket.StartStationId);
+                        return await SearchTicketRoad(ticket.TicketRoute.EndStationId, ticket.SubscriptionTicket.StartStationId, isSideRoad);
                     }
                 }
                 else

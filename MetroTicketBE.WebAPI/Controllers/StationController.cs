@@ -76,18 +76,18 @@ namespace MetroTicketBE.WebAPI.Controllers
         [HttpGet]
         [Route("search-ticket-road")]
         [AllowAnonymous]
-        public async Task<ActionResult<ResponseDTO>> SearchTicketRoad([FromQuery] Guid stationStart, [FromQuery] Guid stationEnd)
+        public async Task<ActionResult<ResponseDTO>> SearchTicketRoad([FromQuery] Guid stationStart, [FromQuery] Guid stationEnd, bool? isSideRoad)
         {
-            var response = await _stationService.SearchTicketRoad(stationStart, stationEnd);
+            var response = await _stationService.SearchTicketRoad(stationStart, stationEnd, isSideRoad);
             return StatusCode(response.StatusCode, response);
         }
 
         [HttpGet]
         [Route("search-ticket-road-v2")]
         [AllowAnonymous]
-        public async Task<ActionResult<ResponseDTO>> SearchTicketRoadV2([FromQuery] Guid ticketId)
+        public async Task<ActionResult<ResponseDTO>> SearchTicketRoadV2([FromQuery] Guid ticketId, bool? isSideRoad)
         {
-            var response = await _stationService.SearchTicketRoadV2(ticketId);
+            var response = await _stationService.SearchTicketRoadV2(ticketId, isSideRoad);
             return StatusCode(response.StatusCode, response);
         }
     }

@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using MetroTicketBE.Domain.Enum;
 using MetroTicketBE.Domain.Enums;
+using MetroTicketBE.WebAPI.Extentions;
 
 namespace MetroTicketBE.Application.Service
 {
@@ -328,6 +329,216 @@ namespace MetroTicketBE.Application.Service
                     IsSuccess = false,
                     StatusCode = 500,
                     Message = "Lỗi khi cập nhật trạng thái tuyến Metro: " + ex.Message
+                };
+            }
+        }
+
+        public async Task<ResponseDTO> CheckMetroLineErrorInPath(Guid stationStartId, Guid stationEndId)
+        {
+            try
+            {
+                var isActiveMetro = true;
+                var allMetroline = await _unitOfWork.MetroLineRepository.GetAllListAsync(isActiveMetro);
+
+                var graph = new StationGraph(allMetroline);
+                var stationPath = graph.FindShortestPath(stationStartId, stationEndId);
+
+                if (stationPath == null || stationPath.Count == 0)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        StatusCode = 404,
+                        Message = "Không tìm thấy đường đi giữa hai trạm"
+                    };
+                }
+
+                int i = 0;
+                var faultyLines = new List<object>();
+                while (i < stationPath.Count - 1)
+                {
+                    var currentStationId = stationPath[i];
+                    var nextStationId = stationPath[i + 1];
+
+                    var metro = allMetroline.FirstOrDefault(l =>
+                        l.MetroLineStations.Any(s => s.StationId == currentStationId) &&
+                        l.MetroLineStations.Any(s => s.StationId == nextStationId));
+
+                    if (metro != null)
+                    {
+                        if (metro.Status == MetroLineStatus.Faulty)
+                        {
+                            faultyLines.Add(new
+                            {
+                                MetroId = metro.Id,
+                                MetroName = metro.MetroName,
+                                Status = metro.Status
+                            });
+                        }
+
+                        while (i < stationPath.Count - 1 &&
+                               metro.MetroLineStations.Any(s => s.StationId == stationPath[i + 1]))
+                        {
+                            i++;
+                        }
+                    }
+                    else
+                    {
+                        i++;
+                    }
+                }
+
+                if (faultyLines.Count > 0)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        StatusCode = 200,
+                        Message = $"Có {faultyLines.Count} tuyến metro bị lỗi trên đường đi",
+                        Result = faultyLines
+                    };
+                }
+
+                return new ResponseDTO
+                {
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Message = "Không có tuyến metro nào bị lỗi trong đường đi giữa hai trạm",
+                    Result = null
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Message = "Lỗi khi kiểm tra tuyến metro: " + ex.Message
+                };
+            }
+        }
+
+        public async Task<ResponseDTO> CheckMetroLineErrorInPathV2(Guid ticketId)
+        {
+            try
+            {
+                var ticket = await _unitOfWork.TicketRepository.GetByIdAsync(ticketId);
+                if (ticket is null)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        StatusCode = 404,
+                        Message = "Không tìm thấy vé"
+                    };
+                }
+
+                var isActiveMetro = true;
+                var allMetroline = await _unitOfWork.MetroLineRepository.GetAllListAsync(isActiveMetro);
+
+                var graph = new StationGraph(allMetroline);
+                var stationPath = new List<Guid>();
+
+                if (ticket.SubscriptionTicket is null && ticket.TicketRoute is not null)
+                {
+                    stationPath = graph.FindShortestPath(ticket.TicketRoute.StartStationId, ticket.TicketRoute.EndStationId);
+                }
+                else if (ticket.SubscriptionTicket is not null && ticket.TicketRoute is null)
+                {
+                    stationPath = graph.FindShortestPath(ticket.SubscriptionTicket.StartStationId, ticket.SubscriptionTicket.EndStationId);
+                }
+                else if (ticket.SubscriptionTicket is not null && ticket.TicketRoute is not null)
+                {
+                    if (ticket.TicketRoute.EndStationId == ticket.SubscriptionTicket.StartStationId)
+                    {
+                        stationPath = graph.FindShortestPath(ticket.TicketRoute.StartStationId, ticket.SubscriptionTicket.EndStationId);
+                    }
+                    else
+                    {
+                        stationPath = graph.FindShortestPath(ticket.SubscriptionTicket.StartStationId, ticket.TicketRoute.EndStationId);
+                    }
+                }
+                else
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        StatusCode = 400,
+                        Message = "Vé không có thông tin tuyến đường"
+                    };
+                }
+
+                if (stationPath == null || stationPath.Count == 0)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        StatusCode = 404,
+                        Message = "Không tìm thấy đường đi giữa hai trạm"
+                    };
+                }
+
+                int i = 0;
+                var faultyLines = new List<object>();
+                while (i < stationPath.Count - 1)
+                {
+                    var currentStationId = stationPath[i];
+                    var nextStationId = stationPath[i + 1];
+
+                    var metro = allMetroline.FirstOrDefault(l =>
+                        l.MetroLineStations.Any(s => s.StationId == currentStationId) &&
+                        l.MetroLineStations.Any(s => s.StationId == nextStationId));
+
+                    if (metro != null)
+                    {
+                        if (metro.Status == MetroLineStatus.Faulty)
+                        {
+                            faultyLines.Add(new
+                            {
+                                MetroId = metro.Id,
+                                MetroName = metro.MetroName,
+                                Status = metro.Status
+                            });
+                        }
+
+                        while (i < stationPath.Count - 1 &&
+                               metro.MetroLineStations.Any(s => s.StationId == stationPath[i + 1]))
+                        {
+                            i++;
+                        }
+                    }
+                    else
+                    {
+                        i++;
+                    }
+                }
+
+                if (faultyLines.Count > 0)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        StatusCode = 200,
+                        Message = $"Có {faultyLines.Count} tuyến metro bị lỗi trên đường đi",
+                        Result = faultyLines
+                    };
+                }
+
+                return new ResponseDTO
+                {
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Message = "Không có tuyến metro nào bị lỗi trong đường đi giữa hai trạm",
+                    Result = null
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Message = "Lỗi khi kiểm tra tuyến metro: " + ex.Message
                 };
             }
         }

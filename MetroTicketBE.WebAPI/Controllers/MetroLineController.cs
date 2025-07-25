@@ -73,5 +73,23 @@ namespace MetroTicketBE.WebAPI.Controllers
             var response = await _metroLineService.ChangeMetroLineStatus(metroLineId, metroLineStatus);
             return StatusCode(response.StatusCode, response);
         }
+
+        [HttpGet]
+        [Route("check-metro-line-error-in-path")]
+        [AllowAnonymous]
+        public async Task<ActionResult<ResponseDTO>> CheckMetroLineErrorInPath([FromQuery] Guid stationStartId, [FromQuery] Guid stationEndId)
+        {
+            var response = await _metroLineService.CheckMetroLineErrorInPath(stationStartId, stationEndId);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpGet]
+        [Route("check-metro-line-error-in-path-V2")]
+        [AllowAnonymous]
+        public async Task<ActionResult<ResponseDTO>> CheckMetroLineErrorInPathV2(Guid ticketId)
+        {
+            var response = await _metroLineService.CheckMetroLineErrorInPathV2(ticketId);
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }
