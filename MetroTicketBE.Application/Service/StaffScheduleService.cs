@@ -282,7 +282,7 @@ public class StaffScheduleService: IStaffScheduleService
         }
     }
 
-    public async Task<ResponseDTO> AssignStaffToExistedSchedule(Guid staffId, Guid scheduleId)
+    public async Task<ResponseDTO> AssignStaffToExistedSchedule(Guid staffId, Guid scheduleId, Guid? workingStationId = null)
     {
         var schedule = await _unitOfWork.StaffScheduleRepository.GetAsync(s => s.Id == scheduleId);
         if (schedule is null)
@@ -295,28 +295,31 @@ public class StaffScheduleService: IStaffScheduleService
                 StatusCode = 404,
             };
         }
-        var staff = await _unitOfWork.StaffRepository.GetAsync(s => s.Id == staffId);
-        if (staff is null)
-        {
-            return new ResponseDTO()
-            {
-                IsSuccess = false,
-                Message = "Nhân viên không tồn tại.",
-                Result = null,
-                StatusCode = 404,
-            };
-        }
-        var isStaffHasSchedule = await _unitOfWork.StaffScheduleRepository.IsExisted(staffId, schedule.WorkingDate, schedule.ShiftId);
-        if (isStaffHasSchedule)
-        {
-            return new ResponseDTO()
-            {
-                IsSuccess = false,
-                Message = "Nhân viên đã có ca làm việc này vào ngày này.",
-                Result = null,
-                StatusCode = 400,
-            };
-        }
+        // var staff = await _unitOfWork.StaffRepository.GetAsync(s => s.Id == staffId);
+        // if (staff is null)
+        // {
+        //     return new ResponseDTO()
+        //     {
+        //         IsSuccess = false,
+        //         Message = "Nhân viên không tồn tại.",
+        //         Result = null,
+        //         StatusCode = 404,
+        //     };
+        // }
+
+            // var isStaffHasSchedule = await _unitOfWork.StaffScheduleRepository.IsExisted(staffId , schedule.WorkingDate, schedule.ShiftId);
+            // if (isStaffHasSchedule)
+            // {
+            //     return new ResponseDTO()
+            //     {
+            //         IsSuccess = false,
+            //         Message = "Nhân viên đã có ca làm việc này vào ngày này.",
+            //         Result = null,
+            //         StatusCode = 400,
+            //     };
+            // }
+        
+        schedule.WorkingStationId = workingStationId ?? schedule.WorkingStationId;
         schedule.StaffId = staffId;
         _unitOfWork.StaffScheduleRepository.Update(schedule);
         await _unitOfWork.SaveAsync();

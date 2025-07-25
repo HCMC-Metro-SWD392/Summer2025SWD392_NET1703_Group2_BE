@@ -101,6 +101,17 @@ public class StaffScheduleRepository: Repository<StaffSchedule>, IStaffScheduleR
         return unscheduledStaff;
     }
 
+    public async Task<bool> IsWorkingStationAvailableAsync(Guid workingStationId, DateOnly workingDate, TimeSpan startTime, TimeSpan endTime)
+    {
+        return !await _context.StaffSchedules
+            .AnyAsync(schedule =>
+                schedule.WorkingStationId == workingStationId &&
+                schedule.WorkingDate == workingDate &&
+                startTime < schedule.EndTime && 
+                endTime > schedule.StartTime
+            );
+    }
+    
     public async Task<bool> HasTimeConflictAsync(Guid staffId, DateOnly workingDate, TimeSpan newStartTime, TimeSpan newEndTime)
     {
         return await _context.StaffSchedules

@@ -10,6 +10,6 @@ public interface IStaffScheduleService
     Task<ResponseDTO> CreateStaffSchedule(CreateStaffScheduleDTO dto);
     Task<ResponseDTO> GetSchedulesByStationIdAndDate(Guid stationId, DateOnly workingDate);
     Task<ResponseDTO> GetSchedulesByStaffIdAndDate(ClaimsPrincipal user, DateOnly? fromDate, DateOnly? toDate);
-    Task<ResponseDTO> AssignStaffToExistedSchedule(Guid staffId, Guid scheduleId);
+    Task<ResponseDTO> AssignStaffToExistedSchedule(Guid staffId, Guid scheduleId, Guid? workingStationId);
     Task<ResponseDTO> GetUnscheduledStaff(Guid shiftId, DateOnly workingDate);
 }
