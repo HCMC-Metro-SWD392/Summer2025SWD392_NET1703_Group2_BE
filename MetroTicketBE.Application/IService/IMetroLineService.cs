@@ -18,5 +18,7 @@ namespace MetroTicketBE.Application.IService
         Task<ResponseDTO> UpdateMetroLine(ClaimsPrincipal user, Guid metroLineId, UpdateMetroLineDTO updateMetroLineDTO);
         Task<ResponseDTO> SetIsActiveMetroLine(ClaimsPrincipal user, Guid metroLineId, bool isActive);
         Task<ResponseDTO> ChangeMetroLineStatus(Guid metroLineId, MetroLineStatus metroLineStatus);
+        Task<ResponseDTO> CheckMetroLineErrorInPath(Guid stationStartId, Guid stationEndId);
+        Task<ResponseDTO> CheckMetroLineErrorInPathV2(Guid ticketId);
     }
 }

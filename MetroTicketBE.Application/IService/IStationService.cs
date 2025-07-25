@@ -18,7 +18,7 @@ namespace MetroTicketBE.Application.IService
         Task<ResponseDTO> GetStationById(Guid stationId);
         Task<ResponseDTO> SearchStationsByName(string? name, bool? isActive);
         Task<ResponseDTO> SetIsActiveStation(ClaimsPrincipal user,Guid stationId, bool isActive);
-        Task<ResponseDTO> SearchTicketRoad(Guid stationStartId, Guid stationEndId);
-        Task<ResponseDTO> SearchTicketRoadV2(Guid ticketId);
+        Task<ResponseDTO> SearchTicketRoad(Guid stationStartId, Guid stationEndId, bool? isSideRoad);
+        Task<ResponseDTO> SearchTicketRoadV2(Guid ticketId, bool? isSideRoad);
     }
 }
