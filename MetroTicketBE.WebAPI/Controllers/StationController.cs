@@ -2,6 +2,7 @@
 using MetroTicketBE.Domain.Constants;
 using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.Station;
+using MetroTicketBE.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -78,6 +79,15 @@ namespace MetroTicketBE.WebAPI.Controllers
         public async Task<ActionResult<ResponseDTO>> SearchTicketRoad([FromQuery] Guid stationStart, [FromQuery] Guid stationEnd)
         {
             var response = await _stationService.SearchTicketRoad(stationStart, stationEnd);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpGet]
+        [Route("search-ticket-road-v2")]
+        [AllowAnonymous]
+        public async Task<ActionResult<ResponseDTO>> SearchTicketRoadV2([FromQuery] Guid ticketId)
+        {
+            var response = await _stationService.SearchTicketRoadV2(ticketId);
             return StatusCode(response.StatusCode, response);
         }
     }
