@@ -1,5 +1,6 @@
 ﻿using MetroTicketBE.Domain.DTO.Auth;
 using MetroTicketBE.Domain.DTO.Station;
+using MetroTicketBE.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,7 @@ namespace MetroTicketBE.Application.IService
         Task<ResponseDTO> GetStationById(Guid stationId);
         Task<ResponseDTO> SearchStationsByName(string? name, bool? isActive);
         Task<ResponseDTO> SetIsActiveStation(ClaimsPrincipal user,Guid stationId, bool isActive);
-        Task<ResponseDTO> SearchTicketRoad(Guid stationStart, Guid stationEnd);
+        Task<ResponseDTO> SearchTicketRoad(Guid stationStartId, Guid stationEndId);
+        Task<ResponseDTO> SearchTicketRoadV2(Guid ticketId);
     }
 }

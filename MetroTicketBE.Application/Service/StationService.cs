@@ -289,7 +289,7 @@ namespace MetroTicketBE.Application.Service
             }
         }
 
-        public async Task<ResponseDTO> SearchTicketRoad(Guid stationStart, Guid stationEnd)
+        public async Task<ResponseDTO> SearchTicketRoad(Guid stationStartId, Guid stationEndId)
         {
             try
             {
@@ -298,7 +298,7 @@ namespace MetroTicketBE.Application.Service
 
                 var _graph = new StationGraph(allMetroline);
 
-                var stationPath = _graph.FindShortestPath(stationStart, stationEnd);
+                var stationPath = _graph.FindShortestPath(stationStartId, stationEndId);
 
                 if (stationPath == null || stationPath.Count == 0)
                 {
@@ -366,6 +366,62 @@ namespace MetroTicketBE.Application.Service
                     Message = "Tìm kiếm đường đi thành công",
                     Result = ticketRoad
                 };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO
+                {
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Message = "Lỗi khi tìm kiếm đường đi: " + ex.Message
+                };
+            }
+        }
+
+        public async Task<ResponseDTO> SearchTicketRoadV2(Guid ticketId)
+        {
+            try
+            {
+
+                var ticket = await _unitOfWork.TicketRepository.GetByIdAsync(ticketId);
+                if (ticket is null)
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        StatusCode = 404,
+                        Message = "Vé không tồn tại"
+                    };
+                }
+
+                if (ticket.SubscriptionTicket is null && ticket.TicketRoute is not null)
+                {
+                    return await SearchTicketRoad(ticket.TicketRoute.StartStationId, ticket.TicketRoute.EndStationId);
+                }
+                else if (ticket.SubscriptionTicket is not null && ticket.TicketRoute is null)
+                {
+                    return await SearchTicketRoad(ticket.SubscriptionTicket.StartStationId, ticket.SubscriptionTicket.EndStationId);
+                }
+                else if (ticket.SubscriptionTicket is not null && ticket.TicketRoute is not null)
+                {
+                    if (ticket.TicketRoute.EndStationId == ticket.SubscriptionTicket.StartStationId)
+                    {
+                        return await SearchTicketRoad(ticket.TicketRoute.StartStationId, ticket.SubscriptionTicket.EndStationId);
+                    }
+                    else
+                    {
+                        return await SearchTicketRoad(ticket.TicketRoute.EndStationId, ticket.SubscriptionTicket.StartStationId);
+                    }
+                }
+                else
+                {
+                    return new ResponseDTO
+                    {
+                        IsSuccess = false,
+                        StatusCode = 400,
+                        Message = "Lỗi vé bị thiếu thông tin"
+                    };
+                }
             }
             catch (Exception ex)
             {
