@@ -282,7 +282,7 @@ public class StaffScheduleService: IStaffScheduleService
         }
     }
 
-    public async Task<ResponseDTO> AssignStaffToExistedSchedule(Guid staffId, Guid scheduleId, Guid? workingStationId = null)
+    public async Task<ResponseDTO> AssignStaffToExistedSchedule(Guid staffId, Guid shiftId, Guid scheduleId, Guid? workingStationId = null)
     {
         var schedule = await _unitOfWork.StaffScheduleRepository.GetAsync(s => s.Id == scheduleId);
         if (schedule is null)
@@ -318,7 +318,7 @@ public class StaffScheduleService: IStaffScheduleService
             //         StatusCode = 400,
             //     };
             // }
-        
+        schedule.ShiftId = shiftId;
         schedule.WorkingStationId = workingStationId ?? schedule.WorkingStationId;
         schedule.StaffId = staffId;
         _unitOfWork.StaffScheduleRepository.Update(schedule);

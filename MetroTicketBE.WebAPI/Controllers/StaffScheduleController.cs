@@ -72,9 +72,9 @@ public class StaffScheduleController: ControllerBase
     }
     [HttpPut("assign-staff")]
     [Authorize(Roles = StaticUserRole.ManagerAdmin)]
-    public async Task<IActionResult> AssignStaffToExistSchedule(Guid staffId, Guid scheduleId, Guid? workingStationId)
+    public async Task<IActionResult> AssignStaffToExistSchedule(Guid staffId,Guid shiftId, Guid scheduleId, Guid? workingStationId)
     {
-        var response = await _staffScheduleService.AssignStaffToExistedSchedule(staffId, scheduleId, workingStationId);
+        var response = await _staffScheduleService.AssignStaffToExistedSchedule(staffId,shiftId, scheduleId, workingStationId);
         if (response.IsSuccess)
         {
             return Ok(response);
