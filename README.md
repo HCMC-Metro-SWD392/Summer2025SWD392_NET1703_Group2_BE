@@ -1,4 +1,4 @@
-# MetroTicketBE – HCMC Metro Ticketing Backend (CV-style overview)
+# MetroTicketBE – HCMC Metro Ticketing Backend
 
 A production-ready .NET 8 Web API that powers metro ticketing for Ho Chi Minh City. The platform manages a multi-line metro network (8 lines), stations, staff scheduling, train timetables, ticket purchase and validation, QR-based check-in/checkout with over-station handling, real-time notifications, payments via PayOS, content (news/forms), and system audit logs.
 
@@ -153,5 +153,3 @@ A production-ready .NET 8 Web API that powers metro ticketing for Ho Chi Minh Ci
   - Path-constrained validation reduces fraud and improves UX
   - Short-lived QR codes for subscriptions improve security while supporting real-time validation
 - The solution is modular, testable, and production-oriented with clear separation of concerns and infra adapters.
-
-If you need a tailored one-pager or slide for a hiring panel, I can condense this into a visual architecture + key flows diagram with talking points.
