@@ -4,7 +4,7 @@ A production-ready .NET 8 Web API that powers metro ticketing for Ho Chi Minh Ci
 
 — Project Scope
 - Domain: Public transport ticketing for a multi-line metro network (8 lines) with interchanges.
-- Users: Customers, Staff, Managers, Admins.
+- Users: Guest, Customer, Staff, Manager, Admin.
 - Outcomes: End-to-end ticketing workflows (search routes, buy tickets, validate via QR, handle over-station payment), operations tooling (scheduling staff/trains), and operator observability (logs, alerts).
 
 — Role & Contributions
